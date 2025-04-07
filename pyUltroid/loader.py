@@ -1,16 +1,18 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
+import contextlib
 import glob
 import os
 from importlib import import_module
 from logging import Logger
 
 from . import LOGS
+from .fns.tools import get_all_files
 
 
 class Loader:
@@ -20,8 +22,15 @@ class Loader:
         self._logger = logger
 
     def load(
-        self, log=True, func=import_module, include=None, exclude=None, after_load=None
+        self,
+        log=True,
+        func=import_module,
+        include=None,
+        exclude=None,
+        after_load=None,
+        load_all=False,
     ):
+        _single = os.path.isfile(self.path)
         if include:
             if log:
                 self._logger.info("Including: {}".format("• ".join(include)))
@@ -30,46 +39,39 @@ class Loader:
                 path = f"{self.path}/{file}.py"
                 if os.path.exists(path):
                     files.append(path)
+        elif _single:
+            files = [self.path]
         else:
-            files = glob.glob(f"{self.path}/*.py")
+            if load_all:
+                files = get_all_files(self.path, ".py")
+            else:
+                files = glob.glob(f"{self.path}/*.py")
             if exclude:
                 for path in exclude:
                     if not path.startswith("_"):
-                        try:
+                        with contextlib.suppress(ValueError):
                             files.remove(f"{self.path}/{path}.py")
-                        except ValueError:
-                            pass
-        if log:
+        if log and not _single:
             self._logger.info(
-                f"• Installing {self.key}'s Plugins || Count : {len(files)} •"
+                f"• Installing {self.key} Plugins || Count : {len(files)} •"
             )
         for plugin in sorted(files):
-            plugin = plugin.replace(".py", "")
             if func == import_module:
-                plugin = plugin.replace("/", ".").replace("\\", ".")
-            else:
-                plugin = plugin.split("/")[-1]
+                plugin = plugin.replace(".py", "").replace("/", ".").replace("\\", ".")
             try:
                 modl = func(plugin)
             except ModuleNotFoundError as er:
                 modl = None
-                self._logger.error(f"{plugin}: '{er.name}' module not installed!")
+                self._logger.error(f"{plugin}: '{er.name}' not installed!")
+                continue
             except Exception as exc:
                 modl = None
                 self._logger.error(f"pyUltroid - {self.key} - ERROR - {plugin}")
                 self._logger.exception(exc)
+                continue
+            if _single and log:
+                self._logger.info(f"Successfully Loaded {plugin}!")
             if callable(after_load):
                 if func == import_module:
                     plugin = plugin.split(".")[-1]
                 after_load(self, modl, plugin_name=plugin)
-
-    def load_single(self, log=False):
-        """To Load Single File"""
-        plugin = self.path.replace(".py", "").replace("/", ".")
-        try:
-            import_module(plugin)
-        except Exception as er:
-            self._logger.info(f"Error while Loading {plugin}")
-            return self._logger.exception(er)
-        if log and self._logger:
-            self._logger.info(f"Successfully Loaded {plugin}!")

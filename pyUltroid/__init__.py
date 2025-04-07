@@ -1,31 +1,43 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
+import os
 import sys
-
+import telethonpatch
 from .version import __version__
 
-run_as_module = False
+run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
 
-if sys.argv[0] == "-m":
-    run_as_module = True
 
+class ULTConfig:
+    lang = "en"
+    thumb = "resources/extras/8189450f-de7f-4582-ba94-f8ec2d928b31.jpeg"
+
+
+if run_as_module:
     import time
 
-    from .configs import Var
+    from config import Var
     from .startup import *
     from .startup._database import UltroidDB
     from .startup.BaseClient import UltroidClient
-    from .startup.connections import session_file, vc_connection
+    from .startup.connections import validate_session, vc_connection
     from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
     from .version import ultroid_version
 
+    if not os.path.exists("./plugins"):
+        LOGS.error(
+            "'plugins' folder not found!\nMake sure that, you are on correct path."
+        )
+        exit()
+
     start_time = time.time()
     _ult_cache = {}
+    _ignore_eval = []
 
     udB = UltroidDB()
     update_envs()
@@ -37,31 +49,35 @@ if sys.argv[0] == "-m":
     BOT_MODE = udB.get_key("BOTMODE")
     DUAL_MODE = udB.get_key("DUAL_MODE")
 
+    USER_MODE = udB.get_key("USER_MODE")
+    if USER_MODE:
+        DUAL_MODE = False
+
     if BOT_MODE:
         if DUAL_MODE:
             udB.del_key("DUAL_MODE")
             DUAL_MODE = False
         ultroid_bot = None
-    else:
-        ultroid_bot = UltroidClient(
-            session_file(LOGS),
-            udB=udB,
-            app_version=ultroid_version,
-            device_model="Ultroid",
-            proxy=udB.get_key("TG_PROXY"),
-        )
 
-    if not BOT_MODE:
-        ultroid_bot.run_in_loop(autobot())
-    else:
         if not udB.get_key("BOT_TOKEN"):
             LOGS.critical(
                 '"BOT_TOKEN" not Found! Please add it, in order to use "BOTMODE"'
             )
 
             sys.exit()
+    else:
+        ultroid_bot = UltroidClient(
+            validate_session(Var.SESSION, LOGS),
+            udB=udB,
+            app_version=ultroid_version,
+            device_model="Ultroid",
+        )
+        ultroid_bot.run_in_loop(autobot())
 
-    asst = UltroidClient(None, bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
+    if USER_MODE:
+        asst = ultroid_bot
+    else:
+        asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
     if BOT_MODE:
         ultroid_bot = asst
@@ -72,7 +88,7 @@ if sys.argv[0] == "-m":
                 )
             except Exception as er:
                 LOGS.exception(er)
-    elif not asst.me.bot_inline_placeholder:
+    elif not asst.me.bot_inline_placeholder and asst._bot:
         ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
 
     vcClient = vc_connection(udB, ultroid_bot)

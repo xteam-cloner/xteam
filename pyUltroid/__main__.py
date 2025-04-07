@@ -1,28 +1,34 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
 from . import *
-
+from config import Var
 
 def main():
     import os
     import sys
     import time
-
-    from .functions.helper import time_formatter, updater
+    
+    from .fns.helper import bash, time_formatter, updater
     from .startup.funcs import (
         WasItRestart,
         autopilot,
         customize,
+        fetch_ann,
         plug,
         ready,
         startup_stuff,
     )
     from .startup.loader import load_other_plugins
+
+    try:
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    except ImportError:
+        AsyncIOScheduler = None
 
     # Option to Auto Update On Restarts..
     if (
@@ -30,16 +36,13 @@ def main():
         and os.path.exists(".git")
         and ultroid_bot.run_in_loop(updater())
     ):
-        os.system(
-            "git pull -f -q && pip3 install --no-cache-dir -U -q -r requirements.txt"
-        )
+        ultroid_bot.run_in_loop(bash("bash installer.sh"))
 
-        os.execl(sys.executable, "python3", "-m", "pyUltroid")
+        os.execl(sys.executable, sys.executable, "-m", "pyUltroid")
 
-    startup_stuff()
+    ultroid_bot.run_in_loop(startup_stuff())
 
     ultroid_bot.me.phone = None
-    ultroid_bot.first_name = ultroid_bot.me.first_name
 
     if not ultroid_bot.me.bot:
         udB.set_key("OWNER_ID", ultroid_bot.uid)
@@ -55,8 +58,10 @@ def main():
     if HOSTED_ON == "okteto":
         vcbot = False
 
-    if HOSTED_ON == "termux" and udB.get_key("EXCLUDE_OFFICIAL") is None:
-        _plugins = "autocorrect autopic compressor forcesubscribe gdrive glitch instagram nsfwfilter nightmode pdftools writer youtube"
+    if (HOSTED_ON == "termux" or udB.get_key("LITE_DEPLOY")) and udB.get_key(
+        "EXCLUDE_OFFICIAL"
+    ) is None:
+        _plugins = "autocorrect autopic audiotools compressor forcesubscribe fedutils gdrive glitch instagram nsfwfilter nightmode pdftools profanityfilter writer youtube"
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
     load_other_plugins(addons=addons, pmbot=pmbot, manager=manager, vcbot=vcbot)
@@ -80,6 +85,12 @@ def main():
     # Send/Ignore Deploy Message..
     if not udB.get_key("LOG_OFF"):
         ultroid_bot.run_in_loop(ready())
+
+    # TODO: Announcement API IS DOWN
+    # if AsyncIOScheduler:
+    #     scheduler = AsyncIOScheduler()
+    #     scheduler.add_job(fetch_ann, "interval", minutes=12 * 60)
+    #     scheduler.start()
 
     # Edit Restarting Message (if It's restarting)
     ultroid_bot.run_in_loop(WasItRestart(udB))
