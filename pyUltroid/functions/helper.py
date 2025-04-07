@@ -1,5 +1,5 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
@@ -13,19 +13,22 @@ import sys
 import time
 from traceback import format_exc
 from urllib.parse import unquote
+from urllib.request import urlretrieve
 
 from .. import run_as_module
 
 if run_as_module:
-    from ..configs import Var
+    from config import Var
+
 
 try:
-    import aiofiles
-    import aiohttp
+    from aiohttp import ClientSession as aiohttp_client
 except ImportError:
-    import urllib
-
-    aiohttp = None
+    aiohttp_client = None
+    try:
+        import requests
+    except ImportError:
+        requests = None
 
 try:
     import heroku3
@@ -39,12 +42,6 @@ except ImportError:
     Repo = None
 
 
-from . import *
-
-try:
-    from html_telegraph_poster import TelegraphPoster
-except ImportError:
-    TelegraphPoster = None
 import asyncio
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
@@ -56,6 +53,8 @@ from telethon.utils import get_display_name
 
 from .._misc import CMD_HELP
 from .._misc._wrappers import eod, eor
+from ..exceptions import DependencyMissingError
+from . import *
 
 if run_as_module:
     from ..dB._core import ADDONS, HELP, LIST, LOADED
@@ -86,7 +85,7 @@ def make_mention(user, custom=None):
 
 
 def inline_mention(user, custom=None, html=False):
-    mention_text = get_display_name(user) or user if not custom else custom
+    mention_text = get_display_name(user) or "Deleted Account" if not custom else custom
     if isinstance(user, types.User):
         if html:
             return f"<a href=tg://user?id={user.id}>{mention_text}</a>"
@@ -161,7 +160,7 @@ if run_as_module:
                         f"**Installation Aborted.**\n**Reason:** Occurance of `{dan}` in `{reply.file.name}`.\n\nIf you trust the provider and/or know what you're doing, use `{HNDLR}install f` to force install.",
                     )
         try:
-            load_addons(dl.split("/")[-1].replace(".py", ""))
+            load_addons(dl)  # dl.split("/")[-1].replace(".py", ""))
         except BaseException:
             os.remove(dl)
             return await eor(ok, f"**ERROR**\n\n`{format_exc()}`", time=30)
@@ -170,7 +169,7 @@ if run_as_module:
             output = "**Plugin** - `{}`\n".format(plug)
             for i in HELP[plug]:
                 output += i
-            output += "\n© @TheUltroid"
+            output += "\n© @TeamUltroid"
             await eod(ok, f"✓ `Ultroid - Installed`: `{plug}` ✓\n\n{output}")
         elif plug in CMD_HELP:
             output = f"Plugin Name-{plug}\n\n✘ Commands Available-\n\n"
@@ -205,24 +204,23 @@ if run_as_module:
             )
         await xx.edit("`Downloading Logs...`")
         ok = app.get_log()
-        with open("ultroid-heroku.log", "w") as log:
+        with open("userbot-heroku.log", "w") as log:
             log.write(ok)
         await event.client.send_file(
             event.chat_id,
-            file="ultroid-heroku.log",
-            thumb="resources/extras/ultroid.jpg",
-            caption="**Ultroid Heroku Logs.**",
+            file="userbot-heroku.log",
+            thumb=ULTConfig.thumb,
+            caption="**Userbot Heroku Logs.**",
         )
 
-        os.remove("ultroid-heroku.log")
+        os.remove("usebot-heroku.log")
         await xx.delete()
 
     async def def_logs(ult, file):
-        await ult.client.send_file(
-            ult.chat_id,
+        await ult.respond(
+            "**Userbot Logs.**",
             file=file,
-            thumb="resources/extras/ultroid.jpg",
-            caption="**Ultroid Logs.**",
+            thumb=ULTConfig.thumb,
         )
 
     async def updateme_requirements():
@@ -265,9 +263,8 @@ async def bash(cmd, run_code=0):
     err = stderr.decode().strip() or None
     out = stdout.decode().strip()
     if not run_code and err:
-        split = cmd.split()[0]
-        if f"{split}: not found" in err:
-            return out, f"{split.upper()}_NOT_FOUND"
+        if match := re.match("\/bin\/sh: (.*): ?(\w+): not found", err):
+            return out, f"{match.group(2).upper()}_NOT_FOUND"
     return out, err
 
 
@@ -301,10 +298,7 @@ async def updater():
         repo.heads.main.set_tracking_branch(origin.refs.main)
         repo.heads.main.checkout(True)
     ac_br = repo.active_branch.name
-    try:
-        repo.create_remote("upstream", off_repo)
-    except Exception as er:
-        LOGS.info(er)
+    repo.create_remote("upstream", off_repo) if "upstream" not in repo.remotes else None
     ups_rem = repo.remote("upstream")
     ups_rem.fetch(ac_br)
     changelog, tl_chnglog = await gen_chlog(repo, f"HEAD..upstream/{ac_br}")
@@ -353,25 +347,70 @@ async def downloader(filename, file, event, taime, msg):
     return result
 
 
+# ~~~~~~~~~~~~~~~Async Searcher~~~~~~~~~~~~~~~
+# @buddhhu
+
+
+async def async_searcher(
+    url: str,
+    post: bool = False,
+    head: bool = False,
+    headers: dict = None,
+    evaluate=None,
+    object: bool = False,
+    re_json: bool = False,
+    re_content: bool = False,
+    *args,
+    **kwargs,
+):
+    if aiohttp_client:
+        async with aiohttp_client(headers=headers) as client:
+            method = client.head if head else (client.post if post else client.get)
+            data = await method(url, *args, **kwargs)
+            if evaluate:
+                return await evaluate(data)
+            if re_json:
+                return await data.json()
+            if re_content:
+                return await data.read()
+            if head or object:
+                return data
+            return await data.text()
+    # elif requests:
+    #     method = requests.head if head else (requests.post if post else requests.get)
+    #     data = method(url, headers=headers, *args, **kwargs)
+    #     if re_json:
+    #         return data.json()
+    #     if re_content:
+    #         return data.content
+    #     if head or object:
+    #         return data
+    #     return data.text
+    else:
+        raise DependencyMissingError("install 'aiohttp' to use this.")
+
+
 # ~~~~~~~~~~~~~~~~~~~~DDL Downloader~~~~~~~~~~~~~~~~~~~~
 # @buddhhu @new-dev0
 
 
-async def download_file(link, name):
+async def download_file(link, name, validate=False):
     """for files, without progress callback with aiohttp"""
-    if not aiohttp:
-        urllib.request.urlretrieve(link, name)
-        return name
-    async with aiohttp.ClientSession() as ses:
-        async with ses.get(link) as re_ses:
-            file = await aiofiles.open(name, "wb")
-            await file.write(await re_ses.read())
-            await file.close()
-    return name
+
+    async def _download(content):
+        if validate and "application/json" in content.headers.get("Content-Type"):
+            return None, await content.json()
+        with open(name, "wb") as file:
+            file.write(await content.read())
+        return name, ""
+
+    return await async_searcher(link, evaluate=_download)
 
 
 async def fast_download(download_url, filename=None, progress_callback=None):
-    async with aiohttp.ClientSession() as session:
+    if not aiohttp_client:
+        return await download_file(download_url, filename)[0], None
+    async with aiohttp_client() as session:
         async with session.get(download_url, timeout=None) as response:
             if not filename:
                 filename = unquote(download_url.rpartition("/")[-1])
@@ -391,19 +430,6 @@ async def fast_download(download_url, filename=None, progress_callback=None):
 
 
 # --------------------------Media Funcs-------------------------------- #
-
-
-@run_async
-def make_html_telegraph(title, author, text):
-    client = TelegraphPoster(use_api=True)
-    client.create_api_token(title)
-    page = client.post(
-        title=title,
-        author=author,
-        author_url="https://t.me/TeamUltroid",
-        text=text,
-    )
-    return page["url"]
 
 
 def mediainfo(media):
@@ -457,7 +483,7 @@ def time_formatter(milliseconds):
         + ((str(seconds) + "s") if seconds else "")
     )
     if not tmp:
-        return "0 s"
+        return "0s"
 
     if tmp.endswith(":"):
         return tmp[:-1]
@@ -481,6 +507,7 @@ def humanbytes(size):
 def numerize(number):
     if not number:
         return None
+    unit = ""
     for unit in ["", "K", "M", "B", "T"]:
         if number < 1000:
             break

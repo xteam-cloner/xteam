@@ -1,5 +1,5 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
@@ -8,6 +8,7 @@
 import json
 import math
 import os
+import random
 import re
 import secrets
 import ssl
@@ -15,8 +16,12 @@ from io import BytesIO
 from json.decoder import JSONDecodeError
 from traceback import format_exc
 
-from .. import LOGS
+import requests
+
+from .. import *
 from ..exceptions import DependencyMissingError
+from . import some_random_headers
+from .helper import async_searcher, bash, run_async
 
 try:
     import certifi
@@ -29,14 +34,10 @@ except ImportError:
     Image, ImageDraw, ImageFont = None, None, None
     LOGS.info("PIL not installed!")
 
-from urllib.parse import unquote
+from urllib.parse import quote, unquote
 
-from requests.exceptions import MissingSchema
 from telethon import Button
 from telethon.tl.types import DocumentAttributeAudio, DocumentAttributeVideo
-
-from .. import *
-from .helper import bash
 
 if run_as_module:
     from ..dB.filestore_db import get_stored_msg, store_msg
@@ -51,6 +52,11 @@ try:
 except ImportError:
     Telegraph = None
 
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+
 # ~~~~~~~~~~~~~~~~~~~~OFOX API~~~~~~~~~~~~~~~~~~~~
 # @buddhhu
 
@@ -64,46 +70,6 @@ async def get_ofox(codename):
         ofox_baseurl + "devices/get?codename=" + codename, re_json=True
     )
     return device, releases
-
-
-# ~~~~~~~~~~~~~~~Async Searcher~~~~~~~~~~~~~~~
-# @buddhhu
-
-
-async def async_searcher(
-    url: str,
-    post: bool = None,
-    headers: dict = None,
-    params: dict = None,
-    json: dict = None,
-    data: dict = None,
-    ssl=None,
-    re_json: bool = False,
-    re_content: bool = False,
-    real: bool = False,
-    *args,
-    **kwargs,
-):
-    try:
-        import aiohttp
-    except ImportError:
-        raise DependencyMissingError(
-            "'aiohttp' is not installed!\nthis function requires aiohttp to be installed."
-        )
-    async with aiohttp.ClientSession(headers=headers) as client:
-        if post:
-            data = await client.post(
-                url, json=json, data=data, ssl=ssl, *args, **kwargs
-            )
-        else:
-            data = await client.get(url, params=params, ssl=ssl, *args, **kwargs)
-        if re_json:
-            return await data.json()
-        if re_content:
-            return await data.read()
-        if real:
-            return data
-        return await data.text()
 
 
 # ~~~~~~~~~~~~~~~JSON Parser~~~~~~~~~~~~~~~
@@ -135,18 +101,12 @@ def json_parser(data, indent=None, ascii=False):
 # ~~~~~~~~~~~~~~~~Link Checker~~~~~~~~~~~~~~~~~
 
 
-def is_url_ok(url: str):
+async def is_url_ok(url: str):
     try:
-        import requests
-    except ImportError:
-        raise DependencyMissingError("This function needs 'requests' to be installed.")
-    try:
-        r = requests.head(url)
-    except MissingSchema:
-        return None
-    except BaseException:
+        return await async_searcher(url, head=True)
+    except BaseException as er:
+        LOGS.debug(er)
         return False
-    return r.ok
 
 
 # ~~~~~~~~~~~~~~~~ Metadata ~~~~~~~~~~~~~~~~~~~~
@@ -155,7 +115,9 @@ def is_url_ok(url: str):
 async def metadata(file):
     out, _ = await bash(f'mediainfo "{_unquote_text(file)}" --Output=JSON')
     if _ and _.endswith("NOT_FOUND"):
-        return _
+        raise DependencyMissingError(
+            f"'{_}' is not installed!\nInstall it to use this command."
+        )
     data = {}
     _info = json.loads(out)["media"]["track"]
     info = _info[0]
@@ -256,7 +218,7 @@ def format_btn(buttons: list):
 async def saavn_search(query: str):
     try:
         data = await async_searcher(
-            url=f"https://jostapi.herokuapp.com/saavn?query={query.replace(' ', '%20')}",
+            url=f"https://saavn-api.vercel.app/search/{query.replace(' ', '%20')}",
             re_json=True,
         )
     except BaseException:
@@ -301,11 +263,12 @@ async def webuploader(chat_id: int, msg_id: int, uploader: str):
     return status
 
 
-def get_all_files(path):
+def get_all_files(path, extension=None):
     filelist = []
     for root, dirs, files in os.walk(path):
         for file in files:
-            filelist.append(os.path.join(root, file))
+            if not (extension and not file.endswith(extension)):
+                filelist.append(os.path.join(root, file))
     return sorted(filelist)
 
 
@@ -334,15 +297,13 @@ class LogoHelper:
     def get_text_size(text, image, font):
         im = Image.new("RGB", (image.width, image.height))
         draw = ImageDraw.Draw(im)
-        return draw.textsize(text, font)
+        return draw.textlength(text, font)
 
     @staticmethod
     def find_font_size(text, font, image, target_width_ratio):
         tested_font_size = 100
         tested_font = ImageFont.truetype(font, tested_font_size)
-        observed_width, observed_height = LogoHelper.get_text_size(
-            text, image, tested_font
-        )
+        observed_width = LogoHelper.get_text_size(text, image, tested_font)
         estimated_font_size = (
             tested_font_size / (observed_width / image.width) * target_width_ratio
         )
@@ -357,32 +318,38 @@ class LogoHelper:
 
         img = Image.open(imgpath)
         width, height = img.size
+        fct = min(height, width)
+        if height != width:
+            img = img.crop((0, 0, fct, fct))
+        if img.height < 1000:
+            img = img.resize((1020, 1020))
+        width, height = img.size
         draw = ImageDraw.Draw(img)
         font_size = LogoHelper.find_font_size(text, funt, img, width_ratio)
         font = ImageFont.truetype(funt, font_size)
-        w, h = draw.textsize(text, font=font)
+        l, t, r, b = font.getbbox(text)
+        w, h = r - l, (b - t) * 1.5
         draw.text(
-            ((width - w) / 2, (height - h) / 2),
+            ((width - w) / 2, ((height - h) / 2)),
             text,
             font=font,
             fill=fill,
             stroke_width=stroke_width,
             stroke_fill=stroke_fill,
         )
-        file_name = "Logo.png"
-        img.save(f"./{file_name}", "PNG")
-        return f"{file_name} Generated Successfully!"
+        file_name = check_filename("logo.png")
+        img.save(file_name, "PNG")
+        return file_name
 
 
 # --------------------------------------
 # @New-Dev0
 
-
 async def get_paste(data: str, extension: str = "txt"):
     ssl_context = ssl.create_default_context(cafile=certifi.where())
     json = {"content": data, "extension": extension}
     key = await async_searcher(
-        url="https://spaceb.in/api/v1/documents/",
+        url="https://spaceb.in/api/",
         json=json,
         ssl=ssl_context,
         post=True,
@@ -399,18 +366,89 @@ async def get_paste(data: str, extension: str = "txt"):
         return None, str(e)
 
 
-# Thanks https://t.me/KukiUpdates/23 for ChatBotApi
+# --------------------------------------
+# https://stackoverflow.com/a/74563494
+
+
+async def get_google_images(query):
+    soup = BeautifulSoup(
+        await async_searcher(
+            "https://google.com/search",
+            params={"q": query, "tbm": "isch"},
+            headers={"User-Agent": random.choice(some_random_headers)},
+        ),
+        "lxml",
+    )
+    google_images = []
+    all_script_tags = soup.select("script")
+    matched_images_data = "".join(
+        re.findall(r"AF_initDataCallback\(([^<]+)\);", str(all_script_tags))
+    )
+    matched_images_data_fix = json.dumps(matched_images_data)
+    matched_images_data_json = json.loads(matched_images_data_fix)
+    matched_google_image_data = re.findall(
+        r"\"b-GRID_STATE0\"(.*)sideChannel:\s?{}}", matched_images_data_json
+    )
+    matched_google_images_thumbnails = ", ".join(
+        re.findall(
+            r"\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]",
+            str(matched_google_image_data),
+        )
+    ).split(", ")
+    thumbnails = [
+        bytes(bytes(thumbnail, "ascii").decode("unicode-escape"), "ascii").decode(
+            "unicode-escape"
+        )
+        for thumbnail in matched_google_images_thumbnails
+    ]
+    removed_matched_google_images_thumbnails = re.sub(
+        r"\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]",
+        "",
+        str(matched_google_image_data),
+    )
+    matched_google_full_resolution_images = re.findall(
+        r"(?:'|,),\[\"(https:|http.*?)\",\d+,\d+\]",
+        removed_matched_google_images_thumbnails,
+    )
+    full_res_images = [
+        bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode(
+            "unicode-escape"
+        )
+        for img in matched_google_full_resolution_images
+    ]
+    for index, (metadata, thumbnail, original) in enumerate(
+        zip(soup.select(".isv-r.PNCib.MSM1fd.BUooTd"), thumbnails, full_res_images),
+        start=1,
+    ):
+        google_images.append(
+            {
+                "title": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")[
+                    "title"
+                ],
+                "link": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")[
+                    "href"
+                ],
+                "source": metadata.select_one(".fxgdke").text,
+                "thumbnail": thumbnail,
+                "original": original,
+            }
+        )
+    random.shuffle(google_images)
+    return google_images
+
+
+# Thanks https://t.me/ImSafone for ChatBotApi
+
+
 async def get_chatbot_reply(message):
-    chatbot_base = "https://kukiapi.xyz/api/apikey=ULTROIDUSERBOT/Ultroid/{}/message={}"
+    chatbot_base = "https://api.safone.dev/chatbot?query={}"
     req_link = chatbot_base.format(
-        ultroid_bot.me.first_name or "ultroid user",
         message,
     )
     try:
-        return (await async_searcher(req_link, re_json=True)).get("reply")
+        return (await async_searcher(req_link, re_json=True)).get("response")
     except Exception:
         LOGS.info(f"**ERROR:**`{format_exc()}`")
-
 
 def check_filename(filroid):
     if os.path.exists(filroid):
@@ -508,17 +546,20 @@ def telegraph_client():
     if TELEGRAPH:
         return TELEGRAPH[0]
 
-    from .. import udB
+    from .. import udB, ultroid_bot
 
     token = udB.get_key("_TELEGRAPH_TOKEN")
-    TelegraphClient = Telegraph(token)
+    TELEGRAPH_DOMAIN = udB.get_key("GRAPH_DOMAIN")
+    TelegraphClient = Telegraph(token, domain=TELEGRAPH_DOMAIN or "graph.org")
     if token:
         TELEGRAPH.append(TelegraphClient)
         return TelegraphClient
     gd_name = ultroid_bot.full_name
     short_name = gd_name[:30]
     profile_url = (
-        f"https://t.me/{ultroid_bot.me.username}" if ultroid_bot.me.username else None
+        f"https://t.me/{ultroid_bot.me.username}"
+        if ultroid_bot.me.username
+        else "https://t.me/TeamUltroid"
     )
     try:
         TelegraphClient.create_account(
@@ -537,18 +578,28 @@ def telegraph_client():
     return TelegraphClient
 
 
+@run_async
+def make_html_telegraph(title, html=""):
+    telegraph = telegraph_client()
+    page = telegraph.create_page(
+        title=title,
+        html_content=html,
+    )
+    return page["url"]
+
+
 async def Carbon(
     code,
-    base_url="https://carbonara-42.herokuapp.com/api/cook",
+    base_url="https://carbonara.solopov.dev/api/cook",
     file_name="ultroid",
     download=False,
     rayso=False,
     **kwargs,
 ):
     if rayso:
-        base_url = "https://raysoapi.herokuapp.com/generate"
+        base_url = "https://rayso-api-desvhu-33.koyeb.app/generate"
         kwargs["text"] = code
-        kwargs["theme"] = kwargs.get("theme", "meadow")
+        kwargs["theme"] = kwargs.get("theme", "breeze")
         kwargs["darkMode"] = kwargs.get("darkMode", True)
         kwargs["title"] = kwargs.get("title", "Ultroid")
     else:
@@ -558,8 +609,13 @@ async def Carbon(
         file = BytesIO(con)
         file.name = file_name + ".jpg"
     else:
+        try:
+            return json_parser(con.decode())
+        except Exception:
+            pass
         file = file_name + ".jpg"
-        open(file_name, "wb").write(con)
+        with open(file, "wb") as f:
+            f.write(con)
     return file
 
 
@@ -592,6 +648,39 @@ async def get_stored_file(event, hash):
             event.chat_id, "__Message was deleted by owner!__", reply_to=event.id
         )
     await asst.send_message(event.chat_id, msg.text, file=msg.media, reply_to=event.id)
+
+
+def _package_rpc(text, lang_src="auto", lang_tgt="auto"):
+    GOOGLE_TTS_RPC = ["MkEWBc"]
+    parameter = [[text.strip(), lang_src, lang_tgt, True], [1]]
+    escaped_parameter = json.dumps(parameter, separators=(",", ":"))
+    rpc = [[[random.choice(GOOGLE_TTS_RPC), escaped_parameter, None, "generic"]]]
+    espaced_rpc = json.dumps(rpc, separators=(",", ":"))
+    freq = "f.req={}&".format(quote(espaced_rpc))
+    return freq
+
+
+def translate(*args, **kwargs):
+    headers = {
+        "Referer": "https://translate.google.co.in",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/47.0.2526.106 Safari/537.36",
+        "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+    }
+    x = requests.post(
+        "https://translate.google.co.in/_/TranslateWebserverUi/data/batchexecute",
+        headers=headers,
+        data=_package_rpc(*args, **kwargs),
+    ).text
+    response = ""
+    data = json.loads(json.loads(x[4:])[0][2])[1][0][0]
+    subind = data[-2]
+    if not subind:
+        subind = data[-1]
+    for i in subind:
+        response += i[0]
+    return response
 
 
 def cmd_regex_replace(cmd):
@@ -674,7 +763,10 @@ class TgConverter:
             return await TgConverter.create_webm(
                 input_, name=output[:-5], remove=remove
             )
-        await bash(f"ffmpeg -i '{input_}' '{output}' -y")
+        if output.endswith(".gif"):
+            await bash(f"ffmpeg -i '{input_}' -an -sn -c:v copy '{output}.mp4' -y")
+        else:
+            await bash(f"ffmpeg -i '{input_}' '{output}' -y")
         if remove:
             os.remove(input_)
         if os.path.exists(output):
@@ -803,7 +895,10 @@ def _get_value(stri):
 
 
 def safe_load(file, *args, **kwargs):
-    read = file.readlines()
+    if isinstance(file, str):
+        read = file.split("\n")
+    else:
+        read = file.readlines()
     out = {}
     for line in read:
         if ":" in line:  # Ignores Empty & Invalid lines
@@ -819,6 +914,16 @@ def safe_load(file, *args, **kwargs):
                 if value:
                     where.append(value)
     return out
+
+
+def get_chat_and_msgid(link):
+    matches = re.findall("https:\\/\\/t\\.me\\/(c\\/|)(.*)\\/(.*)", link)
+    if not matches:
+        return None, None
+    _, chat, msg_id = matches[0]
+    if chat.isdigit():
+        chat = int("-100" + chat)
+    return chat, int(msg_id)
 
 
 # --------- END --------- #

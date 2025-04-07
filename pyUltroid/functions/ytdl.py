@@ -1,5 +1,5 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
@@ -43,7 +43,7 @@ async def ytdl_progress(k, start_time, event):
 
 
 def get_yt_link(query):
-    search = VideosSearch(query, limit=1).result()
+    search = VideosSearch(query, limit=5).result()
     try:
         return search["result"][0]["link"]
     except IndexError:
@@ -65,7 +65,7 @@ async def download_yt(event, link, ytd):
             await download_file(
                 file.get("thumbnail", None) or file["thumbnails"][-1]["url"], thumb
             )
-            ext = "." + ytd["outtmpl"].split(".")[-1]
+            ext = "." + ytd["outtmpl"]["default"].split(".")[-1]
             if ext == ".m4a":
                 ext = ".mp3"
             id = None
@@ -124,7 +124,7 @@ async def download_yt(event, link, ytd):
         info.get("thumbnail", None) or f"https://i.ytimg.com/vi/{id_}/hqdefault.jpg",
         thumb,
     )
-    ext = "." + ytd["outtmpl"].split(".")[-1]
+    ext = "." + ytd["outtmpl"]["default"].split(".")[-1]
     for _ext in [".m4a", ".mp3", ".opus"]:
         if ext == _ext:
             ext = _ext
@@ -187,7 +187,7 @@ def get_formats(type, id, data):
         for vid in data["formats"]:
             if vid["format_id"] == "251":
                 size += vid["filesize"] if vid.get("filesize") else 0
-            if vid["vcodec"] is not "none":
+            if vid["vcodec"] != "none":
                 _id = int(vid["format_id"])
                 _quality = str(vid["width"]) + "×" + str(vid["height"])
                 _size = size + (vid["filesize"] if vid.get("filesize") else 0)
