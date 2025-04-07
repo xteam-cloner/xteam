@@ -1,5 +1,5 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
@@ -7,13 +7,15 @@
 
 import inspect
 import re
+from traceback import format_exc
 
 from telethon import Button
+from telethon.errors import QueryIdInvalidError
 from telethon.events import CallbackQuery, InlineQuery, NewMessage
 from telethon.tl.types import InputWebDocument
 
-from .. import LOGS, asst, ultroid_bot
-from ..functions.admins import admin_check
+from .. import LOGS, asst, udB, ultroid_bot
+from ..fns.admins import admin_check
 from . import append_or_update, owner_and_sudos
 
 OWNER = ultroid_bot.full_name
@@ -32,7 +34,7 @@ IN_BTTS = [
             "Repository",
             url="https://github.com/TeamUltroid/Ultroid",
         ),
-        Button.url("Support", url="https://t.me/UltroidSupport"),
+        Button.url("Support", url="https://t.me/UltroidSupportChat"),
     ]
 ]
 
@@ -47,10 +49,17 @@ def asst_cmd(pattern=None, load=None, owner=False, **kwargs):
 
     def ult(func):
         if pattern:
-            kwargs["pattern"] = re.compile("^/" + pattern)
-        if owner:
-            kwargs["from_users"] = owner_and_sudos
-        asst.add_event_handler(func, NewMessage(**kwargs))
+            kwargs["pattern"] = re.compile(f"^/{pattern}")
+
+        async def handler(event):
+            if owner and event.sender_id not in owner_and_sudos():
+                return
+            try:
+                await func(event)
+            except Exception as er:
+                LOGS.exception(er)
+
+        asst.add_event_handler(handler, NewMessage(**kwargs))
         if load is not None:
             append_or_update(load, func, name, kwargs)
 
@@ -90,11 +99,11 @@ def in_pattern(pattern=None, owner=False, **kwargs):
                 res = [
                     await event.builder.article(
                         title="Ultroid Userbot",
-                        url="https://t.me/TheUltroid",
+                        url="https://t.me/TeamUltroid",
                         description="(c) TeamUltroid",
                         text=MSG,
                         thumb=InputWebDocument(
-                            "https://telegra.ph/file/dde85d441fa051a0d7d1d.jpg",
+                            "https://graph.org/file/dde85d441fa051a0d7d1d.jpg",
                             0,
                             "image/jpeg",
                             [],
@@ -109,8 +118,32 @@ def in_pattern(pattern=None, owner=False, **kwargs):
                 )
             try:
                 await func(event)
+            except QueryIdInvalidError:
+                pass
             except Exception as er:
+                err = format_exc()
+
+                def error_text():
+                    return f"**#ERROR #INLINE**\n\nQuery: `{asst.me.username} {pattern}`\n\n**Traceback:**\n`{format_exc()}`"
+
                 LOGS.exception(er)
+                try:
+                    await event.answer(
+                        [
+                            await event.builder.article(
+                                title="Unhandled Exception has Occured!",
+                                text=error_text(),
+                                buttons=Button.url(
+                                    "Report", "https://t.me/UltroidSupportChat"
+                                ),
+                            )
+                        ]
+                    )
+                except QueryIdInvalidError:
+                    LOGS.exception(err)
+                except Exception as er:
+                    LOGS.exception(er)
+                    await asst.send_message(udB.get_key("LOG_CHANNEL"), error_text())
 
         asst.add_event_handler(wrapper, InlineQuery(pattern=pattern, **kwargs))
 

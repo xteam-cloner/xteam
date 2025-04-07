@@ -1,5 +1,5 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
@@ -34,12 +34,16 @@ from telethon.errors.rpcerrorlist import (
 from telethon.events import MessageEdited, NewMessage
 from telethon.utils import get_display_name
 
+from pyUltroid.exceptions import DependencyMissingError
+from strings import get_string
+
 from .. import *
+from .. import _ignore_eval
 from ..dB import DEVLIST
 from ..dB._core import LIST, LOADED
-from ..functions.admins import admin_check
-from ..functions.helper import bash
-from ..functions.helper import time_formatter as tf
+from ..fns.admins import admin_check
+from ..fns.helper import bash
+from ..fns.helper import time_formatter as tf
 from ..version import __version__ as pyver
 from ..version import ultroid_version as ult_ver
 from . import SUDO_M, owner_and_sudos
@@ -74,14 +78,19 @@ def ultroid_cmd(
 
     def decor(dec):
         async def wrapp(ult):
-            if owner_only and not ult.out:
-                return
-            chat = ult.chat
             if not ult.out:
+                if owner_only:
+                    return
                 if ult.sender_id not in owner_and_sudos():
                     return
+                if ult.sender_id in _ignore_eval:
+                    return await eod(
+                        ult,
+                        get_string("py_d1"),
+                    )
                 if fullsudo and ult.sender_id not in SUDO_M.fullsudos:
-                    return await eod(ult, "`Full Sudo User Required...`", time=15)
+                    return await eod(ult, get_string("py_d2"), time=15)
+            chat = ult.chat
             if hasattr(chat, "title"):
                 if (
                     "#noub" in chat.title.lower()
@@ -89,19 +98,16 @@ def ultroid_cmd(
                     and not (ult.sender_id in DEVLIST)
                 ):
                     return
-            if admins_only:
-                if ult.is_private:
-                    return await eod(ult, "`Use this in group/channel.`")
-                if not (chat.admin_rights or chat.creator):
-                    return await eod(ult, "`I am not an admin.`")
+            if ult.is_private and (groups_only or admins_only):
+                return await eod(ult, get_string("py_d3"))
+            elif admins_only and not (chat.admin_rights or chat.creator):
+                return await eod(ult, get_string("py_d5"))
             if only_devs and not udB.get_key("I_DEV"):
                 return await eod(
                     ult,
-                    f"**⚠️ Developer Restricted!**\nIf you know what this does, and want to proceed, use\n`{HNDLR}setdb I_DEV True`.\n\nThis Might Be Dangerous.",
+                    get_string("py_d4").format(HNDLR),
                     time=10,
                 )
-            if groups_only and ult.is_private:
-                return await eod(ult, "`Use this in Group/Channel.`")
             try:
                 await dec(ult)
             except FloodWaitError as fwerr:
@@ -120,17 +126,15 @@ def ultroid_cmd(
             except ChatSendInlineForbiddenError:
                 return await eod(ult, "`Inline Locked In This Chat.`")
             except (ChatSendMediaForbiddenError, ChatSendStickersForbiddenError):
-                return await eod(
-                    ult, "`Sending media or sticker is not allowed in this chat.`"
-                )
+                return await eod(ult, get_string("py_d8"))
             except (BotMethodInvalidError, UserIsBotError):
-                return await eod(ult, "This Command Can't be used by Bot!")
+                return await eod(ult, get_string("py_d6"))
             except AlreadyInConversationError:
                 return await eod(
                     ult,
-                    "Conversation Is Already On, Kindly Wait Sometime Then Try Again.",
+                    get_string("py_d7"),
                 )
-            except (BotInlineDisabledError) as er:
+            except (BotInlineDisabledError, DependencyMissingError) as er:
                 return await eod(ult, f"`{er}`")
             except (
                 MessageIdInvalidError,
@@ -147,7 +151,7 @@ def ultroid_cmd(
                         Button.url("Bot", "t.me/SessionGeneratorBot?start="),
                         Button.url(
                             "Repl",
-                            "https://replit.com/@TeamUltroid/UltroidStringSession",
+                            "https://replit.com/@TheUltroid/UltroidStringSession",
                         ),
                     ],
                 )
@@ -160,15 +164,13 @@ def ultroid_cmd(
                 LOGS.exception(e)
                 date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 naam = get_display_name(chat)
-                ftext = (
-                    "**Ultroid Client Error:** `Forward this to` @UltroidSupport\n\n"
-                )
-                ftext += "**Py-Ultroid Version:** `" + str(pyver)
-                ftext += "`\n**Ultroid Version:** `" + str(ult_ver)
-                ftext += "`\n**Telethon Version:** `" + str(telever)
-                ftext += f"`\n**Hosted At:** `{HOSTED_ON}`\n\n"
-                ftext += "--------START ULTROID CRASH LOG--------"
-                ftext += "\n**Date:** `" + date
+                ftext = "**Userbot Client Error:** `Forward this to` @xteam-cloner\n\n"
+                #ftext += "**Py-Ultroid Version:** `" + str(pyver)
+                #ftext += "`\n**Ultroid Version:** `" + str(ult_ver)
+                #ftext += "`\n**Telethon Version:** `" + str(telever)
+                #ftext += f"`\n**Hosted At:** `{HOSTED_ON}`\n\n"
+                #ftext += "--------START ULTROID CRASH LOG--------"
+                #ftext += "\n**Date:** `" + date
                 ftext += "`\n**Group:** `" + str(ult.chat_id) + "` " + str(naam)
                 ftext += "\n**Sender ID:** `" + str(ult.sender_id)
                 ftext += "`\n**Replied:** `" + str(ult.is_reply)
@@ -178,13 +180,13 @@ def ultroid_cmd(
                 ftext += str(format_exc())
                 ftext += "`\n\n**Error text:**`\n"
                 ftext += str(sys.exc_info()[1])
-                ftext += "`\n\n--------END ULTROID CRASH LOG--------"
-                ftext += "\n\n\n**Last 5 commits:**`\n"
+                #ftext += "`\n\n--------END ULTROID CRASH LOG--------"
+                #ftext += "\n\n\n**Last 5 commits:**`\n"
 
                 stdout, stderr = await bash('git log --pretty=format:"%an: %s" -5')
                 result = stdout + (stderr or "")
 
-                ftext += result + "`"
+                ftext += f"{result}`"
 
                 if len(ftext) > 4096:
                     with BytesIO(ftext.encode()) as file:
@@ -192,7 +194,7 @@ def ultroid_cmd(
                         error_log = await asst.send_file(
                             udB.get_key("LOG_CHANNEL"),
                             file,
-                            caption="**Ultroid Client Error:** `Forward this to` @UltroidSupport\n\n",
+                            caption="**Userbot Client Error:** `Forward this to` @UltroidSupportChat\n\n",
                         )
                 else:
                     error_log = await asst.send_message(

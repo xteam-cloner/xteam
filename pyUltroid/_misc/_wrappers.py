@@ -1,5 +1,5 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
@@ -14,33 +14,29 @@ from telethon.tl.types import MessageService
 # edit or reply
 
 
-async def eor(event, text=None, **args):
-    time = args.get("time", None)
-    edit_time = args.get("edit_time", None)
-    if "edit_time" in args:
-        del args["edit_time"]
-    if "time" in args:
-        del args["time"]
-    if "link_preview" not in args:
-        args["link_preview"] = False
-    args["reply_to"] = event.reply_to_msg_id or event
+async def eor(event, text=None, time=None, link_preview=False, edit_time=None, **args):
+    reply_to = event.reply_to_msg_id or event
     if event.out and not isinstance(event, MessageService):
         if edit_time:
             await sleep(edit_time)
-        if "file" in args and args["file"] and not event.media:
+        if args.get("file") and not event.media:
             await event.delete()
-            ok = await event.client.send_message(event.chat_id, text, **args)
+            ok = await event.client.send_message(
+                event.chat_id,
+                text,
+                link_preview=link_preview,
+                reply_to=reply_to,
+                **args
+            )
         else:
             try:
-                try:
-                    del args["reply_to"]
-                except KeyError:
-                    pass
-                ok = await event.edit(text, **args)
+                ok = await event.edit(text, link_preview=link_preview, **args)
             except MessageNotModifiedError:
                 ok = event
     else:
-        ok = await event.client.send_message(event.chat_id, text, **args)
+        ok = await event.client.send_message(
+            event.chat_id, text, link_preview=link_preview, reply_to=reply_to, **args
+        )
 
     if time:
         await sleep(time)
