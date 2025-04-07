@@ -4,7 +4,7 @@ import setuptools
 
 requirements = ["redis", "hiredis", "python-decouple", "python-dotenv"]
 
-with open("pyUltroid/version.py", "rt", encoding="utf8") as x:
+with open("xteam/version.py", "rt", encoding="utf8") as x:
     version = re.search(r'__version__ = "(.*?)"', x.read()).group(1)
 
 with open("README.md", "r", encoding="utf-8") as fh:
@@ -12,14 +12,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 name = "xteam"
 author = "TeamX"
-author_email = "teamultroid@protonmail.ch"
-description = "A Secure and Powerful Python-Telethon Based Library For Ultroid Userbot."
+author_email = "xteamji@gmail.com"
+description = "A Secure and Powerful Python-Telethon Based Library For xteam Userbot."
 license_ = "GNU AFFERO GENERAL PUBLIC LICENSE (v3)"
-url = "https://github.com/TeamUltroid/pyUltroid"
+url = "https://github.com/xteam-cloner/xteam"
 project_urls = {
-    "Bug Tracker": "https://github.com/TeamUltroid/pyUltroid/issues",
+    "Bug Tracker": "https://github.com/xteam-cloner/xteam/issues",
     "Documentation": "https://ultroid.tech",
-    "Source Code": "https://github.com/TeamUltroid/pyUltroid",
+    "Source Code": "https://github.com/xteam-cloner/xteam",
 }
 classifiers = [
     "Programming Language :: Python :: 3",

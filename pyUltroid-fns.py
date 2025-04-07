@@ -6,20 +6,20 @@ import setuptools
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-long_description = "# pyUltroid-fns"
+long_description = "# xteam-fns"
 
-name = "pyUltroid-fns"
-author = "TeamUltroid"
-author_email = "teamultroid@protonmail.ch"
+name = "xteam-fns"
+author = "TeamX"
+author_email = "xteamji@gmail.com"
 description = "Function based library for telegram telethon projects."
 license_ = "GNU AFFERO GENERAL PUBLIC LICENSE (v3)"
 
-url = "https://github.com/TeamUltroid/pyUltroid"
+url = "https://github.com/xteam-cloner/xteam"
 
 project_urls = {
-    "Bug Tracker": "https://github.com/TeamUltroid/pyUltroid/issues",
+    "Bug Tracker": "https://github.com/xteam-cloner/xteam/issues",
     "Documentation": "https://ultroid.tech",
-    "Source Code": "https://github.com/TeamUltroid/pyUltroid",
+    "Source Code": "https://github.com/xteam-cloner/xteam",
 }
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -32,12 +32,12 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-shutil.copy("pyUltroid/_misc/_wrappers.py", "pyUltroid/wrappers.py")
-shutil.copy("pyUltroid/startup/_database.py", "pyUltroid/db.py")
+shutil.copy("xteam/_misc/_wrappers.py", "xteam/wrappers.py")
+shutil.copy("xteam/startup/_database.py", "xteam/db.py")
 
 setuptools.setup(
     name=name,
-    version="0.0.1.b0",
+    version="1.0.1",
     author=author,
     author_email=author_email,
     description=description,
@@ -47,7 +47,7 @@ setuptools.setup(
     project_urls=project_urls,
     license=license_,
     packages=setuptools.find_packages(
-        exclude=["pyUltroid.dB", "pyUltroid._misc", "pyUltroid.startup"]
+        exclude=["xteam.dB", "xteam._misc", "xteam.startup"]
     ),
     install_requires=["telethon"],
     classifiers=classifiers,
@@ -55,4 +55,4 @@ setuptools.setup(
 )
 
 for file in ["wrappers", "db"]:
-    os.remove(f"pyUltroid/{file}.py")
+    os.remove(f"xteam/{file}.py")
