@@ -10,8 +10,8 @@ with open("pyUltroid/version.py", "rt", encoding="utf8") as x:
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-name = "py-Ultroid"
-author = "TeamUltroid"
+name = "xteam"
+author = "TeamX"
 author_email = "teamultroid@protonmail.ch"
 description = "A Secure and Powerful Python-Telethon Based Library For Ultroid Userbot."
 license_ = "GNU AFFERO GENERAL PUBLIC LICENSE (v3)"
@@ -26,6 +26,8 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
 ]
@@ -44,5 +46,5 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=requirements,
     classifiers=classifiers,
-    python_requires=">3.7, <3.11",
+    python_requires=">3.7, <3.13",
 )
