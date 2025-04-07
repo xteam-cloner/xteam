@@ -20,7 +20,7 @@ from telethon.errors import (
     AuthKeyDuplicatedError,
 )
 from telethon.sessions import StringSession
-from config import Var
+from pyUltroid.configs import Var
 from . import *
 
 
