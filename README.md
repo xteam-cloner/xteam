@@ -72,5 +72,5 @@ See more working plugins on [the offical repository](https://github.com/xteam-cl
 Userbot is licensed under [GNU Affero General Public License](https://www.gnu.org/licenses/agpl-3.0.en.html) v3 or later.
 
 # Credits
-* [![TeamX-Devs](https://img.shields.io/static/v1?label=TeamUltroid&message=devs&color=critical)](https://t.me/UltroidDevs)
+* [![TeamX-Devs](https://img.shields.io/static/v1?label=TeamX&message=devs&color=critical)](https://t.me/UltroidDevs)
 * [Lonami](https://github.com/Lonami) for [Telethon](https://github.com/LonamiWebs/Telethon)
