@@ -1,12 +1,12 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2023 TeamUltroid
+# Copyright (C) 2021-2025 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
 import sys
-from os import getenv
+
 from decouple import config
 
 try:
@@ -41,10 +41,9 @@ class Var:
     LOG_CHANNEL = config("LOG_CHANNEL", default=0, cast=int)
     HEROKU_APP_NAME = config("HEROKU_APP_NAME", default=None)
     HEROKU_API = config("HEROKU_API", default=None)
-    STRING_SESSION = config("STRING_SESSION", default=None)
+    VC_SESSION = config("VC_SESSION", default=None)
     ADDONS = config("ADDONS", default=False, cast=bool)
     VCBOT = config("VCBOT", default=False, cast=bool)
-    OWNER_ID = config("OWNER_ID", default=1434595544)
     # for railway
     REDISPASSWORD = config("REDISPASSWORD", default=None)
     REDISHOST = config("REDISHOST", default=None)
@@ -54,9 +53,4 @@ class Var:
     DATABASE_URL = config("DATABASE_URL", default=None)
     # for MONGODB users
     MONGO_URI = config("MONGO_URI", default=None)
-    DOWNLOAD_PFP_URL_CLOCK = config("DOWNLOAD_PFP_URL_CLOCK", default=False)
-    DOWNLOADS_DIR = getenv("DOWNLOADS_DIR", "database/music")
-    YOUTUBE_IMG_URL = "https://te.legra.ph/file/6298d377ad3eb46711644.jpg"
-    API_URL = getenv("API_URL", None)
-    API_KEY = getenv("API_KEY", None)
-    PROXY_URL = getenv("PROXY_URL", None)
+    
