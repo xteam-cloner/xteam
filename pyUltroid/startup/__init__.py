@@ -14,7 +14,7 @@ from .. import run_as_module
 from ._extra import _ask_input
 
 if run_as_module:
-    from config import Var
+    from .configs import Var
 else:
     Var = None
 
