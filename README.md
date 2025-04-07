@@ -64,7 +64,7 @@ async def _(e):
 
 See more working plugins on [the offical repository](https://github.com/xteam-cloner/Userbotx)!
 
-> Made with 💕 by [@TeamUltroid](https://t.me/xteam_cloner).    
+> Made with ♥️ by [@TeamX](https://t.me/xteam_cloner).    
 
 
 # License
