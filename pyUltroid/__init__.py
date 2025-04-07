@@ -21,7 +21,7 @@ class ULTConfig:
 if run_as_module:
     import time
 
-    from config import Var
+    from .configs import Var
     from .startup import *
     from .startup._database import UltroidDB
     from .startup.BaseClient import UltroidClient
