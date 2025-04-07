@@ -14,7 +14,7 @@ on:
     branches:
       - main
     paths:
-      - "pyUltroid/version.py"
+      - "xteam/version.py"
 
 jobs:
   deploy:
