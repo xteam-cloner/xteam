@@ -1,6 +1,6 @@
-# py-Ultroid Library
+# xteam Library
 
-Core library of [The Ultroid](https://github.com/TeamUltroid/Ultroid), a python based telegram userbot.
+Core library of [xteam Userbot](https://github.com/xteam-cloner/Userbotx), a python based telegram userbot.
 
 [![CodeFactor](https://www.codefactor.io/repository/github/teamultroid/pyultroid/badge)](https://www.codefactor.io/repository/github/teamultroid/pyultroid)
 [![PyPI - Version](https://img.shields.io/pypi/v/py-Ultroid?style=round)](https://pypi.org/project/py-Ultroid)    
@@ -11,7 +11,7 @@ Core library of [The Ultroid](https://github.com/TeamUltroid/Ultroid), a python 
 
 # Installation
 ```bash
-pip3 install -U py-Ultroid
+pip3 install -U xteam
 ```
 
 # Documentation 
@@ -30,7 +30,7 @@ pip3 install -U py-Ultroid
    ```
 - Check
 [`.env.sample`](https://github.com/TeamUltroid/Ultroid/blob/main/.env.sample) for more details.   
-- Run `python3 -m pyUltroid` to start the bot.   
+- Run `python3 -m xteam` to start the bot.   
 
 ## Creating plugins
  - ### To work everywhere
@@ -62,15 +62,15 @@ async def _(e):
     await e.reply("Ultroid Started.")   
 ```
 
-See more working plugins on [the offical repository](https://github.com/TeamUltroid/Ultroid)!
+See more working plugins on [the offical repository](https://github.com/xteam-cloner/Userbotx)!
 
-> Made with 💕 by [@TeamUltroid](https://t.me/TeamUltroid).    
+> Made with 💕 by [@TeamUltroid](https://t.me/xteam_cloner).    
 
 
 # License
 [![License](https://www.gnu.org/graphics/agplv3-155x51.png)](LICENSE)   
-Ultroid is licensed under [GNU Affero General Public License](https://www.gnu.org/licenses/agpl-3.0.en.html) v3 or later.
+Userbot is licensed under [GNU Affero General Public License](https://www.gnu.org/licenses/agpl-3.0.en.html) v3 or later.
 
 # Credits
-* [![TeamUltroid-Devs](https://img.shields.io/static/v1?label=TeamUltroid&message=devs&color=critical)](https://t.me/UltroidDevs)
+* [![TeamX-Devs](https://img.shields.io/static/v1?label=TeamUltroid&message=devs&color=critical)](https://t.me/UltroidDevs)
 * [Lonami](https://github.com/Lonami) for [Telethon](https://github.com/LonamiWebs/Telethon)
