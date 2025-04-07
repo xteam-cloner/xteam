@@ -1,28 +1,33 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2023 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
 import asyncio
-import logging
 import os
 import random
+import shutil
 import time
+import platform
 from random import randint
-from urllib.request import urlretrieve
-
+from telethon import __version__ 
+import pyrogram 
+from platform import python_version
+from pyUltroid.version import __version__ as UltVer
+from config import Var
+#from .. import ultroid_bot
 try:
     from pytz import timezone
 except ImportError:
     timezone = None
 
 from telethon.errors import (
-    BotMethodInvalidError,
-    ChannelPrivateError,
     ChannelsTooMuchError,
     ChatAdminRequiredError,
+    MessageIdInvalidError,
+    MessageNotModifiedError,
     UserNotParticipantError,
 )
 from telethon.tl.custom import Button
@@ -31,7 +36,6 @@ from telethon.tl.functions.channels import (
     EditAdminRequest,
     EditPhotoRequest,
     InviteToChannelRequest,
-    JoinChannelRequest,
 )
 from telethon.tl.functions.contacts import UnblockRequest
 from telethon.tl.types import (
@@ -41,28 +45,71 @@ from telethon.tl.types import (
     InputMessagesFilterDocument,
 )
 from telethon.utils import get_peer_id
+from decouple import config, RepositoryEnv
+from .. import LOGS, ULTConfig
+from ..fns.helper import download_file, inline_mention, updater
 
-from .. import LOGS
-from ..functions.helper import download_file, updater
+db_url = 0
+
+
+async def autoupdate_local_database():
+    from .. import Var, asst, udB, ultroid_bot
+
+    global db_url
+    db_url = (
+        udB.get_key("TGDB_URL") or Var.TGDB_URL or ultroid_bot._cache.get("TGDB_URL")
+    )
+    if db_url:
+        _split = db_url.split("/")
+        _channel = _split[-2]
+        _id = _split[-1]
+        try:
+            await asst.edit_message(
+                int(_channel) if _channel.isdigit() else _channel,
+                message=_id,
+                file="database.json",
+                text="**Do not delete this file.**",
+            )
+        except MessageNotModifiedError:
+            return
+        except MessageIdInvalidError:
+            pass
+    try:
+        LOG_CHANNEL = (
+            udB.get_key("LOG_CHANNEL")
+            or Var.LOG_CHANNEL
+            or asst._cache.get("LOG_CHANNEL")
+            or "me"
+        )
+        msg = await asst.send_message(
+            LOG_CHANNEL, "**Do not delete this file.**", file="database.json"
+        )
+        asst._cache["TGDB_URL"] = msg.message_link
+        udB.set_key("TGDB_URL", msg.message_link)
+    except Exception as ex:
+        LOGS.error(f"Error on autoupdate_local_database: {ex}")
 
 
 def update_envs():
     """Update Var. attributes to udB"""
     from .. import udB
+    _envs = [*list(os.environ)]
+    if ".env" in os.listdir("."):
+        [_envs.append(_) for _ in list(RepositoryEnv(config._find_file(".")).data)]
+    for envs in _envs:
+        if (
+            envs in ["LOG_CHANNEL", "BOT_TOKEN", "BOTMODE", "DUAL_MODE", "language"]
+            or envs in udB.keys()
+        ):
+            if _value := os.environ.get(envs):
+                udB.set_key(envs, _value)
+            else:
+                udB.set_key(envs, config.config.get(envs))
 
-    for envs in list(os.environ):
-        if envs in ["LOG_CHANNEL", "BOT_TOKEN"] or envs in udB.keys():
-            udB.set_key(envs, os.environ[envs])
 
+async def startup_stuff():
+    from .. import udB
 
-def startup_stuff():
-    from .. import LOGS, udB
-
-    if not os.path.exists("./plugins"):
-        LOGS.error(
-            "'plugins' folder not found!\nMake sure that, you are on correct path."
-        )
-        exit()
     x = ["resources/auth", "resources/downloads"]
     for x in x:
         if not os.path.isdir(x):
@@ -70,8 +117,14 @@ def startup_stuff():
 
     CT = udB.get_key("CUSTOM_THUMBNAIL")
     if CT:
-        urlretrieve(CT, "resources/extras/ultroid.jpg")
-
+        path = "resources/extras/thumbnail.jpg"
+        ULTConfig.thumb = path
+        try:
+            await download_file(CT, path)
+        except Exception as er:
+            LOGS.exception(er)
+    elif CT is False:
+        ULTConfig.thumb = None
     GT = udB.get_key("GDRIVE_AUTH_TOKEN")
     if GT:
         with open("resources/auth/gdrive_creds.json", "w") as t_file:
@@ -96,7 +149,7 @@ def startup_stuff():
             LOGS.debug(er)
         except BaseException:
             LOGS.critical(
-                "Incorrect Timezone ,\nCheck Available Timezone From Here https://telegra.ph/Ultroid-06-18-2\nSo Time is Default UTC"
+                "Incorrect Timezone ,\nCheck Available Timezone From Here https://graph.org/Ultroid-06-18-2\nSo Time is Default UTC"
             )
             os.environ["TZ"] = "UTC"
             time.tzset()
@@ -110,11 +163,11 @@ async def autobot():
     await ultroid_bot.start()
     LOGS.info("MAKING A TELEGRAM BOT FOR YOU AT @BotFather, Kindly Wait")
     who = ultroid_bot.me
-    name = who.first_name + "'s Assistant Bot"
+    name = who.first_name + "Bot"
     if who.username:
         username = who.username + "_bot"
     else:
-        username = "ultroid_" + (str(who.id))[5:] + "_bot"
+        username = "xteam_" + (str(who.id))[5:] + "_bot"
     bf = "@BotFather"
     await ultroid_bot(UnblockRequest(bf))
     await ultroid_bot.send_message(bf, "/cancel")
@@ -149,26 +202,11 @@ async def autobot():
     await ultroid_bot.send_read_acknowledge("botfather")
     if isdone.startswith("Sorry,"):
         ran = randint(1, 100)
-        username = "ultroid_" + (str(who.id))[6:] + str(ran) + "_bot"
+        username = "xteam_" + (str(who.id))[6:] + str(ran) + "_bot"
         await ultroid_bot.send_message(bf, username)
         await asyncio.sleep(1)
-        nowdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
-        if nowdone.startswith("Done!"):
-            token = nowdone.split("`")[1]
-            udB.set_key("BOT_TOKEN", token)
-            await enable_inline(ultroid_bot, username)
-            LOGS.info(
-                f"Done. Successfully created @{username} to be used as your assistant bot!"
-            )
-        else:
-            LOGS.critical(
-                "Please Delete Some Of your Telegram bots at @Botfather or Set Var BOT_TOKEN with token of a bot"
-            )
-
-            import sys
-
-            sys.exit(1)
-    elif isdone.startswith("Done!"):
+        isdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
+    if isdone.startswith("Done!"):
         token = isdone.split("`")[1]
         udB.set_key("BOT_TOKEN", token)
         await enable_inline(ultroid_bot, username)
@@ -193,44 +231,47 @@ async def autopilot():
     if channel:
         try:
             chat = await ultroid_bot.get_entity(channel)
-        except BaseException:
-            logging.exception("message")
+        except BaseException as err:
+            LOGS.exception(err)
             udB.del_key("LOG_CHANNEL")
             channel = None
     if not channel:
-        if ultroid_bot._bot:
-            LOGS.error("'LOG_CHANNEL' not found! Add it in order to use 'BOTMODE'")
-            import sys
 
-            sys.exit()
+        async def _save(exc):
+            udB._cache["LOG_CHANNEL"] = ultroid_bot.me.id
+            await asst.send_message(
+                ultroid_bot.me.id, f"Failed to Create Log Channel due to {exc}.."
+            )
+
+        if ultroid_bot._bot:
+            msg_ = "'LOG_CHANNEL' not found! Add it in order to use 'BOTMODE'"
+            LOGS.error(msg_)
+            return await _save(msg_)
         LOGS.info("Creating a Log Channel for You!")
         try:
             r = await ultroid_bot(
                 CreateChannelRequest(
-                    title="My Ultroid Logs",
-                    about="My Ultroid Log Group\n\n Join @TeamUltroid",
+                    title="My Userbot Logs",
+                    about="My Userbot Log Group\n\n Join @xteam_cloner",
                     megagroup=True,
                 ),
             )
-        except ChannelsTooMuchError:
+        except ChannelsTooMuchError as er:
             LOGS.critical(
                 "You Are in Too Many Channels & Groups , Leave some And Restart The Bot"
             )
-            import sys
-
-            sys.exit(1)
+            return await _save(str(er))
         except BaseException as er:
-            LOGS.info(er)
+            LOGS.exception(er)
             LOGS.info(
                 "Something Went Wrong , Create A Group and set its id on config var LOG_CHANNEL."
             )
-            import sys
 
-            sys.exit(1)
+            return await _save(str(er))
         new_channel = True
         chat = r.chats[0]
         channel = get_peer_id(chat)
-        udB.set_key("LOG_CHANNEL", str(channel))
+        udB.set_key("LOG_CHANNEL", channel)
     assistant = True
     try:
         await ultroid_bot.get_permissions(int(channel), asst.me.username)
@@ -276,8 +317,8 @@ async def autopilot():
                 LOGS.info("Error while promoting assistant in Log Channel..")
                 LOGS.exception(er)
     if isinstance(chat.photo, ChatPhotoEmpty):
-        photo = await download_file(
-            "https://telegra.ph/file/27c6812becf6f376cbb10.jpg", "channelphoto.jpg"
+        photo, _ = await download_file(
+            "https://graph.org/file/27c6812becf6f376cbb10.jpg", "channelphoto.jpg"
         )
         ll = await ultroid_bot.upload_file(photo)
         try:
@@ -308,13 +349,11 @@ async def customize():
             sir = f"@{ultroid_bot.me.username}"
         file = random.choice(
             [
-                "https://telegra.ph/file/92cd6dbd34b0d1d73a0da.jpg",
-                "https://telegra.ph/file/a97973ee0425b523cdc28.jpg",
-                "resources/extras/ultroid_assistant.jpg",
+                "resources/extras/8189450f-de7f-4582-ba94-f8ec2d928b31.jpeg",
             ]
         )
         if not os.path.exists(file):
-            file = await download_file(file, "profile.jpg")
+            file, _ = await download_file(file, "profile.jpg")
             rem = True
         msg = await asst.send_message(
             chat_id, "**Auto Customisation** Started on @Botfather"
@@ -337,7 +376,7 @@ async def customize():
         await ultroid_bot.send_message("botfather", UL)
         await asyncio.sleep(1)
         await ultroid_bot.send_message(
-            "botfather", f"✨ Hello ✨!! I'm Assistant Bot of {sir}"
+            "botfather", f"🥀 Hello !! I'm Assistant Bot of {sir}"
         )
         await asyncio.sleep(2)
         await ultroid_bot.send_message("botfather", "/setdescription")
@@ -346,7 +385,7 @@ async def customize():
         await asyncio.sleep(1)
         await ultroid_bot.send_message(
             "botfather",
-            f"✨ Powerful Ultroid Assistant Bot ✨\n✨ Master ~ {sir} ✨\n\n✨ Powered By ~ @TeamUltroid ✨",
+            f"🥀 Powerful Userbot Assistant Bot 🥀\n🥀 Master ~ {sir} 🥀\n\n🥀 Powered By ~ @xteam_cloner 🥀",
         )
         await asyncio.sleep(2)
         await msg.edit("Completed **Auto Customisation** at @BotFather.")
@@ -364,11 +403,13 @@ async def plug(plugin_channels):
     if ultroid_bot._bot:
         LOGS.info("Plugin Channels can't be used in 'BOTMODE'")
         return
+    if os.path.exists("addons") and not os.path.exists("addons/.git"):
+        shutil.rmtree("addons")
     if not os.path.exists("addons"):
         os.mkdir("addons")
     if not os.path.exists("addons/__init__.py"):
         with open("addons/__init__.py", "w") as f:
-            f.write("from plugins import *\n\nbot = ultroid_bot")
+            f.write("from modules import *\n\nbot = ultroid_bot")
     LOGS.info("• Loading Plugins from Plugin Channel(s) •")
     for chat in plugin_channels:
         LOGS.info(f"{'•'*4} {chat}")
@@ -376,18 +417,18 @@ async def plug(plugin_channels):
             async for x in ultroid_bot.iter_messages(
                 chat, search=".py", filter=InputMessagesFilterDocument, wait_time=10
             ):
-                plugin = x.file.name.replace("_", "-").replace("|", "-")
-                if not os.path.exists(f"addons/{plugin}"):
+                plugin = "addons/" + x.file.name.replace("_", "-").replace("|", "-")
+                if not os.path.exists(plugin):
                     await asyncio.sleep(0.6)
                     if x.text == "#IGNORE":
                         continue
-                    plugin = await x.download_media(f"addons/{plugin}")
-                try:
-                    load_addons(plugin.split("/")[-1].replace(".py", ""))
-                except Exception as e:
-                    LOGS.info(f"Ultroid - PLUGIN_CHANNEL - ERROR - {plugin}")
-                    LOGS.exception(e)
-                    os.remove(plugin)
+                    plugin = await x.download_media(plugin)
+                    try:
+                        load_addons(plugin)
+                    except Exception as e:
+                        LOGS.info(f"Userbot - PLUGIN_CHANNEL - ERROR - {plugin}")
+                        LOGS.exception(e)
+                        os.remove(plugin)
         except Exception as er:
             LOGS.exception(er)
 
@@ -395,20 +436,52 @@ async def plug(plugin_channels):
 # some stuffs
 
 
+async def fetch_ann():
+    from .. import asst, udB
+    from ..fns.tools import async_searcher
+
+    get_ = udB.get_key("OLDANN") or []
+    chat_id = udB.get_key("LOG_CHANNEL")
+    try:
+        updts = await async_searcher(
+            "https://ultroid-api.vercel.app/announcements", post=True, re_json=True
+        )
+        for upt in updts:
+            key = list(upt.keys())[0]
+            if key not in get_:
+                cont = upt[key]
+                if isinstance(cont, dict) and cont.get("lang"):
+                    if cont["lang"] != (udB.get_key("language") or "en"):
+                        continue
+                    cont = cont["msg"]
+                if isinstance(cont, str):
+                    await asst.send_message(chat_id, cont)
+                elif isinstance(cont, dict) and cont.get("chat"):
+                    await asst.forward_messages(chat_id, cont["msg_id"], cont["chat"])
+                else:
+                    LOGS.info(cont)
+                    LOGS.info(
+                        "Invalid Type of Announcement Detected!\nMake sure you are on latest version.."
+                    )
+                get_.append(key)
+        udB.set_key("OLDANN", get_)
+    except Exception as er:
+        LOGS.exception(er)
+
+
 async def ready():
     from .. import asst, udB, ultroid_bot
-    from ..functions.helper import inline_mention
 
     chat_id = udB.get_key("LOG_CHANNEL")
     spam_sent = None
     if not udB.get_key("INIT_DEPLOY"):  # Detailed Message at Initial Deploy
-        MSG = """🎇 **Thanks for Deploying Ultroid Userbot!**
+        MSG = """ **Thanks for Deploying Userbot!**
 • Here, are the Some Basic stuff from, where you can Know, about its Usage."""
-        PHOTO = "https://telegra.ph/file/54a917cc9dbb94733ea5f.jpg"
+        PHOTO = "https://graph.org/file/54a917cc9dbb94733ea5f.jpg"
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set_key("INIT_DEPLOY", "Done")
     else:
-        MSG = f"**Ultroid has been deployed!**\n➖➖➖➖➖➖➖➖➖➖\n**UserMode**: {inline_mention(ultroid_bot.me)}\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖➖\n**Support**: @TeamUltroid\n➖➖➖➖➖➖➖➖➖➖"
+        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>➖➖➖➖➖➖➖➖➖➖\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Telethon : {__version__}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pyrogram.__version__}\n➖➖➖➖➖➖➖➖➖➖</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n➖➖➖➖➖➖➖➖➖➖</blockquote>"        
         BTTS, PHOTO = None, None
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
@@ -420,37 +493,22 @@ async def ready():
             BTTS = Button.inline("Update Available", "updtavail")
 
     try:
-        spam_sent = await asst.send_message(chat_id, MSG, file=PHOTO, buttons=BTTS)
+        spam_sent = await asst.send_message(chat_id, MSG, file=PHOTO, buttons=BTTS, parse_mode="html")
     except ValueError as e:
         try:
             await (await ultroid_bot.send_message(chat_id, str(e))).delete()
-            spam_sent = await asst.send_message(chat_id, MSG, file=PHOTO, buttons=BTTS)
+            spam_sent = await asst.send_message(chat_id, MSG, file=PHOTO, buttons=BTTS, parse_mode="html")
         except Exception as g:
             LOGS.info(g)
     except Exception as el:
         LOGS.info(el)
         try:
-            spam_sent = await ultroid_bot.send_message(chat_id, MSG)
+            spam_sent = await ultroid_bot.send_message(chat_id, MSG, parse_mode="html")
         except Exception as ef:
-            LOGS.info(ef)
+            LOGS.exception(ef)
     if spam_sent and not spam_sent.media:
         udB.set_key("LAST_UPDATE_LOG_SPAM", spam_sent.id)
-    try:
-        # To Let Them know About New Updates and Changes
-        await ultroid_bot(JoinChannelRequest("@TheUltroid"))
-    except BotMethodInvalidError:
-        pass
-    except ChannelsTooMuchError:
-        LOGS.info("Join @TheUltroid to know about new Updates...")
-    except ChannelPrivateError:
-        LOGS.critical(
-            "You are Banned from @TheUltroid for some reason. Contact any dev if you think there is some mistake..."
-        )
-        import sys
-
-        sys.exit()
-    except Exception as er:
-        LOGS.exception(er)
+# TODO:    await fetch_ann()
 
 
 async def WasItRestart(udb):
@@ -463,7 +521,7 @@ async def WasItRestart(udb):
         data = key.split("_")
         who = asst if data[0] == "bot" else ultroid_bot
         await who.edit_message(
-            int(data[1]), int(data[2]), "__Restarted Successfully.__"
+            int(data[1]), int(data[2]), "__```Restarted Successfully.```__"
         )
     except Exception as er:
         LOGS.exception(er)
