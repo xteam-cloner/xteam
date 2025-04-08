@@ -3,8 +3,8 @@
 Core library of [xteam Userbot](https://github.com/xteam-cloner/Userbotx), a python based telegram userbot.
 
 [![CodeFactor](https://www.codefactor.io/repository/github/teamultroid/pyultroid/badge)](https://www.codefactor.io/repository/github/teamultroid/pyultroid)
-[![PyPI - Version](https://img.shields.io/pypi/v/py-Ultroid?style=round)](https://pypi.org/project/py-Ultroid)    
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/py-Ultroid?label=DOWNLOADS&style=round)](https://pypi.org/project/py-Ultroid)    
+[![PyPI - Version](https://img.shields.io/pypi/v/xteam?style=round)](https://pypi.org/project/xteam)    
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/xteam?label=DOWNLOADS&style=round)](https://pypi.org/project/xteam)    
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/TeamUltroid/Ultroid/graphs/commit-activity)
 [![Open Source Love svg2](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/TeamUltroid/Ultroid)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
