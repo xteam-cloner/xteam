@@ -1,6 +1,6 @@
 # xteam Library
 
-Core library of [xteam Userbot](https://github.com/xteam-cloner/Userbotx), a python based telegram userbot.
+Core library of [xteam Userbot](https://github.com/xteam-cloner/xteam-urbot), a python based telegram userbot.
 
 [![CodeFactor](https://www.codefactor.io/repository/github/teamultroid/pyultroid/badge)](https://www.codefactor.io/repository/github/teamultroid/pyultroid)
 [![PyPI - Version](https://img.shields.io/pypi/v/xteam?style=round)](https://pypi.org/project/xteam)    
