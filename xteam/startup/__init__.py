@@ -52,7 +52,7 @@ if run_as_module:
         os.remove(file)
 
     HOSTED_ON = where_hosted()
-    LOGS = getLogger("pyUltLogs")
+    LOGS = getLogger("Xteam")
     TelethonLogger = getLogger("Telethon")
     TelethonLogger.setLevel(INFO)
 
