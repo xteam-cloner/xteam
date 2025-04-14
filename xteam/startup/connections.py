@@ -75,16 +75,24 @@ def validate_session(session, logger=LOGS, _exit=True):
 
 def vc_connection(udB, ultroid_bot):
     from strings import get_string
+    from pytgcalls import PyTgCalls
 
     VC_SESSION = Var.VC_SESSION or udB.get_key("VC_SESSION")
     if VC_SESSION and VC_SESSION != Var.SESSION:
         LOGS.info("Starting up VcClient.")
         try:
-            return UltroidClient(
+            vc_client = UltroidClient(
                 validate_session(VC_SESSION, _exit=False),
                 log_attempt=False,
                 exit_on_error=False,
             )
+            try:
+                PyTgCalls(vc_client)
+                LOGS.info("PyTgCalls client initiated for VC.")
+                return vc_client
+            except Exception as e:
+                LOGS.error(f"Failed to initialize PyTgCalls for VC: {e}")
+                return ultroid_bot # Fallback to the main bot if PyTgCalls fails
         except (AuthKeyDuplicatedError, EOFError):
             LOGS.info(get_string("py_c3"))
             udB.del_key("VC_SESSION")
