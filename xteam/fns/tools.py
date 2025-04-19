@@ -659,29 +659,55 @@ def _package_rpc(text, lang_src="auto", lang_tgt="auto"):
     freq = "f.req={}&".format(quote(espaced_rpc))
     return freq
 
-
 def translate(*args, **kwargs):
+    """
+    Menerjemahkan teks menggunakan API Google Translate.
+
+    Args:
+        *args: Argumen posisi yang diteruskan ke fungsi _package_rpc.
+        **kwargs: Argumen kata kunci yang diteruskan ke fungsi _package_rpc.
+
+    Returns:
+        str: Teks terjemahan.
+    """
     headers = {
         "Referer": "https://translate.google.co.in",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/47.0.2526.106 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
         "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
     }
-    x = requests.post(
-        "https://translate.google.co.in/_/TranslateWebserverUi/data/batchexecute",
-        headers=headers,
-        data=_package_rpc(*args, **kwargs),
-    ).text
-    response = ""
-    data = json.loads(json.loads(x[4:])[0][2])[1][0][0]
-    subind = data[-2]
-    if not subind:
-        subind = data[-1]
-    for i in subind:
-        response += i[0]
-    return response
+    try:
+        response = requests.post(
+            "https://translate.google.co.in/_/TranslateWebserverUi/data/batchexecute",
+            headers=headers,
+            data=_package_rpc(*args, **kwargs),
+            timeout=10  # Tambahkan timeout untuk menghindari hanging
+        )
+        response.raise_for_status()  # Raise HTTPError untuk respons yang buruk (4xx atau 5xx)
+        content = response.text
+        # Hilangkan bagian awal yang tidak valid dan lakukan parsing JSON
+        json_data = json.loads(content[4:])
+        if not json_data or not json_data[0] or len(json_data[0]) < 3 or not json_data[0][2]:
+            return ""  # Kembalikan string kosong jika struktur JSON tidak sesuai
 
+        data = json.loads(json_data[0][2])[1][0][0]
+        sub_indices = data[-2]
+        if not sub_indices:
+            sub_indices = data[-1]
+
+        translated_text = "".join([item[0] for item in sub_indices])
+        return translated_text
+
+    except requests.exceptions.RequestException as e:
+        print(f"Terjadi kesalahan permintaan: {e}")
+        return ""
+    except json.JSONDecodeError as e:
+        print(f"Terjadi kesalahan dalam mendekode JSON: {e}")
+        print(f"Respons yang gagal di-parse: {content[:200]}...") # Tampilkan sebagian respons yang gagal
+        return ""
+    except IndexError:
+        print("Terjadi kesalahan indeks saat memproses respons JSON.")
+        return ""
+        
 
 def cmd_regex_replace(cmd):
     return (
