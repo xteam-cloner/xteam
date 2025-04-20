@@ -53,6 +53,9 @@ ULTROID_IMAGES = [
 ]
 
 ALIVE_NAME = [
+    "12345"
+]
+"""
     "XTEAM-URBOT is a versatile and feature-rich Telegram userbot built using the Telethon library in Python. Think of it as a customizable bot that runs on your Telegram account, allowing you to automate tasks, manage your groups more effectively, and add a variety of fun and useful features to your Telegram experience.\n \
     •xteam-urbot interesting:
     •Extensive Functionality: xteam-urbot boasts a wide array of built-in modules (plugins) that can perform various actions. These can include things like:
@@ -72,7 +75,7 @@ ALIVE_NAME = [
     • GitHub: The main repository for xteam-urbot is on GitHub at https://github.com/xteam-cloner/xteam-urbot. You'll find the source code, installation instructions, and documentation there.
     • TeamX Organization: You can explore other related projects and plugins under the xteam-urbot organization on GitHub: https://github.com/xteam-cloner.
     •In short, xteam-urbot is a powerful tool for Telegram users who want to extend the platform's functionality and automate tasks. However, it comes with a learning curve and requires responsible usage.
-    """"
+    """
 ]
 
 ALIVE_TEXT = [
