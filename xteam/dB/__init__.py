@@ -76,7 +76,6 @@ ALIVE_NAME = [
     • TeamX Organization: You can explore other related projects and plugins under the xteam-urbot organization on GitHub: https://github.com/xteam-cloner.
     •In short, xteam-urbot is a powerful tool for Telegram users who want to extend the platform's functionality and automate tasks. However, it comes with a learning curve and requires responsible usage.
     """
-]
 
 ALIVE_TEXT = [
 "❍❍❍❍❍❍❍❍❍❍❍❍❍❍❍❍"
