@@ -15,7 +15,7 @@ from random import randint
 from telethon import __version__ 
 import pyrogram 
 from platform import python_version
-from xteam.version import __version__ as UltVer
+from xteam.version import ultroid_version as UltVer
 from xteam.version import __version__ as xtver
 from xteam.configs import Var
 #from .. import ultroid_bot
