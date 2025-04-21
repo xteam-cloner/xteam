@@ -12,8 +12,8 @@ import shutil
 import time
 import platform
 from random import randint
-from telethon import __version__ 
-import pyrogram 
+from telethon import __version__ as tver
+import pyrogram import __version__ as pver
 from platform import python_version
 from xteam.version import ultroid_version as UltVer
 from xteam.version import __version__ as xtver
@@ -482,10 +482,10 @@ async def ready():
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set_key("INIT_DEPLOY", "Done")
     else:
-        MSG = f"**Xteam has been deployed!**\n➖➖➖➖➖➖➖➖➖➖\n**UserMode**: {inline_mention(ultroid_bot.me)}\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖➖\n**Support**: @xteam_vloner\n➖➖➖➖➖➖➖➖➖➖"
-        BTTS, PHOTO = None, None
-        #MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer}\n🥀 Xteam : {xtver}\n🥀 Telethon : {__version__}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pyrogram.version}\n</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
+        #MSG = f"**Xteam has been deployed!**\n➖➖➖➖➖➖➖➖➖➖\n**UserMode**: {inline_mention(ultroid_bot.me)}\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖➖\n**Support**: @xteam_vloner\n➖➖➖➖➖➖➖➖➖➖"
         #BTTS, PHOTO = None, None
+        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer}\n🥀 Xteam : {xtver}\n🥀 Telethon : {tver}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pver}\n</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
+        BTTS, PHOTO = None, None
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
             try:
