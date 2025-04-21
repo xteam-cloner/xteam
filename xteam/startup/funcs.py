@@ -16,6 +16,7 @@ from telethon import __version__
 import pyrogram 
 from platform import python_version
 from xteam.version import __version__ as UltVer
+from xteam.version import __xteam__ as xtver
 from xteam.configs import Var
 #from .. import ultroid_bot
 try:
@@ -385,7 +386,7 @@ async def customize():
         await asyncio.sleep(1)
         await ultroid_bot.send_message(
             "botfather",
-            f"🥀 Powerful Userbot Assistant Bot 🥀\n🥀 Master ~ {sir} 🥀\n\n🥀 Powered By ~ @xteam_cloner 🥀",
+            f"🥀 Powerful Urbot Assistant Bot 🥀\n🥀 Master ~ {sir} 🥀\n\n🥀 Powered By ~ @xteam_cloner 🥀",
         )
         await asyncio.sleep(2)
         await msg.edit("Completed **Auto Customisation** at @BotFather.")
@@ -481,7 +482,7 @@ async def ready():
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set_key("INIT_DEPLOY", "Done")
     else:
-        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>➖➖➖➖➖➖➖➖➖➖\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Telethon : {__version__}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pyrogram.__version__}\n➖➖➖➖➖➖➖➖➖➖</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n➖➖➖➖➖➖➖➖➖➖</blockquote>"        
+        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer}\n🥀 Xteam : {xtver}\n🥀 Telethon : {version}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pyrogram.version}\n</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
         BTTS, PHOTO = None, None
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
