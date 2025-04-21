@@ -482,7 +482,7 @@ async def ready():
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set_key("INIT_DEPLOY", "Done")
     else:
-        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer}\n🥀 Xteam : {xtver}\n🥀 Telethon : {version}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pyrogram.version}\n</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
+        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer}\n🥀 Xteam : {xtver}\n🥀 Telethon : {__version__}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pyrogram.version}\n</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
         BTTS, PHOTO = None, None
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
