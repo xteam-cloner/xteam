@@ -13,7 +13,7 @@ import time
 import platform
 from random import randint
 from telethon import __version__ as tver
-import pyrogram import __version__ as pver
+from pyrogram import __version__ as pver
 from platform import python_version
 from xteam.version import ultroid_version as UltVer
 from xteam.version import __version__ as xtver
