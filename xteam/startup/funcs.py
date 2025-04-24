@@ -18,7 +18,7 @@ from platform import python_version
 from xteam.version import ultroid_version as UltVer
 from xteam.version import __version__ as xtver
 from xteam.configs import Var
-#from .. import ultroid_bot
+from . import HOSTED_ON
 try:
     from pytz import timezone
 except ImportError:
@@ -484,7 +484,7 @@ async def ready():
     else:
         #MSG = f"**Xteam has been deployed!**\n➖➖➖➖➖➖➖➖➖➖\n**UserMode**: {inline_mention(ultroid_bot.me)}\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖➖\n**Support**: @xteam_vloner\n➖➖➖➖➖➖➖➖➖➖"
         #BTTS, PHOTO = None, None
-        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer}\n🥀 Xteam : {xtver}\n🥀 Telethon : {tver}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pver}\n</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
+        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer} [{HOSTED_ON}]\n🥀 Xteam : {xtver}\n🥀 Telethon : {tver}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pver}\n</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
         BTTS, PHOTO = None, None
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
