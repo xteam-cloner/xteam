@@ -52,7 +52,7 @@ ULTROID_IMAGES = [
     ]
 ]
 
-ALIVE_TEXT = [
+About = [
     f"XTEAM-URBOT is a versatile and feature-rich Telegram userbot built using the Telethon library in Python.\n\n" \
     f"Think of it as a customizable bot that runs on your Telegram account, allowing you to automate tasks, manage your groups more effectively, and add a variety of fun and useful features to your Telegram experience.\n" \
     f"• xteam-urbot interesting:\n" \
