@@ -252,7 +252,16 @@ def ytdownload(url, opts):
 
 @run_async
 def extract_info(url, opts):
-    return YoutubeDL(opts).extract_info(url=url, download=False)
+    return YoutubeDL(opts).extract_info(url=url, download=True)
+        ytdl_data = await run_sync(ydl.extract_info, link, download=True)
+        file_path = ydl.prepare_filename(ytdl_data)
+        videoid = ytdl_data["id"]
+        title = ytdl_data["title"]
+        url = f"https://youtu.be/{videoid}"
+        duration = ytdl_data["duration"]
+        channel = ytdl_data["uploader"]
+        views = f"{ytdl_data['view_count']:,}".replace(",", ".")
+        thumbs = f"https://img.youtube.com/vi/{videoid}/hqdefault.jpg"
 
 
 @run_async
