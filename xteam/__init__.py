@@ -70,7 +70,7 @@ if run_as_module:
             validate_session(Var.SESSION, LOGS),
             udB=udB,
             app_version=ultroid_version,
-            device_model="Ultroid",
+            device_model="♥️ xteam-urbot ♥️",
         )
         ultroid_bot.run_in_loop(autobot())
 
@@ -99,7 +99,7 @@ if run_as_module:
     DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
     SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
 else:
-    print("xteam 2025 © TeamX")
+    print("xteam 2025 © xteam_cloner")
 
     from logging import getLogger
 
