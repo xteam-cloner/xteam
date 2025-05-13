@@ -155,10 +155,10 @@ async def allcmds(event, telegraph):
     for z in LIST.keys():
         txt += f"PLUGIN NAME: {z}\n"
         for zz in LIST[z]:
-            txt += HNDLR + zz + "\n"
+            txt += zz + "\n"
         txt += "\n\n"
-    t = telegraph.create_page(title="Ultroid All Cmds", content=[txt])
-    await eor(event, f"All Ultroid Cmds : [Click Here]({t['url']})", link_preview=False)
+    t = telegraph.create_page(title="xteam-urbot All Commands", content=[txt])
+    await eor(event, f"All xteam-urbot Commands: [Click Here]({t['url']})", link_preview=False)
 
 
 async def ReTrieveFile(input_file_name):
