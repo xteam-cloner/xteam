@@ -319,7 +319,7 @@ async def autopilot():
                 LOGS.exception(er)
     if isinstance(chat.photo, ChatPhotoEmpty):
         photo, _ = await download_file(
-            "https://graph.org/file/27c6812becf6f376cbb10.jpg", "channelphoto.jpg"
+            "https://files.catbox.moe/k9ljse.jpg", "channelphoto.jpg"
         )
         ll = await ultroid_bot.upload_file(photo)
         try:
@@ -478,14 +478,14 @@ async def ready():
     if not udB.get_key("INIT_DEPLOY"):  # Detailed Message at Initial Deploy
         MSG = """ **Thanks for Deploying Userbot!**
 • Here, are the Some Basic stuff from, where you can Know, about its Usage."""
-        PHOTO = "https://graph.org/file/54a917cc9dbb94733ea5f.jpg"
+        PHOTO = "https://files.catbox.moe/k9ljse.jpg"
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set_key("INIT_DEPLOY", "Done")
     else:
         #MSG = f"**Xteam has been deployed!**\n➖➖➖➖➖➖➖➖➖➖\n**UserMode**: {inline_mention(ultroid_bot.me)}\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖➖\n**Support**: @xteam_vloner\n➖➖➖➖➖➖➖➖➖➖"
         #BTTS, PHOTO = None, None
-        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer} {HOSTED_ON}\n🥀 Xteam : {xtver}\n🥀 Telethon : {tver}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pver}\n</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
-        BTTS, PHOTO = None, None
+        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer} {HOSTED_ON}\n🥀 Xteam : {xtver}\n🥀 Telethon : {tver}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pver}</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
+        BTTS, PHOTO = True, None
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
             try:
