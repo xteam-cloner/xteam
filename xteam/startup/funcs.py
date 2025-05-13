@@ -484,8 +484,8 @@ async def ready():
     else:
         #MSG = f"**Xteam has been deployed!**\n➖➖➖➖➖➖➖➖➖➖\n**UserMode**: {inline_mention(ultroid_bot.me)}\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖➖\n**Support**: @xteam_vloner\n➖➖➖➖➖➖➖➖➖➖"
         #BTTS, PHOTO = None, None
-        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥</blockquote>\n<blockquote>\n🥀 Owner : {ultroid_bot.full_name}\n🥀 Xteam-Urbot : {UltVer} {HOSTED_ON}\n🥀 Xteam : {xtver}\n🥀 Telethon : {tver}\n🥀 Python : {platform.python_version()}\n🥀 Pyrogram : {pver}</blockquote>\n<blockquote>🥀 Support : @xteam_cloner\n</blockquote>"        
-        BTTS, PHOTO = True, None
+        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥\n🥀 Owner : {ultroid_bot.full_name}\n🥀 xteam-Urbot : {UltVer} {HOSTED_ON}\n🥀 xteam : {xtver}\n🥀 telethon : {tver}\n🥀 python : {platform.python_version()}\n🥀 pyrogram : {pver}\n🥀 support : @xteam_cloner</blockquote>"        
+        BTTS, PHOTO = "https://files.catbox.moe/k9ljse.jpg", None
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
             try:
