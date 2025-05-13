@@ -54,7 +54,7 @@ db_url = 0
 
 
 async def autoupdate_local_database():
-    from .. import Var, asst, udB, ultroid_bot
+    from .. import asst, udB, ultroid_bot
 
     global db_url
     db_url = (
@@ -482,10 +482,8 @@ async def ready():
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set_key("INIT_DEPLOY", "Done")
     else:
-        #MSG = f"**Xteam has been deployed!**\n➖➖➖➖➖➖➖➖➖➖\n**UserMode**: {inline_mention(ultroid_bot.me)}\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖➖\n**Support**: @xteam_vloner\n➖➖➖➖➖➖➖➖➖➖"
-        #BTTS, PHOTO = None, None
         MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥\n🥀 Owner : {ultroid_bot.full_name}\n🥀 xteam-Urbot : {UltVer} {HOSTED_ON}\n🥀 xteam : {xtver}\n🥀 telethon : {tver}\n🥀 python : {platform.python_version()}\n🥀 pyrogram : {pver}\n🥀 support : @xteam_cloner</blockquote>"        
-        BTTS, PHOTO = "https://files.catbox.moe/k9ljse.jpg", None
+        BTTS, PHOTO = None, None
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
             try:
