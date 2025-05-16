@@ -1,9 +1,9 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2023 TeamUltroid
+# Copyright (C) 2021-2025 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
-# <https://github.com/TeamUltroid/xteam/blob/main/LICENSE>.
+# <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
 import glob
 import os
@@ -43,7 +43,7 @@ async def ytdl_progress(k, start_time, event):
 
 
 def get_yt_link(query):
-    search = VideosSearch(query, limit=5).result()
+    search = VideosSearch(query, limit=1).result()
     try:
         return search["result"][0]["link"]
     except IndexError:
@@ -252,16 +252,7 @@ def ytdownload(url, opts):
 
 @run_async
 def extract_info(url, opts):
-    return YoutubeDL(opts).extract_info(url=url, download=True)
-        ytdl_data = await run_sync(ydl.extract_info, link, download=True)
-        file_path = ydl.prepare_filename(ytdl_data)
-        videoid = ytdl_data["id"]
-        title = ytdl_data["title"]
-        url = f"https://youtu.be/{videoid}"
-        duration = ytdl_data["duration"]
-        channel = ytdl_data["uploader"]
-        views = f"{ytdl_data['view_count']:,}".replace(",", ".")
-        thumbs = f"https://img.youtube.com/vi/{videoid}/hqdefault.jpg"
+    return YoutubeDL(opts).extract_info(url=url, download=False)
 
 
 @run_async
