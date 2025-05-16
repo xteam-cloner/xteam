@@ -39,7 +39,7 @@ devs = [
 ]
 
 
-ULTROID_IMAGES = [
+"""ULTROID_IMAGES = [
     f"https://graph.org/file/{_}.jpg"
     for _ in [
         "8d7b534e34e13316a7dd2"
@@ -49,6 +49,13 @@ ULTROID_IMAGES = [
         #"4ceaf720a96a24527ecff",
         #"a96223b574f29f3f0d184",
         #"6e081d339a01cc6190393",
+    ]
+]"""
+
+ULTROID_IMAGES = [
+    f"https://files.catbox.moe/{_}.jpg"
+    for _ in [
+        "k9ljs"
     ]
 ]
 
