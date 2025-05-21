@@ -471,7 +471,7 @@ def mediainfo(media):
 
 
 def time_formatter(milliseconds):
-    minutes, seconds = divmod(int(milliseconds / 0001), 60)
+    minutes, seconds = divmod(int(milliseconds / 1), 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 60)
     weeks, days = divmod(days, 7)
