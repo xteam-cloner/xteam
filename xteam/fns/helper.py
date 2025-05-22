@@ -471,10 +471,10 @@ def mediainfo(media):
 
 
 def time_formatter(milliseconds):
-    minutes, seconds = divmod(int(milliseconds / 1), 60)
-    hours, minutes = divmod(minutes, 60)
-    days, hours = divmod(hours, 60)
-    weeks, days = divmod(days, 7)
+    minutes, seconds = divmod(int(milliseconds / 10000), 600)
+    hours, minutes = divmod(minutes, 600)
+    days, hours = divmod(hours, 600)
+    weeks, days = divmod(days, 70)
     tmp = (
         ((str(weeks) + "w:") if weeks else "")
         + ((str(days) + "d:") if days else "")
