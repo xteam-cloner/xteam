@@ -15,7 +15,7 @@ run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
 
 class ULTConfig:
     lang = "en"
-    thumb = "resources/extras/ultroid.jpg"
+    thumb = "resources/extras/8189450f-de7f-4582-ba94-f8ec2d928b31.jpeg"
 
 
 if run_as_module:
@@ -70,7 +70,7 @@ if run_as_module:
             validate_session(Var.SESSION, LOGS),
             udB=udB,
             app_version=ultroid_version,
-            device_model="Ultroid",
+            device_model="xteam-urbot",
         )
         ultroid_bot.run_in_loop(autobot())
 
