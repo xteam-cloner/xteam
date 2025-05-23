@@ -68,7 +68,7 @@ def main():
 
     suc_msg = """
             ----------------------------------------------------------------------
-                Ultroid has been deployed! Visit @TheUltroid for updates!!
+                xteam-urbot has been deployed! @xteam_cloner for updates!!
             ----------------------------------------------------------------------
     """
 
@@ -76,7 +76,7 @@ def main():
     plugin_channels = udB.get_key("PLUGIN_CHANNEL")
 
     # Customize Ultroid Assistant...
-    ultroid_bot.run_in_loop(customize())
+    #ultroid_bot.run_in_loop(customize())
 
     # Load Addons from Plugin Channels.
     if plugin_channels:
@@ -101,7 +101,7 @@ def main():
         pass
 
     LOGS.info(
-        f"Took {time_formatter((time.time() - start_time)*1000)} to start •ULTROID•"
+        f"Took {time_formatter((time.time() - start_time)*1000)} to start •xteam-urbot•"
     )
     LOGS.info(suc_msg)
 
