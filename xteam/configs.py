@@ -1,15 +1,20 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2022 TeamUltroid
+# Copyright (C) 2021-2025 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
-__all__ = ("Var",)
-
 import sys
 
 from decouple import config
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
 
 
 class Var:
@@ -31,7 +36,6 @@ class Var:
     REDIS_PASSWORD = (
         sys.argv[5] if len(sys.argv) > 5 else config("REDIS_PASSWORD", default=None)
     )
-
     # extras
     BOT_TOKEN = config("BOT_TOKEN", default=None)
     LOG_CHANNEL = config("LOG_CHANNEL", default=0, cast=int)
@@ -40,20 +44,12 @@ class Var:
     VC_SESSION = config("VC_SESSION", default=None)
     ADDONS = config("ADDONS", default=False, cast=bool)
     VCBOT = config("VCBOT", default=False, cast=bool)
-
     # for railway
     REDISPASSWORD = config("REDISPASSWORD", default=None)
     REDISHOST = config("REDISHOST", default=None)
     REDISPORT = config("REDISPORT", default=None)
     REDISUSER = config("REDISUSER", default=None)
-
     # for sql
     DATABASE_URL = config("DATABASE_URL", default=None)
-
     # for MONGODB users
     MONGO_URI = config("MONGO_URI", default=None)
-    MONGO_DBNAME = config("MONGO_DBNAME", default=None)
-
-    # custom
-    USER = config("_USER", default=config("USER", "None"))
-    HOST = config("HOST", default="None")
