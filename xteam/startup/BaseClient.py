@@ -275,7 +275,7 @@ class UltroidClient(TelegramClient):
         return await self.get_peer_id(text)
 
 
----
+#---
 
 ## UltroidPyrogramClient Class
 
