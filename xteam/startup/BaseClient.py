@@ -279,9 +279,9 @@ class UltroidClient(TelegramClient):
 
 ## UltroidPyrogramClient Class
 
-This class will handle your Pyrogram client's initialization and basic lifecycle.
+#This class will handle your Pyrogram client's initialization and basic lifecycle.
 
-```python
+#python
 class UltroidPyrogramClient(PyrogramClient):
     def __init__(
         self,
