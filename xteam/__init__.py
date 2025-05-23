@@ -1,16 +1,31 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2023 TeamUltroid
+# Copyright (C) 2021-2022 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
-# <https://github.com/TeamUltroid/xteam/blob/main/LICENSE>.
+# <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
-import os
-import sys
-import telethonpatch
-from .version import __version__
 
-run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
+import time
+
+
+start_time = time.time()
+_ignore_eval = []
+_shutdown_tasks = []
+_ult_cache = {}
+
+
+try:
+    import telethonpatch as _telepatch
+except ImportError:
+    # print("running without telethonpatch >>>")
+    pass
+
+
+from .version import __version__, ultroid_version
+from .custom.init import loop
+from .configs import Var
+from .startup import *
 
 
 class ULTConfig:
@@ -18,91 +33,81 @@ class ULTConfig:
     thumb = "resources/extras/8189450f-de7f-4582-ba94-f8ec2d928b31.jpeg"
 
 
-if run_as_module:
-    import time
+# database stuff
+from .startup._database import _UltroidDB
 
-    from .configs import Var
-    from .startup import *
-    from .startup._database import UltroidDB
-    from .startup.BaseClient import UltroidClient
-    from .startup.connections import validate_session, vc_connection
-    from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
-    from .version import ultroid_version
+udB = _UltroidDB()
+LOGS.info(f"Connected to {udB.name} Successfully!")
 
-    if not os.path.exists("./plugins"):
-        LOGS.error(
-            "'plugins' folder not found!\nMake sure that, you are on correct path."
-        )
-        exit()
 
-    start_time = time.time()
-    _ult_cache = {}
-    _ignore_eval = []
+from .custom.init import afterBoot as _afterBoot
+from .startup.BaseClient import UltroidClient as _UltroidClient
+from .startup.connections import (
+    validate_session as _validate_session,
+    vc_connection as _vc_connection,
+)
+from .startup.funcs import _autobot, _enable_inline
 
-    udB = UltroidDB()
-    update_envs()
 
-    LOGS.info(f"Connecting to {udB.name}...")
-    if udB.ping():
-        LOGS.info(f"Connected to {udB.name} Successfully!")
+_afterBoot(udB)
+BOT_MODE = udB.get_key("BOTMODE")
+DUAL_MODE = udB.get_key("DUAL_MODE")
 
-    BOT_MODE = udB.get_key("BOTMODE")
-    DUAL_MODE = udB.get_key("DUAL_MODE")
+USER_MODE = udB.get_key("USER_MODE")
+if USER_MODE:
+    DUAL_MODE = False
 
-    USER_MODE = udB.get_key("USER_MODE")
-    if USER_MODE:
+if BOT_MODE:
+    if DUAL_MODE:
+        udB.del_key("DUAL_MODE")
         DUAL_MODE = False
+    ultroid_bot = None
 
-    if BOT_MODE:
-        if DUAL_MODE:
-            udB.del_key("DUAL_MODE")
-            DUAL_MODE = False
-        ultroid_bot = None
-
-        if not udB.get_key("BOT_TOKEN"):
-            LOGS.critical(
-                '"BOT_TOKEN" not Found! Please add it, in order to use "BOTMODE"'
-            )
-
-            sys.exit()
-    else:
-        ultroid_bot = UltroidClient(
-            validate_session(Var.SESSION, LOGS),
-            udB=udB,
-            app_version=ultroid_version,
-            device_model="♥️ xteam-urbot ♥️",
-        )
-        ultroid_bot.run_in_loop(autobot())
-
-    if USER_MODE:
-        asst = ultroid_bot
-    else:
-        asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
-
-    if BOT_MODE:
-        ultroid_bot = asst
-        if udB.get_key("OWNER_ID"):
-            try:
-                ultroid_bot.me = ultroid_bot.run_in_loop(
-                    ultroid_bot.get_entity(udB.get_key("OWNER_ID"))
-                )
-            except Exception as er:
-                LOGS.exception(er)
-    elif not asst.me.bot_inline_placeholder and asst._bot:
-        ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
-
-    vcClient = vc_connection(udB, ultroid_bot)
-
-    _version_changes(udB)
-
-    HNDLR = udB.get_key("HNDLR") or "."
-    DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
-    SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
+    if not (udB.get_key("BOT_TOKEN") or Var.BOT_TOKEN):
+        LOGS.critical('"BOT_TOKEN" not Found! Please add it, in order to use "BOTMODE"')
+        quit(1)
 else:
-    print("xteam 2025 © xteam_cloner")
+    ultroid_bot = _UltroidClient(
+        _validate_session(Var.SESSION, LOGS),
+        udB=udB,
+        app_version=ultroid_version,
+        device_model="Ultroid",
+        proxy=udB.get_key("TG_PROXY"),
+        entity_cache_limit=2500,
+    )
+    ultroid_bot.run_in_loop(_autobot(ultroid_bot, udB))
 
-    from logging import getLogger
+if USER_MODE:
+    asst = ultroid_bot
+else:
+    asst = _UltroidClient(
+        None,
+        bot_token=udB.get_key("BOT_TOKEN") or Var.BOT_TOKEN,
+        udB=udB,
+        entity_cache_limit=500,
+    )
 
-    LOGS = getLogger("xteam")
+if BOT_MODE:
+    ultroid_bot = asst
+    if udB.get_key("OWNER_ID"):
+        try:
+            ultroid_bot.me = ultroid_bot.run_in_loop(
+                ultroid_bot.get_entity(udB.get_key("OWNER_ID"))
+            )
+        except Exception as er:
+            LOGS.exception(er)
+elif not asst.me.bot_inline_placeholder:
+    ultroid_bot.run_in_loop(_enable_inline(ultroid_bot, asst.me.username))
 
-    ultroid_bot = asst = udB = vcClient = None
+
+vcClient = _vc_connection(udB, ultroid_bot)
+
+
+HNDLR = udB.get_key("HNDLR") or "."
+DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
+SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
+
+
+from .custom.startup_helper import _handle_post_startup
+
+_handle_post_startup()
