@@ -250,8 +250,6 @@ class UltroidClient(TelegramClient):
         return await self.get_peer_id(text)
 
 
----
-
 ## Pyrogram Client
 
 """Here's the class for a Pyrogram client, separate from the `UltroidClient` (which is based on Telethon). This class uses `pyrogram.Client` and includes the `PyTgCalls` integration.
