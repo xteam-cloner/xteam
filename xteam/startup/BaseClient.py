@@ -280,8 +280,6 @@ class PyrogramClient(Client):
         self.logger = logger
         self._log_at = log_attempt
         self._handle_error = exit_on_error
-
-        # Initialize Pyrogram Client
         super().__init__(
             name=name,
             api_id=api_id or Var.API_ID,
