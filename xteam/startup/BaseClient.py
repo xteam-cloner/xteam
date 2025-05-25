@@ -344,39 +344,3 @@ class PyrogramClient(Client):
         self.run_until_disconnected() # This is a conceptual placeholder.
                                      # Pyrogram's run() method is blocking.
                                      # For async, use start() and stop() within your own event loop.
-
-#PyTgCalls (Standalone for Pyrogram)
-#This shows how PyTgCalls is initialized with a Pyrogram Client instance.
-from pyrogram import Client
-from pytgcalls import PyTgCalls
-
-def initialize_pytgcalls_pyrogram(app: Client):
-    """
-    Initializes PyTgCalls with a given Pyrogram Client instance.
-
-    Args:
-        app: An instance of pyrogram.Client.
-
-    Returns:
-        An instance of PyTgCalls linked to the provided Pyrogram Client.
-    """
-    call_py = PyTgCalls(app)
-    return call_py
-
-#PyTgCalls (Standalone for Telethon)
-#This shows how PyTgCalls is initialized with a Telethon TelegramClient instance.
-from telethon import TelegramClient
-from pytgcalls import PyTgCalls
-
-def initialize_pytgcalls_telethon(client: TelegramClient):
-    """
-    Initializes PyTgCalls with a given Telethon TelegramClient instance.
-
-    Args:
-        client: An instance of telethon.TelegramClient.
-
-    Returns:
-        An instance of PyTgCalls linked to the provided Telethon Client.
-    """
-    call_py = PyTgCalls(client)
-    return call_py
