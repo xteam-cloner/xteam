@@ -111,7 +111,17 @@ from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatType
 from pytgcalls import PyTgCalls
-from pytgcalls.types import InputAudioStream
+from pytgcalls.exceptions import (
+    AlreadyJoinedError,
+    NoActiveGroupCall,
+)
+from pytgcalls.types import (
+    JoinedGroupCallParticipant,
+    LeftGroupCallParticipant,
+    MediaStream,
+    Update,
+)
+from pytgcalls.types.stream import StreamAudioEnded
 from xteam.startup.BaseClient import PyrogramClient # Assuming this is your custom Pyrogram Client
 from xteam.configs import Var # Assuming Var contains API_ID, API_HASH, BOT_TOKEN
 from xteam import LOGS # Assuming LOGS is defined for logging
