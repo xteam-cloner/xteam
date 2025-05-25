@@ -106,124 +106,146 @@ def main():
     LOGS.info(suc_msg)
 
 import asyncio
+import os
 from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatType
-from xteam.startup.BaseClient import PyrogramClient # Asumsi lokasi file Anda
-from xteam.configs import Var # Asumsi Var berisi API_ID, API_HASH
+from pytgcalls import PyTgCalls, GroupCall
+from pytgcalls.types import InputAudioStream
+from xteam.startup.BaseClient import PyrogramClient # Assuming this is your custom Pyrogram Client
+from xteam.configs import Var # Assuming Var contains API_ID, API_HASH, BOT_TOKEN
+from xteam import LOGS # Assuming LOGS is defined for logging
 
-# Asumsi LOGS sudah didefinisikan di xteam/__init__.py
-from xteam import LOGS
+# Dictionary to store active group calls per chat ID
+# This is crucial for managing multiple voice chats if needed
+active_group_calls: dict[int, GroupCall] = {}
 
-async def main():
-    # Inisialisasi klien Pyrogram Anda
-    # Ganti 'my_account_session' dengan nama sesi yang sesuai untuk userbot Anda
-    # Atau jika ini bot, gunakan token bot Anda (Var.BOT_TOKEN)
+async def main_music_bot():
+    # Initialize your Pyrogram Client
+    # Ensure Var.BOT_TOKEN is correctly set for a bot
     app = PyrogramClient(
-        name="Xteammusic", # Nama sesi unik
+        name="Xteammusic", # Unique session name
         api_id=Var.API_ID,
         api_hash=Var.API_HASH,
-        bot_token=Var.BOT_TOKEN, # Uncomment ini jika Anda menggunakan bot token
+        bot_token=Var.BOT_TOKEN, # Use BOT_TOKEN for a bot
         logger=LOGS,
         log_attempt=True,
         exit_on_error=True
     )
 
-    # Memulai klien (dan juga PyTgCalls di dalamnya)
-    await app.start_client()
+    # Initialize PyTgCalls with your Pyrogram Client
+    # This automatically integrates PyTgCalls with your running Pyrogram client
+    pytgcalls_client = PyTgCalls(app)
+
+    # Start the Pyrogram client and PyTgCalls
+    await asst.start()
+    await app.start()
+    await pytgcalls_client.start()
     LOGS.info("Pyrogram Client and PyTgCalls are now running!")
 
-    # --- Contoh Penggunaan PyTgCalls ---
+    # --- PyTgCalls Command Handlers ---
 
-    # Listener untuk perintah /joinvc
     @app.on_message(filters.command("joinvc") & filters.private)
     async def join_voice_chat(_, message: Message):
+        if not message.chat.type in [ChatType.GROUP, ChatType.SUPERGROUP, ChatType.CHANNEL]:
+            await message.reply("Please use this command in a group or channel with an active voice chat.")
+            return
+
         chat_id = message.chat.id
         LOGS.info(f"Received /joinvc command in chat {chat_id}")
-        
-        # Contoh: mencoba bergabung ke obrolan suara di grup atau saluran
-        # Anda perlu mendapatkan ID grup/saluran yang memiliki obrolan suara aktif
-        # Untuk tujuan contoh, kita akan bergabung ke obrolan suara di chat_id ini
-        # Jika ini adalah userbot, Anda bisa bergabung ke VC di grup/saluran
-        # Jika ini bot, bot harus admin dengan hak kelola obrolan suara
-        
-        # Dapatkan peer (chat) dari ID pesan
-        target_chat_id = message.chat.id # Atau ID grup/saluran tertentu
-        
+
+        if chat_id in active_group_calls:
+            await message.reply("I am already in a voice chat in this group.")
+            return
+
         try:
-            # Bergabung ke obrolan suara
-            await app.call_py.join_group_call(
-                target_chat_id,
-                # Sebagai contoh, kita akan memutar 'input.raw' atau audio dummy
-                # Anda perlu menyediakan sumber audio yang valid
-                # Misalnya, dari file audio lokal, atau URL stream
-                # Lihat dokumentasi PyTgCalls untuk detail lebih lanjut tentang `InputAudioStream`
-                # Untuk tes awal, kita bisa bergabung tanpa memutar apa pun jika tidak ada file
-                # Anda bisa mengganti ini dengan audio stream sebenarnya
-                # Contoh: AudioInputFromFile("path/to/your/audio.raw")
+            # Check if the bot is an admin with 'manage_voice_chats' permission
+            # This is crucial for a bot to join a voice chat
+            # If it's a userbot, this permission check might not be strictly necessary
+            # but it's good practice for any account joining a VC.
+            member = await app.get_chat_member(chat_id, app.me.id)
+            if not member.can_manage_voice_chats:
+                await message.reply("I need `Manage Voice Chats` permission to join the voice chat.")
+                return
+
+            # Join the voice chat
+            await pytgcalls_client.join_group_call(
+                chat_id,
+                InputAudioStream() # Join silently, or you can provide a default audio stream
             )
-            await message.reply(f"Berhasil bergabung ke obrolan suara di chat `{target_chat_id}`.")
-            LOGS.info(f"Successfully joined voice chat in {target_chat_id}")
+            # Store the group call instance
+            active_group_calls[chat_id] = pytgcalls_client.get_active_group_call(chat_id)
+            await message.reply(f"Successfully joined voice chat in chat `{chat_id}`.")
+            LOGS.info(f"Successfully joined voice chat in {chat_id}")
         except Exception as e:
-            await message.reply(f"Gagal bergabung ke obrolan suara: {e}")
+            await message.reply(f"Failed to join voice chat: {e}")
             LOGS.error(f"Failed to join voice chat: {e}")
 
-    # Listener untuk perintah /play
     @app.on_message(filters.command("play") & filters.private)
     async def play_audio(_, message: Message):
         chat_id = message.chat.id
-        if not message.reply_to_message or not message.reply_to_message.audio:
-            await message.reply("Balas ke file audio untuk memutar.")
+
+        if chat_id not in active_group_calls:
+            await message.reply("I'm not in a voice chat in this group. Use /joinvc first.")
             return
 
-        audio_file = message.reply_to_message.audio
-        # Mendapatkan file audio dari Telegram
-        downloaded_file = await app.download_media(audio_file)
-        
+        if not message.reply_to_message or not message.reply_to_message.audio:
+            await message.reply("Reply to an audio file to play it.")
+            return
+
+        audio_file_path = None
         try:
-            # Memutar audio di obrolan suara aktif
-            await app.call_py.stream(
-                chat_id, # ID chat di mana obrolan suara aktif
-                downloaded_file # Path ke file audio yang diunduh
-            )
-            await message.reply(f"Mulai memutar audio di obrolan suara di chat `{chat_id}`.")
+            # Download the audio file from Telegram
+            audio_file_path = await app.download_media(message.reply_to_message.audio)
+            LOGS.info(f"Downloaded audio to: {audio_file_path}")
+
+            # Stream the audio in the active voice chat
+            await active_group_calls[chat_id].play(InputAudioStream(audio_file_path))
+
+            await message.reply(f"Started playing audio in voice chat in chat `{chat_id}`.")
             LOGS.info(f"Started playing audio in voice chat in {chat_id}")
         except Exception as e:
-            await message.reply(f"Gagal memutar audio: {e}")
+            await message.reply(f"Failed to play audio: {e}")
             LOGS.error(f"Failed to play audio: {e}")
         finally:
-            # Hapus file setelah digunakan
-            import os
-            if os.path.exists(downloaded_file):
-                os.remove(downloaded_file)
+            # Clean up the downloaded file
+            if audio_file_path and os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
+                LOGS.info(f"Cleaned up audio file: {audio_file_path}")
 
-    # Listener untuk perintah /stopvc
+
     @app.on_message(filters.command("stopvc") & filters.private)
     async def stop_voice_chat(_, message: Message):
         chat_id = message.chat.id
         LOGS.info(f"Received /stopvc command in chat {chat_id}")
+
+        if chat_id not in active_group_calls:
+            await message.reply("I am not currently in a voice chat in this group.")
+            return
+
         try:
-            # Mengakhiri atau meninggalkan obrolan suara
-            await app.call_py.leave_group_call(chat_id)
-            await message.reply(f"Berhasil meninggalkan obrolan suara di chat `{chat_id}`.")
+            # End or leave the voice chat
+            await pytgcalls_client.leave_group_call(chat_id)
+            del active_group_calls[chat_id] # Remove from active calls
+            await message.reply(f"Successfully left voice chat in chat `{chat_id}`.")
             LOGS.info(f"Successfully left voice chat in {chat_id}")
         except Exception as e:
-            await message.reply(f"Gagal meninggalkan obrolan suara: {e}")
+            await message.reply(f"Failed to leave voice chat: {e}")
             LOGS.error(f"Failed to leave voice chat: {e}")
 
-    # Menunggu klien untuk berhenti (misalnya, jika ada Ctrl+C)
-    # Ini adalah cara Pyrogram agar bot tetap berjalan
+    # Keep the client running until termination (e.g., Ctrl+C)
     await app.idle()
 
-    # Menghentikan klien (dan juga PyTgCalls di dalamnya) saat idle selesai
-    await app.stop_client()
+    # Stop PyTgCalls and then the Pyrogram client
+    await pytgcalls_client.stop()
+    await app.stop()
     LOGS.info("Pyrogram Client and PyTgCalls have stopped.")
 
 if __name__ == "__main__":
-    asyncio.run(main())
-    
-
-if __name__ == "__main__":
-    main()
-
-    asst.run()
+    # Ensure you have your environment variables for API_ID, API_HASH, and BOT_TOKEN set.
+    # For example:
+    # API_ID = 12345
+    # API_HASH = "your_api_hash"
+    # BOT_TOKEN = "your_bot_token"
+    # Or define them in xteam/configs/Var.py
+    asyncio.run(main_music_bot())
