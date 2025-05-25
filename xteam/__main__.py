@@ -109,7 +109,7 @@ import asyncio
 from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatType
-from xteam.client import PyrogramClient # Asumsi lokasi file Anda
+from xteam.startup.BaseClient import PyrogramClient # Asumsi lokasi file Anda
 from xteam.configs import Var # Asumsi Var berisi API_ID, API_HASH
 
 # Asumsi LOGS sudah didefinisikan di xteam/__init__.py
