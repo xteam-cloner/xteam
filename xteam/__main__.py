@@ -110,25 +110,16 @@ import os
 from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatType
-from pytgcalls import PyTgCalls
-from pytgcalls.exceptions import (
-    AlreadyJoinedError,
-    NoActiveGroupCall,
-)
-from pytgcalls.types import (
-    JoinedGroupCallParticipant,
-    LeftGroupCallParticipant,
-    MediaStream,
-    Update,
-)
-from pytgcalls.types.stream import StreamAudioEnded
+from pytgcalls import PyTgCalls, filters
+from pytgcalls.exceptions import NoActiveGroupCall
+from pytgcalls.types import ChatUpdate, Update, GroupCallConfig
 from xteam.startup.BaseClient import PyrogramClient # Assuming this is your custom Pyrogram Client
 from xteam.configs import Var # Assuming Var contains API_ID, API_HASH, BOT_TOKEN
 from xteam import LOGS # Assuming LOGS is defined for logging
 
 # Dictionary to store active group calls per chat ID
 # This is crucial for managing multiple voice chats if needed
-active_group_calls: dict[int, GroupCall] = {}
+active_group_calls: dict[int, GroupCallConfig] = {}
 
 async def main_music_bot():
     # Initialize your Pyrogram Client
