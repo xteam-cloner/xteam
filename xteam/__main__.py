@@ -110,7 +110,7 @@ import os
 from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatType
-from pytgcalls import PyTgCalls, GroupCall
+from pytgcalls import PyTgCalls
 from pytgcalls.types import InputAudioStream
 from xteam.startup.BaseClient import PyrogramClient # Assuming this is your custom Pyrogram Client
 from xteam.configs import Var # Assuming Var contains API_ID, API_HASH, BOT_TOKEN
