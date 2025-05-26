@@ -31,7 +31,7 @@ def main():
         AsyncIOScheduler = None
 
     # Option to Auto Update On Restarts..
-    """if (
+    if (
         udB.get_key("UPDATE_ON_RESTART")
         and os.path.exists(".git")
         and ultroid_bot.run_in_loop(updater())
@@ -50,7 +50,7 @@ def main():
     LOGS.info("Initialising...")
 
     ultroid_bot.run_in_loop(autopilot())
-"""
+
     pmbot = udB.get_key("PMBOT")
     manager = udB.get_key("MANAGER")
     addons = udB.get_key("ADDONS") or Var.ADDONS
@@ -79,8 +79,8 @@ def main():
     #ultroid_bot.run_in_loop(customize())
 
     # Load Addons from Plugin Channels.
-    if plugin_channels:
-        ultroid_bot.run_in_loop(plug(plugin_channels))
+    #if plugin_channels:
+        #ultroid_bot.run_in_loop(plug(plugin_channels))
 
     # Send/Ignore Deploy Message..
     if not udB.get_key("LOG_OFF"):
