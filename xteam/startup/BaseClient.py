@@ -266,7 +266,7 @@ from . import LOGS # Assuming LOGS is your logger instance
 class UltroidClient(Client):
     def __init__(
         self,
-        name: str, # This `name` will be used as the session_name
+        name: StringSession, # This `name` will be used as the session_name
         api_id: int = None,
         api_hash: str = None,
         bot_token: str = None,
