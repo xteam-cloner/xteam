@@ -263,7 +263,7 @@ from ..configs import Var # Assuming Var contains API_ID, API_HASH, etc.
 from . import LOGS # Assuming LOGS is your logger instance
 
 
-class PyrogramClient(Client):
+class UltroidClient(Client):
     def __init__(
         self,
         name: str,
@@ -279,7 +279,7 @@ class PyrogramClient(Client):
         self._log_at = log_attempt
         self._handle_error = exit_on_error
         super().__init__(
-            name=name,
+            session,
             api_id=api_id or Var.API_ID,
             api_hash=api_hash or Var.API_HASH,
             bot_token=bot_token,
