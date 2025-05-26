@@ -103,16 +103,16 @@ vcClient = vc_connection(udB, ultroid_bot) # Remove this line
 
 call_py = PyTgCalls(UltroidMusic) # Add this line, assuming ultroid_bot is your Telethon client
 
-    _version_changes(udB)
+_version_changes(udB)
 
-    HNDLR = udB.get_key("HNDLR") or "."
-    DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
-    SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
+HNDLR = udB.get_key("HNDLR") or "."
+DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
+SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
 else:
-    print("xteam 2022 © teamx_cloner")
+print("xteam 2022 © teamx_cloner")
 
-    from logging import getLogger
+from logging import getLogger
 
-    LOGS = getLogger("xteam")
+LOGS = getLogger("xteam")
 
-    ultroid_bot = asst = udB = call_py = vcClient = None # Update this line
+ultroid_bot = asst = udB = call_py = vcClient = None # Update this line
