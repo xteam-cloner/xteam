@@ -114,4 +114,4 @@ else:
 
     LOGS = getLogger("xteam")
 
-    ultroid_bot = asst = udB = call_py = None # Update this line
+    ultroid_bot = asst = udB = call_py = vcClient = None # Update this line
