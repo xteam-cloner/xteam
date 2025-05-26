@@ -270,12 +270,14 @@ class UltroidClient(Client):
         api_id: int = None,
         api_hash: str = None,
         bot_token: str = None,
+        udB= None,
         logger: Logger = LOGS,
         log_attempt: bool = True,
         exit_on_error: bool = True,
         **kwargs,
     ):
         self.logger = logger
+        self.udB = udB
         self._log_at = log_attempt
         self._handle_error = exit_on_error
         super().__init__(
