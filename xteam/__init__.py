@@ -30,7 +30,7 @@ if run_as_module:
     from .configs import Var
     from .startup import *
     from .startup._database import UltroidDB
-    from .startup.BaseClient import UltroidClient
+    from .startup.BaseClient import UltroidClient, UltroidMusic
     from .startup.connections import validate_session
     # from .startup.connections import vc_connection # Remove this line
     from pytgcalls import PyTgCalls # Add this import
@@ -99,8 +99,8 @@ if run_as_module:
     elif not asst.me.bot_inline_placeholder and asst._bot:
         ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
 
-    # vcClient = vc_connection(udB, ultroid_bot) # Remove this line
-    call_py = PyTgCalls(ultroid_bot) # Add this line, assuming ultroid_bot is your Telethon client
+    vcClient = vc_connection(udB, ultroid_bot) # Remove this line
+    call_py = PyTgCalls(UltroidMusic) # Add this line, assuming ultroid_bot is your Telethon client
 
     _version_changes(udB)
 
