@@ -263,10 +263,10 @@ from ..configs import Var # Assuming Var contains API_ID, API_HASH, etc.
 from . import LOGS # Assuming LOGS is your logger instance
 
 
-class UltroidClient(Client):
+class UltroidClient2(Client):
     def __init__(
         self,
-        name: StringSession, # This `name` will be used as the session_name
+        name: str, # This `name` will be used as the session_name
         api_id: int = None,
         api_hash: str = None,
         bot_token: str = None,
