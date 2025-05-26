@@ -255,47 +255,81 @@ class UltroidClient(TelegramClient):
 """Here's the class for a Pyrogram client, separate from the `UltroidClient` (which is based on Telethon). This class uses `pyrogram.Client` and includes the `PyTgCalls` integration.
 """
 
-from pyrogram import Client
-from pytgcalls import PyTgCalls
+import sys
 from logging import Logger
 
-from ..configs import Var # Assuming Var contains API_ID, API_HASH, etc.
-from . import LOGS # Assuming LOGS is your logger instance
+from pyrogram import Client
+from pytgcalls import PyTgCalls
+
+from ..configs import Var  # Assuming Var contains API_ID, API_HASH, etc.
+from . import LOGS  # Assuming LOGS is your logger instance
 
 
-class UltroidClient2(Client):
+# Assuming BridgedClient and ClientCache are defined elsewhere.
+# For demonstration purposes, we'll create minimal placeholders.
+class BridgedClient:
+    """Placeholder for the BridgedClient base class."""
+    def run_until_disconnected(self):
+        print("BridgedClient: run_until_disconnected called.")
+
+class ClientCache:
+    """Placeholder for the ClientCache class."""
+    def __init__(self, duration, client):
+        self.duration = duration
+        self.client = client
+
+
+class UltroidMusic(BridgedClient):
     def __init__(
         self,
-        name: str, # This `name` will be used as the session_name
+        session_name: str, # Pyrogram sessions are typically named
         api_id: int = None,
         api_hash: str = None,
-        bot_token: str = None,
-        udB= None,
+        bot_token: str = None, # Optional, if it's a bot client
+        cache_duration: int = 3600, # Default cache duration
         logger: Logger = LOGS,
         log_attempt: bool = True,
         exit_on_error: bool = True,
+        *args,
         **kwargs,
     ):
+        super().__init__()
+        # Initialize internal attributes
         self.logger = logger
-        self.udB = udB
         self._log_at = log_attempt
         self._handle_error = exit_on_error
-        super().__init__(
-            name, # Use `name` here for the session_name
+        self.me = None # Will be populated after client starts
+
+        # Input validation for the cache duration
+        if not isinstance(cache_duration, int) or cache_duration <= 0:
+            raise ValueError("Cache duration must be a positive integer.")
+
+        # Initialize Pyrogram Client
+        self._app = Client(
+            session_name,
             api_id=api_id or Var.API_ID,
             api_hash=api_hash or Var.API_HASH,
             bot_token=bot_token,
+            *args,
             **kwargs,
-        )    
-        self.call_py = PyTgCalls(self) # PyTgCalls integrated with Pyrogram
+        )
+
+        # Initialize ClientCache
+        self._cache = ClientCache(
+            cache_duration,
+            self._app, # Pass the Pyrogram client instance
+        )
+        
+        # Initialize PyTgCalls
+        self.call_py = PyTgCalls(self._app) # Pass the Pyrogram client to PyTgCalls
 
     async def start_client(self):
         """Function to start the Pyrogram client."""
         if self._log_at:
             self.logger.info("Trying to login with Pyrogram.")
         try:
-            await self.start()
-            self.me = await self.get_me()
+            await self._app.start() # Use self._app for Pyrogram methods
+            self.me = await self._app.get_me()
             if self.me.is_bot:
                 me = f"@{self.me.username}"
             else:
@@ -317,7 +351,7 @@ class UltroidClient2(Client):
         """Function to stop the Pyrogram client."""
         if self._log_at:
             self.logger.info("Stopping Pyrogram client.")
-        await self.stop()
+        await self._app.stop() # Use self._app for Pyrogram methods
         if self._log_at:
             self.logger.info("Pyrogram client stopped.")
         
@@ -340,9 +374,6 @@ class UltroidClient2(Client):
 
     def run(self):
         """Run the Pyrogram client until disconnected."""
-        # Pyrogram's Client.run() handles event loop.
-        # This method is primarily for consistency with Telethon's run().
-        # For actual usage, you'd typically call app.run() or app.start() and app.stop().
-        self.run_until_disconnected() # This is a conceptual placeholder.
-                                     # Pyrogram's run() method is blocking.
-                                     # For async, use start() and stop() within your own event loop.
+        # For Pyrogram, app.run() is a blocking call that starts the event loop.
+        # This is suitable if this is the main entry point for the Pyrogram client.
+        self._app.run()
