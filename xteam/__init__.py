@@ -9,6 +9,12 @@ import os
 import sys
 import telethonpatch
 from .version import __version__
+from xteam.core.bot import ChampuBot
+from xteam.core.dir import dirr
+from xteam.core.git import git
+from xteam.core.userbot import Userbot
+from xteam.misc import dbb, heroku, sudo
+from .logging import LOGGER
 
 run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
 
@@ -41,6 +47,30 @@ if run_as_module:
 
     udB = UltroidDB()
     update_envs()
+    dirr()
+    git()
+    dbb()
+    heroku()
+    sudo()
+
+    app = ChampuBot()
+    userbot = Userbot()
+
+    from .platforms import *
+
+    YouTube = YouTubeAPI()
+    Carbon = CarbonAPI()
+    Spotify = SpotifyAPI()
+    Apple = AppleAPI()
+    Resso = RessoAPI()
+    SoundCloud = SoundAPI()
+    Telegram = TeleAPI()
+    HELPABLE = {}
+
+    EMOJIS = ["PPLAY_1", "PPLAY_2", "PPLAY_3", "PPLAY_4", "PPLAY_5",
+          "PPLAY_6", "PPLAY_7", "PPLAY_8", "PPLAY_9", "PPLAY_10",
+          "PPLAY_11", "PPLAY_12", "PPLAY_13", "PPLAY_14", "PPLAY_15",
+          "PPLAY_16", "PPLAY_17"]
 
     LOGS.info(f"Connecting to {udB.name}...")
     if udB.ping():
