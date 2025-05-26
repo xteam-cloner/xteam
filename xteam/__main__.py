@@ -31,7 +31,7 @@ def main():
         AsyncIOScheduler = None
 
     # Option to Auto Update On Restarts..
-    if (
+    """if (
         udB.get_key("UPDATE_ON_RESTART")
         and os.path.exists(".git")
         and ultroid_bot.run_in_loop(updater())
@@ -48,7 +48,7 @@ def main():
         udB.set_key("OWNER_ID", ultroid_bot.uid)
 
     LOGS.info("Initialising...")
-
+"""
     ultroid_bot.run_in_loop(autopilot())
 
     pmbot = udB.get_key("PMBOT")
