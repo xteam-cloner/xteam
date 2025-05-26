@@ -266,7 +266,7 @@ from . import LOGS # Assuming LOGS is your logger instance
 class UltroidClient(Client):
     def __init__(
         self,
-        name: str,
+        name: str, # This `name` will be used as the session_name
         api_id: int = None,
         api_hash: str = None,
         bot_token: str = None,
@@ -279,12 +279,12 @@ class UltroidClient(Client):
         self._log_at = log_attempt
         self._handle_error = exit_on_error
         super().__init__(
-            session,
+            name, # Use `name` here for the session_name
             api_id=api_id or Var.API_ID,
             api_hash=api_hash or Var.API_HASH,
             bot_token=bot_token,
             **kwargs,
-        )
+        )    
         self.call_py = PyTgCalls(self) # PyTgCalls integrated with Pyrogram
 
     async def start_client(self):
