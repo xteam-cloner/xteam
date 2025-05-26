@@ -48,9 +48,9 @@ def main():
         udB.set_key("OWNER_ID", ultroid_bot.uid)
 
     LOGS.info("Initialising...")
-"""
-    ultroid_bot.run_in_loop(autopilot())
 
+    ultroid_bot.run_in_loop(autopilot())
+"""
     pmbot = udB.get_key("PMBOT")
     manager = udB.get_key("MANAGER")
     addons = udB.get_key("ADDONS") or Var.ADDONS
