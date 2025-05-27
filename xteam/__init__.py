@@ -103,10 +103,13 @@ if run_as_module:
                 auto_reconnect=True,
                 connection_retries=None,
             )
+            # Add this line:
+            bot.start() # <--- HERE
             call_py = PyTgCalls(bot)
         except Exception as e:
             print(f"STRING_SESSION - {e}")
             sys.exit()
+            
     
     if BOT_MODE:
         ultroid_bot = asst
@@ -134,4 +137,4 @@ else:
 
     LOGS = getLogger("xteam")
 
-    ultroid_bot = asst = udB = bot= call_py = vcClient = None
+    ultroid_bot = asst = udB = bot = call_py = vcClient = None
