@@ -120,32 +120,6 @@ if run_as_module:
         except Exception as e:
             print(f"STRING_SESSION_ERROR - {e}") # Changed the error message for clarity
             sys.exit()
-    else:
-        # If VC_SESSION is False, and you don't have a StringSession,
-        # you'll need to use a bot token or prompt for a phone number for a user session.
-        # Based on your code, you likely intend to use a bot token here.
-        try:
-            bot_token = udB.get_key("BOT_TOKEN")
-            if not bot_token:
-                LOGS.critical(
-                    '"BOT_TOKEN" not Found! Please add it, in order to use the Musicbot client.'
-                )
-                sys.exit()
-
-            bot = TelegramClient(
-                session="Musicbot", # Name for the session file
-                api_id=Var.API_ID,
-                api_hash=Var.API_HASH,
-                connection=ConnectionTcpAbridged,
-                auto_reconnect=True,
-                connection_retries=None,
-            )
-            bot.start()
-            call_py = PyTgCalls(bot)
-        except Exception as e:
-            print(f"BOT_TOKEN_AUTHENTICATION_ERROR - {e}")
-            sys.exit()
-            
             
     
     if BOT_MODE:
