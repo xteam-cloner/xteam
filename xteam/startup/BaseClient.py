@@ -251,94 +251,8 @@ class UltroidClient(TelegramClient):
 
 
 ## Pyrogram Client
-
-"""Here's the class for a Pyrogram client, separate from the `UltroidClient` (which is based on Telethon). This class uses `pyrogram.Client` and includes the `PyTgCalls` integration.
-"""
-
-import sys
-from logging import Logger
-
-from pyrogram import Client
-from pytgcalls import PyTgCalls
-
-from ..configs import Var  # Assuming Var contains API_ID, API_HASH, etc.
-from . import LOGS  # Assuming LOGS is your logger instance
-
-
-# Assuming BridgedClient and ClientCache are defined elsewhere.
-# For demonstration purposes, we'll create minimal placeholders.
-class BridgedClient:
-    """Placeholder for the BridgedClient base class."""
-    def run_until_disconnected(self):
-        print("BridgedClient: run_until_disconnected called.")
-
-class ClientCache:
-    """Placeholder for the ClientCache class."""
-    def __init__(self, duration, client):
-        self.duration = duration
-        self.client = client
-
-
-class UltroidMusic(BridgedClient):
-    def __init__(
-        self,
-        session_name: str, # Pyrogram sessions are typically named
-        api_id: int = None,
-        api_hash: str = None,
-        bot_token: str = None, # Optional, if it's a bot client
-        cache_duration: int = 3600, # Default cache duration
-        logger: Logger = LOGS,
-        log_attempt: bool = True,
-        exit_on_error: bool = True,
-        *args,
-        **kwargs,
-    ):
-        super().__init__()
-        # Initialize internal attributes
-        self.logger = logger
-        self._log_at = log_attempt
-        self._handle_error = exit_on_error
-        self.me = None # Will be populated after client starts
-
-        # Input validation for the cache duration
-        if not isinstance(cache_duration, int) or cache_duration <= 0:
-            raise ValueError("Cache duration must be a positive integer.")
-
-        # Initialize Pyrogram Client
-        self._app = Client(
-            session_name,
-            api_id=api_id or Var.API_ID,
-            api_hash=api_hash or Var.API_HASH,
-            bot_token=bot_token,
-            *args,
-            **kwargs,
-        )
-
-        # Initialize ClientCache
-        self._cache = ClientCache(
-            cache_duration,
-            self._app, # Pass the Pyrogram client instance
-        )
-        
-        # Initialize PyTgCalls
-        self.call_py = PyTgCalls(self._app) # Pass the Pyrogram client to PyTgCalls
-
-    async def start_client(self):
-        """Function to start the Pyrogram client."""
-        if self._log_at:
-            self.logger.info("Trying to login with Pyrogram.")
-        try:
-            await self._app.start() # Use self._app for Pyrogram methods
-            self.me = await self._app.get_me()
-            if self.me.is_bot:
-                me = f"@{self.me.username}"
-            else:
-                me = f"{self.me.first_name} {self.me.last_name or ''}".strip()
-            if self._log_at:
-                self.logger.info(f"Logged in with Pyrogram as {me}")
-            
             # Start PyTgCalls client
-            await self.call_py.start()
+            await call_py.start()
             if self._log_at:
                 self.logger.info("PyTgCalls client started for Pyrogram.")
 
@@ -347,16 +261,8 @@ class UltroidMusic(BridgedClient):
             if self._handle_error:
                 sys.exit()
 
-    async def stop_client(self):
-        """Function to stop the Pyrogram client."""
-        if self._log_at:
-            self.logger.info("Stopping Pyrogram client.")
-        await self._app.stop() # Use self._app for Pyrogram methods
-        if self._log_at:
-            self.logger.info("Pyrogram client stopped.")
-        
         # Stop PyTgCalls client
-        await self.call_py.stop()
+        await call_py.stop()
         if self._log_at:
             self.logger.info("PyTgCalls client stopped for Pyrogram.")
 
