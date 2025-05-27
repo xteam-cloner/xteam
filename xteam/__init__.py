@@ -139,7 +139,6 @@ if run_as_module:
                 connection=ConnectionTcpAbridged,
                 auto_reconnect=True,
                 connection_retries=None,
-                bot_token=bot_token,
             )
             bot.start()
             call_py = PyTgCalls(bot)
