@@ -90,10 +90,10 @@ if run_as_module:
     else:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
-    if VC_SESSION:
+        if VC_SESSION:
         session = StringSession(str(Var.SESSION))
     else:
-        session = "Musicbot"
+        session = "Musicbot" # This line implies `session` will be a string, which is then used by TelegramClient.
         try:
             # Retrieve the BOT_TOKEN from your database
             bot_token = udB.get_key("BOT_TOKEN")
@@ -103,6 +103,9 @@ if run_as_module:
                 )
                 sys.exit()
 
+            # The issue is here: when 'session' is a string (representing a session),
+            # you typically don't pass 'bot_token' to TelegramClient.
+            # The session string itself should contain the bot's authentication.
             bot = TelegramClient(
                 session=session,
                 api_id=Var.API_ID,
@@ -110,13 +113,14 @@ if run_as_module:
                 connection=ConnectionTcpAbridged,
                 auto_reconnect=True,
                 connection_retries=None,
-                bot_token=Var.BOT_TOKEN, # <--- Adne
+                # Remove this line: bot_token=Var.BOT_TOKEN,
             )
             bot.start()
             call_py = PyTgCalls(bot)
         except Exception as e:
             print(f"STRING_SESSION - {e}")
             sys.exit()
+            
             
     
     if BOT_MODE:
