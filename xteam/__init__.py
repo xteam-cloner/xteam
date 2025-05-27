@@ -116,9 +116,9 @@ if run_as_module:
                 connection_retries=None,
             )
             bot.start()
-            call_py = PyTgCalls(bot)
+            call_py = PyTgCalls(bot) # <--- call_py is defined here
         except Exception as e:
-            print(f"STRING_SESSION_ERROR - {e}") # Changed the error message for clarity
+            print(f"STRING_SESSION_ERROR - {e}")
             sys.exit()
             
     
