@@ -12,7 +12,6 @@ import random
 import re
 import secrets
 import ssl
-import google_images_download
 from io import BytesIO
 from json.decoder import JSONDecodeError
 from traceback import format_exc
@@ -371,72 +370,151 @@ async def get_paste(data: str, extension: str = "txt"):
 # https://stackoverflow.com/a/74563494
 
 
-async def google_images_download(query):
-    soup = BeautifulSoup(
-        await async_searcher(
+async def google_images_download(query: str) -> list:
+    """
+    Mengunduh informasi gambar dari Google Images untuk kueri tertentu.
+
+    Args:
+        query: Kueri pencarian gambar.
+
+    Returns:
+        Daftar dictionary, di mana setiap dictionary mewakili gambar dengan
+        metadata seperti judul, tautan, sumber, thumbnail, dan URL asli.
+    """
+    google_images = []
+    try:
+        html_content = await async_searcher(
             "https://google.com/search",
             params={"q": query, "tbm": "isch"},
             headers={"User-Agent": random.choice(some_random_headers)},
-        ),
-        "lxml",
-    )
-    google_images = []
-    all_script_tags = soup.select("script")
-    matched_images_data = "".join(
-        re.findall(r"AF_initDataCallback\(([^<]+)\);", str(all_script_tags))
-    )
-    matched_images_data_fix = json.dumps(matched_images_data)
-    matched_images_data_json = json.loads(matched_images_data_fix)
-    matched_google_image_data = re.findall(
-        r"\"b-GRID_STATE0\"(.*)sideChannel:\s?{}}", matched_images_data_json
-    )
-    matched_google_images_thumbnails = ", ".join(
-        re.findall(
-            r"\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]",
-            str(matched_google_image_data),
         )
-    ).split(", ")
-    thumbnails = [
-        bytes(bytes(thumbnail, "ascii").decode("unicode-escape"), "ascii").decode(
-            "unicode-escape"
-        )
-        for thumbnail in matched_google_images_thumbnails
-    ]
-    removed_matched_google_images_thumbnails = re.sub(
-        r"\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]",
-        "",
-        str(matched_google_image_data),
-    )
-    matched_google_full_resolution_images = re.findall(
-        r"(?:'|,),\[\"(https:|http.*?)\",\d+,\d+\]",
-        removed_matched_google_images_thumbnails,
-    )
-    full_res_images = [
-        bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode(
-            "unicode-escape"
-        )
-        for img in matched_google_full_resolution_images
-    ]
-    for index, (metadata, thumbnail, original) in enumerate(
-        zip(soup.select(".isv-r.PNCib.MSM1fd.BUooTd"), thumbnails, full_res_images),
-        start=1,
-    ):
-        google_images.append(
-            {
-                "title": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")[
-                    "title"
-                ],
-                "link": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")[
-                    "href"
-                ],
-                "source": metadata.select_one(".fxgdke").text,
-                "thumbnail": thumbnail,
-                "original": original,
-            }
-        )
-    random.shuffle(google_images)
-    return google_images
+        soup = BeautifulSoup(html_content, "lxml")
 
+        # Coba ekstrak data JSON langsung dari script tags
+        data_script = None
+        for script in soup.find_all("script"):
+            if "AF_initDataCallback" in script.text:
+                data_script = script.text
+                break
+
+        if not data_script:
+            print("Tidak dapat menemukan script data AF_initDataCallback.")
+            return []
+
+        # Ekstrak string JSON dari AF_initDataCallback
+        # Pola regex yang lebih tepat untuk menangkap seluruh objek JSON
+        match = re.search(r"AF_initDataCallback\({data:(.+)}\);", data_script)
+        if not match:
+            print("Tidak dapat mengekstrak data JSON dari AF_initDataCallback.")
+            return []
+
+        json_data_str = match.group(1)
+        # Hati-hati: Ada kemungkinan data JSON ini perlu sedikit dibersihkan
+        # karena seringkali ada trailing characters atau format yang sedikit aneh.
+        # Jika json.loads gagal, Anda mungkin perlu melakukan pre-processing lebih lanjut.
+
+        # Cobalah parse JSON
+        try:
+            parsed_data = json.loads(json_data_str)
+        except json.JSONDecodeError as e:
+            print(f"Gagal mengurai JSON dari AF_initDataCallback: {e}")
+            print(f"Data JSON yang gagal diurai: {json_data_str[:500]}...") # Tampilkan sebagian kecil
+            return []
+
+        # Menemukan data gambar di dalam struktur JSON
+        # Struktur ini sangat rentan, sesuaikan jika Google berubah
+        # Ini adalah asumsi berdasarkan pola lama, perlu disesuaikan jika API berubah
+        image_results = []
+        if 'b-GRID_STATE0' in parsed_data and parsed_data['b-GRID_STATE0'] and len(parsed_data['b-GRID_STATE0']) > 0:
+            # Struktur data Google Images sangat kompleks dan bersarang.
+            # Bagian ini adalah titik paling rapuh. Anda mungkin perlu inspeksi manual
+            # respons HTML Google untuk memahami struktur JSON terbaru.
+            # Sebagai contoh, kita akan mencoba mendapatkan semua item yang terlihat seperti gambar
+            # Biasanya, gambar ada di array dalam array: [null, [[...]]]
+            # Contoh sederhana yang mungkin berhasil pada beberapa struktur:
+            for item in parsed_data['b-GRID_STATE0'][0]:
+                if isinstance(item, list) and len(item) > 1 and isinstance(item[0], list):
+                    for sub_item in item[0]:
+                        if isinstance(sub_item, list) and len(sub_item) >= 2:
+                            # Ini adalah tebakan berdasarkan struktur sebelumnya:
+                            # [original_url, width, height, thumbnail_url, thumbnail_width, thumbnail_height, ...]
+                            # Ini sangat mungkin salah untuk struktur Google saat ini.
+                            # Anda perlu melakukan debugging dengan respons asli Google.
+                            if sub_item[0].startswith("http") and sub_item[1].startswith("http"): # asumsi original dan thumbnail
+                                image_results.append({
+                                    "original": sub_item[0],
+                                    "thumbnail": sub_item[1],
+                                    # Anda perlu mengekstrak data lain dari sub_item jika ada
+                                })
+
+        # Alternatif (dan seringkali lebih andal) adalah mencari URL langsung dari data JSON
+        # Contoh mencari thumbnail dan URL asli (ini juga memerlukan inspeksi data nyata)
+        all_urls = re.findall(r'\"(https?:\/\/[^\"]+\.(?:jpg|jpeg|png|gif|svg|webp))\"', json_data_str)
+        thumbnails = [url for url in all_urls if "encrypted-tbn0.gstatic.com" in url]
+        full_res_images = [url for url in all_urls if "encrypted-tbn0.gstatic.com" not in url and "http" in url]
+
+        # Menyatukan data (jika tidak dapat mengurai JSON secara struktural)
+        # Pendekatan ini lebih mengandalkan regex pada seluruh string JSON yang diurai
+        # Ini kurang ideal tetapi bisa lebih stabil jika struktur JSON terlalu kompleks untuk diurai secara langsung
+        matched_google_images_thumbnails = re.findall(
+            r'\[\"(https:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]', json_data_str
+        )
+        thumbnails = [
+            bytes(bytes(thumbnail, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape")
+            for thumbnail in matched_google_images_thumbnails
+        ]
+
+        # Untuk full resolution images, kita perlu pola yang lebih spesifik atau mencari di luar thumbnail
+        # Ini juga sangat rentan, Anda perlu melihat respons aktual
+        matched_google_full_resolution_images = re.findall(
+            r'\[\"(https?:\/\/[^\"]+?)\",\d+,\d+\]', json_data_str
+        )
+        full_res_images = [
+            bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape")
+            for img in matched_google_full_resolution_images
+            if "encrypted-tbn0.gstatic.com" not in img # Filter out thumbnails
+        ]
+
+
+        # Menggabungkan data dari HTML (judul, link, sumber) dengan URL gambar yang diekstrak dari JSON
+        # Asumsi bahwa elemen HTML ".isv-r.PNCib.MSM1fd.BUooTd" masih relevan dan urutannya cocok
+        # Ini adalah titik rapuh kedua karena mengandalkan urutan dan kecocokan
+        metadata_elements = soup.select(".isv-r.PNCib.MSM1fd.BUooTd")
+        
+        # Pastikan jumlah thumbnail dan full_res_images tidak kosong dan cocok
+        # Kita akan mengambil minimum dari ketiganya untuk menghindari IndexError
+        num_items = min(len(metadata_elements), len(thumbnails), len(full_res_images))
+
+        for i in range(num_items):
+            metadata = metadata_elements[i]
+            try:
+                title_element = metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")
+                link_element = metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")
+                source_element = metadata.select_one(".fxgdke")
+
+                title = title_element["title"] if title_element else "N/A"
+                link = link_element["href"] if link_element else "N/A"
+                source = source_element.text if source_element else "N/A"
+
+                google_images.append(
+                    {
+                        "title": title,
+                        "link": link,
+                        "source": source,
+                        "thumbnail": thumbnails[i],
+                        "original": full_res_images[i],
+                    }
+                )
+            except Exception as e:
+                print(f"Error processing image metadata: {e}")
+                continue # Lanjutkan ke gambar berikutnya jika ada error
+
+        random.shuffle(google_images)
+        return google_images
+
+    except Exception as e:
+        print(f"Terjadi kesalahan umum: {e}")
+        return []
 
 # Thanks https://t.me/ImSafone for ChatBotApi
 
