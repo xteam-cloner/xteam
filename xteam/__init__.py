@@ -12,6 +12,19 @@ from .version import __version__
 from telethon.network.connection.tcpabridged import ConnectionTcpAbridged
 from telethon.sessions import StringSession
 from telethon import TelegramClient
+import contextlib
+import inspect
+import time
+from logging import Logger
+
+from telethonpatch import TelegramClient
+from telethon import utils as telethon_utils
+from telethon.errors import (
+    AccessTokenExpiredError,
+    AccessTokenInvalidError,
+    ApiIdInvalidError,
+    AuthKeyDuplicatedError,
+)
 from pytgcalls import PyTgCalls
 #from xteam.core.bot import ChampuBot
 #from xteam.core.dir import dirr
@@ -91,21 +104,9 @@ if run_as_module:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
     if VC_SESSION:
+        # Assuming Var.SESSION is a valid string session
         session = StringSession(str(Var.SESSION))
-    else:
-        session = "Musicbot" # This line implies `session` will be a string, which is then used by TelegramClient.
         try:
-            # Retrieve the BOT_TOKEN from your database
-            bot_token = udB.get_key("BOT_TOKEN")
-            if not bot_token:
-                LOGS.critical(
-                    '"BOT_TOKEN" not Found! Please add it, in order to use the Musicbot client.'
-                )
-                sys.exit()
-
-            # The issue is here: when 'session' is a string (representing a session),
-            # you typically don't pass 'bot_token' to TelegramClient.
-            # The session string itself should contain the bot's authentication.
             bot = TelegramClient(
                 session=session,
                 api_id=Var.API_ID,
@@ -113,12 +114,37 @@ if run_as_module:
                 connection=ConnectionTcpAbridged,
                 auto_reconnect=True,
                 connection_retries=None,
-                # Remove this line: bot_token=Var.BOT_TOKEN,
             )
             bot.start()
             call_py = PyTgCalls(bot)
         except Exception as e:
-            print(f"STRING_SESSION - {e}")
+            print(f"STRING_SESSION_ERROR - {e}") # Changed the error message for clarity
+            sys.exit()
+    else:
+        # If VC_SESSION is False, and you don't have a StringSession,
+        # you'll need to use a bot token or prompt for a phone number for a user session.
+        # Based on your code, you likely intend to use a bot token here.
+        try:
+            bot_token = udB.get_key("BOT_TOKEN")
+            if not bot_token:
+                LOGS.critical(
+                    '"BOT_TOKEN" not Found! Please add it, in order to use the Musicbot client.'
+                )
+                sys.exit()
+
+            bot = TelegramClient(
+                session="Musicbot", # Name for the session file
+                api_id=Var.API_ID,
+                api_hash=Var.API_HASH,
+                connection=ConnectionTcpAbridged,
+                auto_reconnect=True,
+                connection_retries=None,
+                bot_token=bot_token,
+            )
+            bot.start()
+            call_py = PyTgCalls(bot)
+        except Exception as e:
+            print(f"BOT_TOKEN_AUTHENTICATION_ERROR - {e}")
             sys.exit()
             
             
