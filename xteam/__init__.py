@@ -90,7 +90,7 @@ if run_as_module:
     else:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
-        if VC_SESSION:
+    if VC_SESSION:
         session = StringSession(str(Var.SESSION))
     else:
         session = "Musicbot" # This line implies `session` will be a string, which is then used by TelegramClient.
