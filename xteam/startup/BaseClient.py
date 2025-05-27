@@ -248,38 +248,3 @@ class UltroidClient(TelegramClient):
         with contextlib.suppress(ValueError):
             text = int(text)
         return await self.get_peer_id(text)
-
-
-## Pyrogram Client
-            # Start PyTgCalls client
-            await call_py.start()
-            if self._log_at:
-                self.logger.info("PyTgCalls client started for Pyrogram.")
-
-        except Exception as e:
-            self.logger.critical(f"Error starting Pyrogram client: {e}")
-            if self._handle_error:
-                sys.exit()
-
-        # Stop PyTgCalls client
-        await call_py.stop()
-        if self._log_at:
-            self.logger.info("PyTgCalls client stopped for Pyrogram.")
-
-    @property
-    def full_name(self):
-        """Full name of the Pyrogram client."""
-        if self.me:
-            return f"{self.me.first_name} {self.me.last_name or ''}".strip()
-        return "Not logged in"
-
-    @property
-    def uid(self):
-        """Client's user ID for Pyrogram."""
-        return self.me.id if self.me else None
-
-    def run(self):
-        """Run the Pyrogram client until disconnected."""
-        # For Pyrogram, app.run() is a blocking call that starts the event loop.
-        # This is suitable if this is the main entry point for the Pyrogram client.
-        self._app.run()
