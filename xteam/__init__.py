@@ -85,6 +85,24 @@ if run_as_module:
     else:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
+    if SESSION:
+        session = StringSession(str(Var.SESSION))
+    else:
+        session = "Musicbot"
+        try:
+            bot = TelegramClient(
+                session=session,
+                api_id=API_ID,
+                api_hash=API_HASH,
+                connection=ConnectionTcpAbridged,
+                auto_reconnect=True,
+                connection_retries=None,
+            )
+            call_py = PyTgCalls(bot)
+        except Exception as e:
+            print(f"STRING_SESSION - {e}")
+            sys.exit()
+    
     if BOT_MODE:
         ultroid_bot = asst
         if udB.get_key("OWNER_ID"):
@@ -111,4 +129,4 @@ else:
 
     LOGS = getLogger("xteam")
 
-    ultroid_bot = asst = udB = vcClient = None
+    ultroid_bot = asst = udB = bot= call_py = vcClient = None
