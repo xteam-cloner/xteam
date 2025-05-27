@@ -370,7 +370,7 @@ async def get_paste(data: str, extension: str = "txt"):
 # https://stackoverflow.com/a/74563494
 
 
-async def get_google_images(query):
+async def google_images_download(query):
     soup = BeautifulSoup(
         await async_searcher(
             "https://google.com/search",
