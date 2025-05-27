@@ -95,6 +95,14 @@ if run_as_module:
     else:
         session = "Musicbot"
         try:
+            # Retrieve the BOT_TOKEN from your database
+            bot_token = udB.get_key("BOT_TOKEN")
+            if not bot_token:
+                LOGS.critical(
+                    '"BOT_TOKEN" not Found! Please add it, in order to use the Musicbot client.'
+                )
+                sys.exit()
+
             bot = TelegramClient(
                 session=session,
                 api_id=Var.API_ID,
@@ -102,9 +110,9 @@ if run_as_module:
                 connection=ConnectionTcpAbridged,
                 auto_reconnect=True,
                 connection_retries=None,
+                bot_token=bot_token, # <--- Add this line
             )
-            # Add this line:
-            bot.start() # <--- HERE
+            bot.start()
             call_py = PyTgCalls(bot)
         except Exception as e:
             print(f"STRING_SESSION - {e}")
