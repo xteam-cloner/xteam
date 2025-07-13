@@ -18,7 +18,7 @@ from .. import *
 from . import *
 
 DEVLIST = [
-    1434595544, # @xteam_clone
+    1187804106, # @xteam_clone
     719195224,  # @xditya
     1322549723,  # @danish_00
     1903729401,  # @its_buddhhu
