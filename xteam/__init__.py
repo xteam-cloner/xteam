@@ -105,7 +105,7 @@ if run_as_module:
 
     if VC_SESSION:
         # Assuming Var.SESSION is a valid string session
-        session = StringSession(str(Var.SESSION))
+        session = StringSession(str(Var.VC_SESSION))
         try:
             bot = TelegramClient(
                 session=session,
