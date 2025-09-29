@@ -25,7 +25,7 @@ from telethon.errors import (
     ApiIdInvalidError,
     AuthKeyDuplicatedError,
 )
-import PyTgCalls
+from pytgcalls import PyTgCalls
 #from xteam.core.bot import ChampuBot
 #from xteam.core.dir import dirr
 #from xteam.core.git import git
