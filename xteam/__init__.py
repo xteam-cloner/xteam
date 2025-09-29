@@ -25,7 +25,7 @@ from telethon.errors import (
     ApiIdInvalidError,
     AuthKeyDuplicatedError,
 )
-#from pytgcalls import PyTgCalls
+import PyTgCalls
 #from xteam.core.bot import ChampuBot
 #from xteam.core.dir import dirr
 #from xteam.core.git import git
@@ -103,7 +103,7 @@ if run_as_module:
     else:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
-    """if VC_SESSION:
+    if VC_SESSION:
         # Assuming Var.SESSION is a valid string session
         session = StringSession(str(Var.SESSION))
         try:
@@ -120,7 +120,7 @@ if run_as_module:
         except Exception as e:
             print(f"STRING_SESSION_ERROR - {e}")
             sys.exit()
-      """      
+          
     
     if BOT_MODE:
         ultroid_bot = asst
