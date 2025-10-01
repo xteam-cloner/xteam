@@ -16,7 +16,7 @@ import contextlib
 import inspect
 import time
 from logging import Logger
-
+from .startup.BaseClient import *
 from telethonpatch import TelegramClient
 from telethon import utils as telethon_utils
 from telethon.errors import (
@@ -64,6 +64,7 @@ if run_as_module:
 
     udB = UltroidDB()
     update_envs()
+    self.music = MusicModule(self)
 
     LOGS.info(f"Connecting to {udB.name}...")
     if udB.ping():
