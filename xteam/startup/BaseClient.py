@@ -94,9 +94,7 @@ class UltroidClient(TelegramClient):
         kwargs["base_logger"] = TelethonLogger
         super().__init__(session, **kwargs)
         
-        # Inisialisasi placeholder PyTgCalls sebelum menjalankan loop
-        # Anda perlu mengimpor PyTgCalls (asumsi sudah diinstal)
-from pytgcalls import PyTgCalls 
+        from pytgcalls import PyTgCalls 
         self.call_py = None # Ganti 'None' dengan 'PyTgCalls(self)' jika sudah diimpor
         
         # --- MODIFIKASI: Inisialisasi MusicModule ---
