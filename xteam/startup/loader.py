@@ -57,7 +57,7 @@ def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
     Loader().load(include=_in_only, exclude=_exclude, after_load=_after_load)
 
     # for assistant
-    if not USER_MODE and not udB.get_key("DISABLE_AST_PLUGINS"):
+    """if not USER_MODE and not udB.get_key("DISABLE_AST_PLUGINS"):
         _ast_exc = ["pmbot"]
         if _in_only and "games" not in _in_only:
             _ast_exc.append("games")
@@ -66,7 +66,7 @@ def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
         )
 
     # for addons
-    """if addons:
+    if addons:
         if url := udB.get_key("ADDONS_URL"):
             subprocess.run(f"git clone -q {url} addons", shell=True)
         if os.path.exists("addons") and not os.path.exists("addons/.git"):
