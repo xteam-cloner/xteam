@@ -22,7 +22,7 @@ from telethon.errors import (
 
 # Import PyTgCalls di sini agar tersedia untuk seluruh file
 from pytgcalls import PyTgCalls 
-from pytgcalls.types import StreamType # Penting untuk menentukan jenis stream
+from pytgcalls.types import MediaStream, StreamEnded # Penting untuk menentukan jenis stream
 
 from ..configs import Var
 from . import *
