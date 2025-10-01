@@ -66,7 +66,7 @@ def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
         )
 
     # for addons
-    if addons:
+    """if addons:
         if url := udB.get_key("ADDONS_URL"):
             subprocess.run(f"git clone -q {url} addons", shell=True)
         if os.path.exists("addons") and not os.path.exists("addons/.git"):
@@ -106,7 +106,7 @@ def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
             after_load=_after_load,
             load_all=True,
         )
-
+"""
     if not USER_MODE:
         # group manager
         if manager:
@@ -118,7 +118,7 @@ def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
 
     
 # vc bot
-    if vcbot and (vcClient and not vcClient.me.bot):
+    """if vcbot and (vcClient and not vcClient.me.bot):
         try:
             import pytgcalls  # ignore: pylint
 
@@ -139,3 +139,4 @@ def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
                 LOGS.error(f"{e} Skipping VCBot Installation.")
         except ModuleNotFoundError:
             LOGS.error("'pytgcalls' not installed!\nSkipping loading of VCBOT.")
+"""
