@@ -1,5 +1,5 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2023 TeamUltroid
+# Copyright (C) 2021-2025 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
@@ -10,7 +10,7 @@ import inspect
 import sys
 import time
 from logging import Logger
-from pytgcalls import PyTgCalls
+
 from telethonpatch import TelegramClient
 from telethon import utils as telethon_utils
 from telethon.errors import (
@@ -19,9 +19,54 @@ from telethon.errors import (
     ApiIdInvalidError,
     AuthKeyDuplicatedError,
 )
-from telethon.sessions import StringSession
-from xteam.configs import Var
+
+from ..configs import Var
 from . import *
+
+# --- START: Penambahan Class untuk Fungsionalitas Musik ---
+
+class MusicModule:
+    """
+    Class untuk mengelola fungsionalitas music bot (play, stop, queue, dll.).
+    Objek ini akan diinisialisasi di dalam UltroidClient.
+    """
+    def __init__(self, client):
+        self.client = client
+        self.logger = client.logger
+        self.udB = client.udB
+        self.call_py = client.call_py # Akses ke instance PyTgCalls dari client
+        self.is_playing = False
+        self.current_track = None
+        self.logger.info("MusicModule initialized.")
+
+    async def play(self, chat_id, url_or_query):
+        """Metode untuk mulai memutar musik."""
+        if self.is_playing:
+            return await self.client.send_message(chat_id, "ℹ️ Musik sudah diputar.")
+        
+        # NOTE: Di sini Anda akan menambahkan logika untuk:
+        # 1. Mencari track (jika query).
+        # 2. Mengunduh atau mempersiapkan stream.
+        # 3. Menggunakan self.call_py.join_group_call(chat_id, stream_link).
+        
+        self.current_track = url_or_query
+        self.is_playing = True
+        self.logger.info(f"Mulai memutar: {self.current_track} di {chat_id}")
+        await self.client.send_message(chat_id, f"▶️ Mulai memutar **{url_or_query}**.")
+
+    async def stop(self, chat_id):
+        """Metode untuk menghentikan pemutaran musik."""
+        if not self.is_playing:
+            return await self.client.send_message(chat_id, "ℹ️ Tidak ada musik yang diputar.")
+
+        # NOTE: Logika untuk menghentikan pemutaran melalui self.call_py.leave_group_call(chat_id).
+        
+        self.is_playing = False
+        self.current_track = None
+        self.logger.info("Pemutaran dihentikan.")
+        await self.client.send_message(chat_id, "⏹ Pemutaran dihentikan.")
+
+# --- END: Penambahan Class untuk Fungsionalitas Musik ---
 
 
 class UltroidClient(TelegramClient):
@@ -48,11 +93,27 @@ class UltroidClient(TelegramClient):
         kwargs["api_hash"] = api_hash or Var.API_HASH
         kwargs["base_logger"] = TelethonLogger
         super().__init__(session, **kwargs)
+        
+        # Inisialisasi placeholder PyTgCalls sebelum menjalankan loop
+        # Anda perlu mengimpor PyTgCalls (asumsi sudah diinstal)
+from pytgcalls import PyTgCalls 
+        self.call_py = None # Ganti 'None' dengan 'PyTgCalls(self)' jika sudah diimpor
+        
+        # --- MODIFIKASI: Inisialisasi MusicModule ---
+        # Setelah self.call_py siap, inisialisasi modul musik.
+        self.music = MusicModule(self)
+        # --- END MODIFIKASI ---
+        
         self.run_in_loop(self.start_client(bot_token=bot_token))
         self.dc_id = self.session.dc_id
-    
+
     def __repr__(self):
-        return f"<Ultroid.Client :\n self: {self.full_name}\n bot: {self._bot}\n>"
+        return f"<Ultroid.Client :\n self: {self.full_name}\n bot: {self._bot}\n music: {self.music.is_playing}\n>"
+
+# ... (Semua methods lainnya tetap sama, termasuk __dict__, start_client, 
+# fast_uploader, fast_downloader, run_in_loop, run, add_handler, utils, 
+# full_name, uid, to_dict, parse_id)
+# ...
 
     @property
     def __dict__(self):
@@ -92,6 +153,10 @@ class UltroidClient(TelegramClient):
         if self._log_at:
             self.logger.info(f"Logged in as {me}")
         self._bot = await self.is_bot()
+        
+        # Tambahkan start untuk PyTgCalls setelah login sukses
+        if self.call_py:
+            await self.call_py.start()
 
     async def fast_uploader(self, file, **kwargs):
         """Upload files in a faster way"""
@@ -114,7 +179,7 @@ class UltroidClient(TelegramClient):
         by_bot = self._bot
         size = os.path.getsize(file)
         # Don't show progress bar when file size is less than 5MB.
-        if size < 5 * 2 ** 20:
+        if size < 5 * 2**20:
             show_progress = False
         if use_cache and self._cache and self._cache.get("upload_cache"):
             for files in self._cache["upload_cache"]:
@@ -170,7 +235,7 @@ class UltroidClient(TelegramClient):
         if show_progress:
             event = kwargs["event"]
         # Don't show progress bar when file size is less than 10MB.
-        if file.size < 10 * 2 ** 20:
+        if file.size < 10 * 2**20:
             show_progress = False
         import mimetypes
 
