@@ -135,17 +135,7 @@ if run_as_module:
     elif not asst.me.bot_inline_placeholder and asst._bot:
         ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
 
-    #vcClient = vc_connection(udB, ultroid_bot)
-    # (Ini adalah perkiraan isi dari fungsi vc_connection)
-    def vc_connection(udB, client):
-        if not client.is_connected():
-            client.start()
-
-    # 2. Inisiasi PyTgCalls
-    call_py = PyTgCalls(client)
-
-    return call_py
-    
+    vcClient = vc_connection(udB, ultroid_bot)
 
     _version_changes(udB)
 
