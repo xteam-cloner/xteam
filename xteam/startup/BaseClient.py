@@ -20,6 +20,10 @@ from telethon.errors import (
     AuthKeyDuplicatedError,
 )
 
+# Import PyTgCalls di sini agar tersedia untuk seluruh file
+from pytgcalls import PyTgCalls 
+from pytgcalls.types import StreamType # Penting untuk menentukan jenis stream
+
 from ..configs import Var
 from . import *
 
@@ -34,40 +38,67 @@ class MusicModule:
         self.client = client
         self.logger = client.logger
         self.udB = client.udB
-        self.call_py = client.call_py # Akses ke instance PyTgCalls dari client
+        # Akses instance PyTgCalls yang sudah diinisialisasi di client
+        self.call_py: PyTgCalls = client.call_py 
         self.is_playing = False
         self.current_track = None
         self.logger.info("MusicModule initialized.")
 
     async def play(self, chat_id, url_or_query):
         """Metode untuk mulai memutar musik."""
+        if not self.call_py:
+             return await self.client.send_message(chat_id, "❌ PyTgCalls belum diinisialisasi.")
+
         if self.is_playing:
             return await self.client.send_message(chat_id, "ℹ️ Musik sudah diputar.")
         
-        # NOTE: Di sini Anda akan menambahkan logika untuk:
-        # 1. Mencari track (jika query).
-        # 2. Mengunduh atau mempersiapkan stream.
-        # 3. Menggunakan self.call_py.join_group_call(chat_id, stream_link).
+        # NOTE: Anda harus mengganti bagian ini dengan logika yang SESUNGGUHNYA 
+        # untuk mencari/mengunduh dan mendapatkan tautan stream yang valid.
         
-        self.current_track = url_or_query
-        self.is_playing = True
-        self.logger.info(f"Mulai memutar: {self.current_track} di {chat_id}")
-        await self.client.send_message(chat_id, f"▶️ Mulai memutar **{url_or_query}**.")
+        # --- LOGIKA PLACEHOLDER UNTUK DEMONSTRASI ---
+        # Untuk tujuan demo, anggap url_or_query adalah tautan yang valid 
+        # (misalnya, tautan file .ogg yang bisa langsung di-stream).
+        stream_link = url_or_query 
+        
+        self.logger.info(f"Mencoba memutar: {stream_link} di {chat_id}")
+        
+        try:
+            # 3. MENGGUNAKAN call_py.join_group_call
+            await self.call_py.join_group_call(
+                chat_id, 
+                stream_link,
+                stream_type=StreamType().pulse_stream # StreamType yang umum
+            )
+            
+            self.current_track = url_or_query
+            self.is_playing = True
+            await self.client.send_message(chat_id, f"▶️ Mulai memutar **{url_or_query}**.")
+        except Exception as e:
+            self.logger.error(f"Gagal memulai pemutaran di {chat_id}: {e}")
+            await self.client.send_message(chat_id, f"❌ Gagal memutar musik: `{str(e)}`")
+
 
     async def stop(self, chat_id):
         """Metode untuk menghentikan pemutaran musik."""
+        if not self.call_py:
+            return await self.client.send_message(chat_id, "❌ PyTgCalls belum diinisialisasi.")
+            
         if not self.is_playing:
             return await self.client.send_message(chat_id, "ℹ️ Tidak ada musik yang diputar.")
 
-        # NOTE: Logika untuk menghentikan pemutaran melalui self.call_py.leave_group_call(chat_id).
-        
+        try:
+            # LOGIKA UNTUK MENGHENTIKAN PEMUTARAN
+            await self.call_py.leave_group_call(chat_id)
+        except Exception as e:
+            self.logger.error(f"Gagal menghentikan pemutaran di {chat_id}: {e}")
+            # Lanjutkan reset state meskipun gagal mengakhiri call (opsional)
+
         self.is_playing = False
         self.current_track = None
         self.logger.info("Pemutaran dihentikan.")
         await self.client.send_message(chat_id, "⏹ Pemutaran dihentikan.")
 
 # --- END: Penambahan Class untuk Fungsionalitas Musik ---
-
 
 class UltroidClient(TelegramClient):
     def __init__(
@@ -94,11 +125,13 @@ class UltroidClient(TelegramClient):
         kwargs["base_logger"] = TelethonLogger
         super().__init__(session, **kwargs)
         
-        from pytgcalls import PyTgCalls 
-        self.call_py = None # Ganti 'None' dengan 'PyTgCalls(self)' jika sudah diimpor
+        # --- MODIFIKASI KRITIS: Inisialisasi PyTgCalls ---
+        # self di sini adalah instance UltroidClient (Telethon Client)
+        self.call_py: PyTgCalls = PyTgCalls(self) 
+        # --- END MODIFIKASI KRITIS ---
         
         # --- MODIFIKASI: Inisialisasi MusicModule ---
-        # Setelah self.call_py siap, inisialisasi modul musik.
+        # Inisialisasi modul musik SETELAH self.call_py siap
         self.music = MusicModule(self)
         # --- END MODIFIKASI ---
         
@@ -108,9 +141,7 @@ class UltroidClient(TelegramClient):
     def __repr__(self):
         return f"<Ultroid.Client :\n self: {self.full_name}\n bot: {self._bot}\n music: {self.music.is_playing}\n>"
 
-# ... (Semua methods lainnya tetap sama, termasuk __dict__, start_client, 
-# fast_uploader, fast_downloader, run_in_loop, run, add_handler, utils, 
-# full_name, uid, to_dict, parse_id)
+# ... (Semua methods lainnya tetap sama)
 # ...
 
     @property
@@ -154,7 +185,14 @@ class UltroidClient(TelegramClient):
         
         # Tambahkan start untuk PyTgCalls setelah login sukses
         if self.call_py:
-            await self.call_py.start()
+            self.logger.info("Starting PyTgCalls client...")
+            try:
+                # Ini harus dijalankan setelah Telethon client sukses login/start
+                await self.call_py.start() 
+                self.logger.info("PyTgCalls client started.")
+            except Exception as e:
+                self.logger.error(f"Gagal memulai PyTgCalls: {e}")
+
 
     async def fast_uploader(self, file, **kwargs):
         """Upload files in a faster way"""
