@@ -135,11 +135,9 @@ if run_as_module:
     elif not asst.me.bot_inline_placeholder and asst._bot:
         ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
 
-    vcClient = vc_connection(udB, ultroid_bot)
+    #vcClient = vc_connection(udB, ultroid_bot)
     # (Ini adalah perkiraan isi dari fungsi vc_connection)
     def vc_connection(udB, client):
-    # 1. Pastikan Client Telegram sudah ter-START.
-    #    PyTgCalls membutuhkan klien yang sudah aktif/terhubung.
         if not client.is_connected():
         client.start()
 
