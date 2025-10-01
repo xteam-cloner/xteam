@@ -139,7 +139,7 @@ if run_as_module:
     # (Ini adalah perkiraan isi dari fungsi vc_connection)
     def vc_connection(udB, client):
         if not client.is_connected():
-        client.start()
+            client.start()
 
     # 2. Inisiasi PyTgCalls
     call_py = PyTgCalls(client)
