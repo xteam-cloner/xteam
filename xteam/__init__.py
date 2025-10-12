@@ -1,3 +1,11 @@
+
+
+
+
+
+
+
+
 # Ultroid - UserBot
 # Copyright (C) 2021-2025 TeamUltroid
 #
@@ -104,9 +112,9 @@ if run_as_module:
     else:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
-    """if VC_SESSION:
+    if MUSIC_SESSION:
         # Assuming Var.SESSION is a valid string session
-        session = StringSession(str(Var.VC_SESSION))
+        session = StringSession(str(Var.SESSION))
         try:
             bot = TelegramClient(
                 session=session,
@@ -121,7 +129,7 @@ if run_as_module:
         except Exception as e:
             print(f"STRING_SESSION_ERROR - {e}")
             sys.exit()
-          """
+          
     
     if BOT_MODE:
         ultroid_bot = asst
