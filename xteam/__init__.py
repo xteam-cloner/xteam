@@ -80,7 +80,7 @@ if run_as_module:
 
     BOT_MODE = udB.get_key("BOTMODE")
     DUAL_MODE = udB.get_key("DUAL_MODE")
-    VC_SESSION = udB.get_key("VC_SESSION")
+    VC_SESSION = udB.get_key("SESSION")
     
     USER_MODE = udB.get_key("USER_MODE")
     if USER_MODE:
@@ -112,7 +112,7 @@ if run_as_module:
     else:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
-    if MUSIC_SESSION:
+    if VC_SESSION:
         # Assuming Var.SESSION is a valid string session
         session = StringSession(str(Var.SESSION))
         try:
