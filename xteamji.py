@@ -11,7 +11,7 @@ API_ID = Var.API_ID
 API_HASH = Var.API_HASH 
 
 # Menggunakan STRING_SESSION sebagai nama sesi
-STRING_SESSION = Var.STRING_SESSION 
+STRING_SESSION = Var.SESSION 
 
 # URL Audio/Video untuk diputar (Diubah menjadi URL YouTube)
 # PyTgCalls akan menggunakan yt-dlp untuk mendapatkan stream audio dari URL ini.
@@ -19,7 +19,7 @@ DEFAULT_STREAM_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 # ------------------------------------
 
 # Inisialisasi Klien Telethon menggunakan STRING_SESSION
-client = TelegramClient(STRING_SESSION, API_ID, API_HASH)
+client = TelegramClient(SESSION, API_ID, API_HASH)
 
 # Inisialisasi PyTgCalls dengan Klien Telethon
 pytgcalls_app = PyTgCalls(client)
