@@ -1,2 +1,2 @@
-__version__ = "2.2.5"
+__version__ = "2.3.5"
 ultroid_version = "3.0"
