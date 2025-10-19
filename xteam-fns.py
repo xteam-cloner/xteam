@@ -51,7 +51,7 @@ setuptools.setup(
     ),
     install_requires=["telethon"],
     classifiers=classifiers,
-    python_requires=">3.7, <3.13",
+    python_requires=">3.7, <3.14",
 )
 
 for file in ["wrappers", "db"]:
