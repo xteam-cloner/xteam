@@ -51,7 +51,8 @@ if run_as_module:
     from .startup.connections import validate_session, vc_connection
     from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
     from .version import ultroid_version
-
+    from telethon import __version__ as tver
+    
     if not os.path.exists("./plugins"):
         LOGS.error(
             "'plugins' folder not found!\nMake sure that, you are on correct path."
@@ -94,7 +95,7 @@ if run_as_module:
         ultroid_bot = UltroidClient(
             validate_session(Var.SESSION, LOGS),
             udB=udB,
-            app_version=ultroid_version,
+            app_version=tver,
             device_model="xteam-urbot",
         )
         ultroid_bot.run_in_loop(autobot())
