@@ -14,20 +14,21 @@ def get_stuff():
     return udB.get_key("AFK_DB") or []
 
 
-def add_afk(msg, media_type, media):
-    time = dt.now().strftime("%b %d %Y %I:%M:%S%p")
-    udB.set_key("AFK_DB", [msg, media_type, media, time])
+def add_afk(msg, media_type, media, start_time_str, timezone):
+    """Menyimpan status AFK, termasuk media, waktu mulai, dan zona waktu."""
+    udB.set_key("AFK_DB", [msg, media_type, media, start_time_str, timezone])
     return
 
 
 def is_afk():
+    """Mengembalikan 5 nilai AFK yang tersimpan (msg, media_type, media, start_time_str, timezone)."""
     afk = get_stuff()
-    if afk:
-        start_time = dt.strptime(afk[3], "%b %d %Y %I:%M:%S%p")
-        afk_since = str(dt.now().replace(microsecond=0) - start_time)
-        return afk[0], afk[1], afk[2], afk_since
+    if afk and len(afk) == 5:
+        # Pastikan kita mengembalikan 5 nilai
+        return afk[0], afk[1], afk[2], afk[3], afk[4]
     return False
 
 
 def del_afk():
     return udB.del_key("AFK_DB")
+    
