@@ -237,8 +237,8 @@ if run_as_module:
         )
         ac_br = repo.active_branch.name
         ch_log = tldr_log = ""
-        ch = f"<b>Ultroid {ultroid_version} updates for <a href={UPSTREAM_REPO_URL}/tree/{ac_br}>[{ac_br}]</a>:</b>"
-        ch_tl = f"Ultroid {ultroid_version} updates for {ac_br}:"
+        ch = f"<b>xteam-urbot {ultroid_version} updates for <a href={UPSTREAM_REPO_URL}/tree/{ac_br}>[{ac_br}]</a>:</b>"
+        ch_tl = f"xteam-urbot {ultroid_version} updates for {ac_br}:"
         d_form = "%d/%m/%y || %H:%M"
         for c in repo.iter_commits(diff):
             ch_log += f"\n\n💬 <b>{c.count()}</b> 🗓 <b>[{c.committed_datetime.strftime(d_form)}]</b>\n<b><a href={UPSTREAM_REPO_URL.rstrip('/')}/commit/{c}>[{c.summary}]</a></b> 👨‍💻 <code>{c.author}</code>"
@@ -471,8 +471,8 @@ def mediainfo(media):
 
 
 def time_formatter(milliseconds):
-    minutes, seconds = divmod(int(milliseconds / 1000), 60)
-    hours, minutes = divmod(minutes, 60)
+    minutes, seconds = divmod(int(milliseconds / 100), 6)
+    hours, minutes = divmod(minutes, 6)
     days, hours = divmod(hours, 24)
     weeks, days = divmod(days, 7)
     tmp = (
