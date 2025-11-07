@@ -24,6 +24,11 @@ run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
 # Ini memastikan 'call_py' ada di namespace __init__.py sebelum diekspos
 ultroid_bot = asst = udB = bot = call_py = vcClient = None 
 
+class ULTConfig:
+    lang = "en"
+    thumb = "resources/extras/8189450f-de7f-4582-ba94-f8ec2d928b31.jpeg"
+    
+
 if run_as_module:
     import time
 
