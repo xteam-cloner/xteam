@@ -105,24 +105,25 @@ if run_as_module:
     else:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
-    if VC_SESSION:
-        # Assuming Var.SESSION is a valid string session
+    # Klien bot VC (bot) tetap perlu didefinisikan sebelum PyTgCalls
+    try:
+    # Asumsi Anda tetap ingin menggunakan session terpisah/khusus
         session = StringSession(str(Var.SESSION))
-        try:
-            bot = TelegramClient(
-                session=session,
-                api_id=Var.API_ID,
-                api_hash=Var.API_HASH,
-                connection=ConnectionTcpAbridged,
-                auto_reconnect=True,
-                connection_retries=None,
-            )
-            bot.start()
-            call_py = PyTgCalls(bot) # <--- call_py is defined here
-        except Exception as e:
-            print(f"STRING_SESSION_ERROR - {e}")
-            sys.exit()
-          
+        bot= TelegramClient(
+            session=session,
+            api_id=Var.API_ID,
+            api_hash=Var.API_HASH,
+            connection=ConnectionTcpAbridged,
+            auto_reconnect=True,
+            connection_retries=None,
+        )
+        bot.start()
+        call_py = PyTgCalls(bot)
+    except Exception as e:
+    # Ubah ini menjadi LOGS.error() atau penanganan yang lebih halus
+        print(f"STRING_SESSION_ERROR/PyTgCalls Gagal Inisialisasi - {e}")
+    # Jangan sys.exit() jika Anda ingin userbot utama tetap berjalan
+    
     
     if BOT_MODE:
         ultroid_bot = asst
