@@ -470,7 +470,7 @@ async def fetch_ann():
         LOGS.exception(er)
 
 
-Async def ready():
+async def ready():
     from .. import asst, udB, ultroid_bot
 
     chat_id = udB.get_key("LOG_CHANNEL")
