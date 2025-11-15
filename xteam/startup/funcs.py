@@ -470,11 +470,136 @@ async def fetch_ann():
         LOGS.exception(er)
 
 
-async def ready():
-    from .. import asst, udB, ultroid_bot
+import os
+import platform
+from PIL import Image, ImageDraw, ImageFont
+import io # Diperlukan untuk mengirim gambar ke Telegram via BytesIO
 
+# --- ASUMSI IMPORT DARI MODUL BOT ANDA ---
+# Karena ini adalah contoh gabungan, kita buatkan fungsi placeholder untuk yang hilang:
+# Di userbot Anda, pastikan Anda sudah mengimpor yang sebenarnya:
+# from .. import asst, udB, ultroid_bot, LOGS, Button 
+class DummyBot:
+    """Placeholder untuk ultroid_bot.full_name"""
+    full_name = "JIYO vx | UB"
+class DummyDB:
+    """Placeholder untuk udB.get_key dan udB.set_key"""
+    def __init__(self):
+        self._data = {}
+    def get_key(self, key):
+        return self._data.get(key)
+    def set_key(self, key, value):
+        self._data[key] = value
+class DummyAsst:
+    """Placeholder untuk asst.send_message"""
+    async def send_message(self, chat_id, msg, file=None, buttons=None, parse_mode=None):
+        print(f"--- FAKE SEND MESSAGE ---")
+        print(f"To: {chat_id}")
+        print(f"Caption: {msg}")
+        if file:
+            print(f"File: (Gambar BytesIO) - Berhasil!")
+        print(f"-------------------------")
+        class DummyMsg:
+            id = 123456
+            media = True if file else False
+        return DummyMsg()
+class DummyLogs:
+    """Placeholder untuk LOGS"""
+    def info(self, msg):
+        print(f"[LOGS] {msg}")
+    def exception(self, msg):
+        print(f"[ERROR] {msg}")
+class DummyBtn:
+    """Placeholder untuk Button"""
+    def inline(self, text, data):
+        return f"[{text} | data:{data}]"
+
+# --- VARIABEL DUMMY (GANTI DENGAN VARIABEL ASLI ANDA) ---
+ultroid_bot = DummyBot()
+udB = DummyDB()
+asst = DummyAsst()
+LOGS = DummyLogs()
+Button = DummyBtn()
+
+# ASUMSI VARIABEL VERSI BOT
+UltVer = "3.0 VPS"
+xtver = "2.3.5"
+tver = "1.42.0"
+pver = "2.2.13"
+# Asumsi fungsi updater dan button ada
+async def updater():
+    return False # False: Tidak ada update
+
+# --- FUNGSI PEMBUAT GAMBAR (Menggunakan Pillow) ---
+
+def generate_activation_image(full_name, ultver, xtver, tver, pver):
+    ASSETS_DIR = "resources" 
+    BACKGROUND_PATH = os.path.join(ASSETS_DIR, "IMG_20251115_011736_203.jpg")
+    FONT_PATH = os.path.join(ASSETS_DIR, "sfont.ttf")
+    FONT_SIZE = 35
+
+    TARGET_SIZE = (1280, 720) 
+    try:
+        background = Image.open(BACKGROUND_PATH).convert("RGB")
+        background = background.resize(TARGET_SIZE) 
+    except FileNotFoundError:
+        background = Image.new('RGB', TARGET_SIZE, color=(30, 60, 30)) 
+
+    draw = ImageDraw.Draw(background)
+    W, H = background.size 
+
+    try:
+        detail_font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+    except IOError:
+        detail_font = ImageFont.load_default()
+
+    def get_text_size(text, font):
+        bbox = draw.textbbox((0, 0), text, font=font)
+        return bbox[2] - bbox[0], bbox[3] - bbox[1]
+
+    text_lines = [
+        "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌",
+        f"Owner : {full_name}",
+        f"Userbot : {ultver}",
+        f"Library : {xtver}",
+        f"Python : {platform.python_version()}",
+        "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
+    ]
+
+    start_x_detail = 150
+    line_spacing = 20
+
+    total_text_height = 0
+    line_heights = []
+    
+    for line in text_lines:
+        w, h = get_text_size(line, detail_font)
+        line_heights.append(h)
+        total_text_height += h + line_spacing 
+
+    start_y_detail = (H - (total_text_height - line_spacing)) / 2
+    
+    current_y = start_y_detail
+    for i, line in enumerate(text_lines):
+        if line.startswith("❌"):
+            draw.text((start_x_detail, current_y), line, fill=(200, 200, 200), font=detail_font)
+        else:
+            draw.text((start_x_detail, current_y), line, fill=(255, 255, 255), font=detail_font) 
+
+        current_y += line_heights[i] + line_spacing 
+    
+    # Simpan gambar ke buffer in-memory
+    img_byte_arr = io.BytesIO()
+    background.save(img_byte_arr, format='PNG')
+    img_byte_arr.seek(0)
+    return img_byte_arr
+
+# --- FUNGSI ASYNC READY() YANG DIMODIFIKASI ---
+
+async def ready():
     chat_id = udB.get_key("LOG_CHANNEL")
     spam_sent = None
+    
     if not udB.get_key("INIT_DEPLOY"):  # Detailed Message at Initial Deploy
         MSG = """ **Thanks for Deploying Userbot!**
 • Here, are the Some Basic stuff from, where you can Know, about its Usage."""
@@ -482,34 +607,54 @@ async def ready():
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set_key("INIT_DEPLOY", "Done")
     else:
-        MSG = f"<blockquote>🔥ᴜꜱᴇʀʙᴏᴛ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥\n🥀 Owner : {ultroid_bot.full_name}\n🥀 xteam-Urbot : {UltVer} {HOSTED_ON}\n🥀 xteam : {xtver}\n🥀 telethon : {tver}\n🥀 python : {platform.python_version()}\n🥀 pyrogram : {pver}\n🥀 support : @xteam_cloner</blockquote>"        
-        BTTS, PHOTO = None, None
+        # --- MODIFIKASI: Ganti Teks dengan Gambar Pillow ---
+        
+        # 1. Panggil fungsi untuk membuat gambar aktivasi (BytesIO object)
+        PHOTO = generate_activation_image(
+            full_name=ultroid_bot.full_name,
+            ultver=UltVer,
+            xtver=xtver,
+            tver=tver,
+            pver=pver
+        )
+        
+        # 2. Atur MSG sebagai caption gambar
+        MSG = f"Userbot Successfully Activated! Version: {UltVer}"
+        BTTS = None # Atur tombol update di bawah
+        
+        # --- Akhir Modifikasi ---
+
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
             try:
-                await ultroid_bot.delete_messages(chat_id, int(prev_spam))
+                # ultroid_bot.delete_messages harus diimplementasikan pada bot Anda
+                # await ultroid_bot.delete_messages(chat_id, int(prev_spam))
+                pass # Lewati karena ini adalah dummy bot
             except Exception as E:
                 LOGS.info("Error while Deleting Previous Update Message :" + str(E))
+        
         if await updater():
             BTTS = Button.inline("Update Available", "updtavail")
 
     try:
+        # Kirim pesan dengan gambar yang sudah dibuat (PHOTO adalah BytesIO object)
         spam_sent = await asst.send_message(chat_id, MSG, file=PHOTO, buttons=BTTS, parse_mode="html")
     except ValueError as e:
         try:
-            await (await ultroid_bot.send_message(chat_id, str(e))).delete()
+            # await (await ultroid_bot.send_message(chat_id, str(e))).delete()
             spam_sent = await asst.send_message(chat_id, MSG, file=PHOTO, buttons=BTTS, parse_mode="html")
         except Exception as g:
             LOGS.info(g)
     except Exception as el:
         LOGS.info(el)
         try:
-            spam_sent = await ultroid_bot.send_message(chat_id, MSG, parse_mode="html")
+            # Fallback jika pengiriman gambar gagal
+            spam_sent = await asst.send_message(chat_id, MSG + "\n(Failed to send image, sending text instead)", parse_mode="html")
         except Exception as ef:
             LOGS.exception(ef)
+            
     if spam_sent and not spam_sent.media:
         udB.set_key("LAST_UPDATE_LOG_SPAM", spam_sent.id)
-# TODO:    await fetch_ann()
 
 
 async def WasItRestart(udb):
