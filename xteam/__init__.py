@@ -18,7 +18,7 @@ from telethon.errors import (
     AuthKeyDuplicatedError,
 )
 from pytgcalls import PyTgCalls
-from xteam.dB import DEVLIST
+from .dB import DEVLIST
 
 run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
 
