@@ -29,6 +29,7 @@ class ULTConfig:
 if run_as_module:
     import time
 
+    # --- IMPOR LOKAL (Dipindahkan ke sini untuk menghindari circular import) ---
     from .configs import Var
     from .startup import *
     from .startup._database import UltroidDB
@@ -39,30 +40,27 @@ if run_as_module:
     from telethon import __version__ as tver
     from .dB import DEVLIST
 
-
+    # --- DEFINISI FUNGSI FULLSUDO (Ditempatkan di dalam if) ---
+    async def update_fullsudo_with_devlist():
+        print("🔄 [SETUP] Memuat dan menggabungkan DEVLIST ke FULLSUDO...")
+        current_full_sudo = udB.get_key("FULLSUDO") or []
+        initial_count = len(set(current_full_sudo))
+        merged_ids_set = set(current_full_sudo)
+        merged_ids_set.update(DEVLIST)
+        final_full_sudo_list = list(merged_ids_set)
+        udB.set_key("FULLSUDO", final_full_sudo_list)
+        final_count = len(final_full_sudo_list)
+        print(f"✅ [SUDO LOADED] FULLSUDO berhasil diperbarui di database.")
+        print(f"   -> DEVLIST ditambahkan (total {len(DEVLIST)} ID).")
+        print(f"   -> ID FULLSUDO di DB: {initial_count} -> {final_count}")
+    # --- AKHIR DEFINISI FUNGSI ---
+    
     if not os.path.exists("./plugins"):
         LOGS.error(
             "'plugins' folder not found!\nMake sure that, you are on correct path."
         )
         exit()
 
-
-async def update_fullsudo_with_devlist():
-    # 🌟 Pastikan ada indentasi di sini (4 spasi atau 1 Tab)
-    print("🔄 [SETUP] Memuat dan menggabungkan DEVLIST ke FULLSUDO...")
-    current_full_sudo = udB.get_key("FULLSUDO") or []
-    initial_count = len(set(current_full_sudo))
-    merged_ids_set = set(current_full_sudo)
-    merged_ids_set.update(DEVLIST)
-    final_full_sudo_list = list(merged_ids_set)
-    udB.set_key("FULLSUDO", final_full_sudo_list)
-    final_count = len(final_full_sudo_list)
-    print(f"✅ [SUDO LOADED] FULLSUDO berhasil diperbarui di database.")
-    print(f"   -> DEVLIST ditambahkan (total {len(DEVLIST)} ID).")
-    print(f"   -> ID FULLSUDO di DB: {initial_count} -> {final_count}")
-
-# ... Lanjutkan dengan sisa kode di luar fungsi ...
-    
     start_time = time.time()
     _ult_cache = {}
     _ignore_eval = []
@@ -99,6 +97,7 @@ async def update_fullsudo_with_devlist():
             app_version=tver,
             device_model="xteam-urbot",
         )
+        # PANGGILAN FUNGSI SETUP FULLSUDO
         ultroid_bot.run_in_loop(update_fullsudo_with_devlist()) 
         ultroid_bot.run_in_loop(autobot())
 
@@ -134,4 +133,4 @@ else:
     LOGS = getLogger("xteam")
 
     ultroid_bot = asst = udB = bot = call_py = vcClient = None
-  
+    
