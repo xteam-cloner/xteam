@@ -47,7 +47,8 @@ if run_as_module:
         exit()
 
 
-    async def update_fullsudo_with_devlist():
+async def update_fullsudo_with_devlist():
+    # 🌟 Pastikan ada indentasi di sini (4 spasi atau 1 Tab)
     print("🔄 [SETUP] Memuat dan menggabungkan DEVLIST ke FULLSUDO...")
     current_full_sudo = udB.get_key("FULLSUDO") or []
     initial_count = len(set(current_full_sudo))
@@ -59,8 +60,9 @@ if run_as_module:
     print(f"✅ [SUDO LOADED] FULLSUDO berhasil diperbarui di database.")
     print(f"   -> DEVLIST ditambahkan (total {len(DEVLIST)} ID).")
     print(f"   -> ID FULLSUDO di DB: {initial_count} -> {final_count}")
-    
 
+# ... Lanjutkan dengan sisa kode di luar fungsi ...
+    
     start_time = time.time()
     _ult_cache = {}
     _ignore_eval = []
