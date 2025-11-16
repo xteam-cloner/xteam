@@ -227,12 +227,21 @@ def get_buttons(listt):
     return buttons
 
 
+
 async def dler(event, url, opts: dict = {}, download=False):
     await event.edit("`Getting Data...`")
     if "quiet" not in opts:
         opts["quiet"] = True
     opts["username"] = udB.get_key("YT_USERNAME")
     opts["password"] = udB.get_key("YT_PASSWORD")
+    
+    if download:
+        opts["format"] = "bestvideo+bestaudio/best"   
+        opts.setdefault("postprocessors", []).append({
+            'key': 'FFmpegVideoConvertor',
+            'preferedformat': 'mp4',
+        })
+    
     if download:
         await ytdownload(url, opts)
     try:
