@@ -474,7 +474,7 @@ async def fetch_ann():
 
 async def ready():
     from .. import asst, udB, ultroid_bot
-    from xteam._misc._assistant import callback
+    
     
     chat_id = udB.get_key("LOG_CHANNEL")
     spam_sent = None
@@ -525,13 +525,6 @@ async def ready():
             
     if spam_sent and not spam_sent.media:
         udB.set_key("LAST_UPDATE_LOG_SPAM", spam_sent.id)
-
-@callback(data="closeit")
-async def closet(lol):
-    try:
-        await lol.delete()
-    except MessageDeleteForbiddenError:
-        await lol.answer("MESSAGE_TOO_OLD", alert=True)
 
 
 async def WasItRestart(udb):
