@@ -18,7 +18,7 @@ from platform import python_version
 from xteam.version import ultroid_version as UltVer
 from xteam.version import __version__ as xtver
 from xteam.configs import Var
-from xteam._misc._assistant import callback
+from ._misc._assistant import callback
 from . import HOSTED_ON
 try:
     from pytz import timezone
