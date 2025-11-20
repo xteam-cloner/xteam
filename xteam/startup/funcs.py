@@ -524,8 +524,7 @@ async def ready():
     if spam_sent and not spam_sent.media:
         udB.set_key("LAST_UPDATE_LOG_SPAM", spam_sent.id)
 
-
-@callback("closeit")
+@callback(data="closeit")
 async def closet(lol):
     try:
         await lol.delete()
