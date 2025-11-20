@@ -18,7 +18,7 @@ from platform import python_version
 from xteam.version import ultroid_version as UltVer
 from xteam.version import __version__ as xtver
 from xteam.configs import Var
-from ._misc._assistant import callback
+
 from . import HOSTED_ON
 try:
     from pytz import timezone
@@ -474,7 +474,8 @@ async def fetch_ann():
 
 async def ready():
     from .. import asst, udB, ultroid_bot
-
+    from .._misc._assistant import callback
+    
     chat_id = udB.get_key("LOG_CHANNEL")
     spam_sent = None
     
