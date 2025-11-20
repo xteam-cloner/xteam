@@ -98,8 +98,8 @@ def load_addons(plugin_name):
         except BaseException as em:
             pass
 
-@callback(data="closeit")
-async def closet(lol):
+
+async def closeit(lol):
     try:
         await lol.delete()
     except MessageDeleteForbiddenError:
