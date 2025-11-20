@@ -440,7 +440,7 @@ async def plug(plugin_channels):
 async def fetch_ann():
     from .. import asst, udB
     from ..fns.tools import async_searcher
-    from ._misc._assistant callback
+    from ._misc._assistant import callback
     
     get_ = udB.get_key("OLDANN") or []
     chat_id = udB.get_key("LOG_CHANNEL")
