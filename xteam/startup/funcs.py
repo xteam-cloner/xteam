@@ -475,25 +475,41 @@ async def ready():
 
     chat_id = udB.get_key("LOG_CHANNEL")
     spam_sent = None
+    
     if not udB.get_key("INIT_DEPLOY"):  # Detailed Message at Initial Deploy
         MSG = """ **Thanks for Deploying Userbot!**
 • Here, are the Some Basic stuff from, where you can Know, about its Usage."""
         PHOTO = "https://files.catbox.moe/k9ljse.jpg"
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set_key("INIT_DEPLOY", "Done")
+
     else:
         MSG = f"<blockquote>▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n🔥xᴛᴇᴀᴍ-ᴜʀʙᴏᴛ ᴀᴄᴛɪᴠᴀᴛᴇᴅ🔥\n🥀 Owner : {ultroid_bot.full_name}\n🥀 xteam-Urbot : {UltVer} {HOSTED_ON}\n🥀 xteam : {xtver}\n🥀 telethon : {tver}\n🥀 python : {platform.python_version()}\n🥀 pyrogram : {pver}\n🥀 support : @xteam_cloner\n▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰</blockquote>"        
-        BTTS, PHOTO = None, None
+        
+        # 👇👇👇 MODIFIKASI DIMULAI DI SINI 👇👇👇
+        
+        # Mengatur GAMBAR secara permanen
+        PHOTO = "https://files.catbox.moe/k9ljse.jpg"  # Ganti dengan URL gambar Userbot Anda
+        
+        # Mengatur TOMBOL Support Channel sebagai default (format list of lists)
+        BTTS = [[Button.url("🔗 Support Channel", "https://t.me/xteam_cloner")]]
+        
+        # --- Kode untuk Menghapus Pesan Lama ---
         prev_spam = udB.get_key("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
             try:
                 await ultroid_bot.delete_messages(chat_id, int(prev_spam))
             except Exception as E:
                 LOGS.info("Error while Deleting Previous Update Message :" + str(E))
+        
+        # --- Kode untuk Menambahkan Tombol Update (kondisional) ---
         if await updater():
-            BTTS = Button.inline("Update Available", "updtavail")
+            # Tambahkan tombol Update Available ke baris pertama (index 0)
+            BTTS[0].append(Button.inline("Update Available", "updtavail"))
 
+    # --- Pengiriman Pesan ---
     try:
+        # Pesan akan dikirim dengan MSG, file=PHOTO, dan buttons=BTTS yang sudah dimodifikasi
         spam_sent = await asst.send_message(chat_id, MSG, file=PHOTO, buttons=BTTS, parse_mode="html")
     except ValueError as e:
         try:
@@ -507,9 +523,11 @@ async def ready():
             spam_sent = await ultroid_bot.send_message(chat_id, MSG, file=PHOTO, parse_mode="html")
         except Exception as ef:
             LOGS.exception(ef)
+            
     if spam_sent and not spam_sent.media:
         udB.set_key("LAST_UPDATE_LOG_SPAM", spam_sent.id)
 # TODO:    await fetch_ann()
+
 
 async def WasItRestart(udb):
     key = udb.get_key("_RESTART")
