@@ -97,3 +97,10 @@ def load_addons(plugin_name):
             HELP.update({"Addons": {base_name: doc}})
         except BaseException as em:
             pass
+
+@callback(data="closeit")
+async def closet(lol):
+    try:
+        await lol.delete()
+    except MessageDeleteForbiddenError:
+        await lol.answer("MESSAGE_TOO_OLD", alert=True)
