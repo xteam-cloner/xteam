@@ -400,7 +400,7 @@ async def customize():
 
 async def plug(plugin_channels):
     from .. import ultroid_bot
-    from .utils import load_addons
+    from .utils import load_addons, closeit
 
     if ultroid_bot._bot:
         LOGS.info("Plugin Channels can't be used in 'BOTMODE'")
