@@ -440,7 +440,8 @@ async def plug(plugin_channels):
 async def fetch_ann():
     from .. import asst, udB
     from ..fns.tools import async_searcher
-
+    from ._misc._assistant callback
+    
     get_ = udB.get_key("OLDANN") or []
     chat_id = udB.get_key("LOG_CHANNEL")
     try:
@@ -523,7 +524,6 @@ async def ready():
     if spam_sent and not spam_sent.media:
         udB.set_key("LAST_UPDATE_LOG_SPAM", spam_sent.id)
 
-from xteam._misc._assistant callback
 
 @callback("closeit")
 async def closet(lol):
