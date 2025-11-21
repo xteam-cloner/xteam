@@ -1,10 +1,3 @@
-# Ultroid - UserBot
-# Copyright (C) 2021-2025 TeamUltroid
-#
-# This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
-# PLease read the GNU Affero General Public License in
-# <https://github.com/TeamUltroid/xteam/blob/main/LICENSE>.
-
 import os
 import sys
 import telethonpatch
@@ -16,7 +9,6 @@ import contextlib
 import inspect
 import time
 from logging import Logger
-#from .startup.BaseClient import *
 from telethonpatch import TelegramClient
 from telethon import utils as telethon_utils
 from telethon.errors import (
@@ -26,12 +18,6 @@ from telethon.errors import (
     AuthKeyDuplicatedError,
 )
 from pytgcalls import PyTgCalls
-#from xteam.core.bot import ChampuBot
-#from xteam.core.dir import dirr
-#from xteam.core.git import git
-#from xteam.core.userbot import Userbot
-#from xteam.misc import dbb, heroku, sudo
-#from .logging import LOGGER
 
 run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
 
@@ -65,7 +51,6 @@ if run_as_module:
 
     udB = UltroidDB()
     update_envs()
-    #self.music = MusicModule(self)
 
     LOGS.info(f"Connecting to {udB.name}...")
     if udB.ping():
@@ -116,13 +101,29 @@ if run_as_module:
         ULTROID_CLIENTS[1] = ultroid_bot
 
     def create_additional_client(session_string, client_id):
-        """Membuat klien Telethon tambahan dari string session."""
+        """
+        Membuat klien Telethon tambahan dari string session, 
+        menggunakan validate_session untuk mengkonversi sesi Pyrogram.
+        """
         if not session_string:
             return None
+        
         try:
-            session = StringSession(str(session_string))
-            client = UltroidClient( # Gunakan UltroidClient
-                session=session,
+            # 1. Bersihkan string dari spasi/newline
+            cleaned_session_string = str(session_string).strip()
+            
+            # 2. VALIDASI DAN KONVERSI: Ini yang memecahkan masalah Pyrogram/Telethon
+            # validate_session mengkonversi sesi Pyrogram ke Telethon.
+            # _exit=False agar program tidak berhenti jika sesi gagal.
+            session = validate_session(cleaned_session_string, logger=LOGS, _exit=False) 
+            
+            if not session:
+                LOGS.error(f"Sesi untuk Klien Tambahan {client_id} tidak valid (format string tidak dikenali).")
+                return None
+
+            # 3. Inisialisasi Klien dengan sesi yang sudah divalidasi/dikonversi
+            client = UltroidClient( 
+                session=session, # Menggunakan objek session yang sudah divalidasi/dikonversi
                 api_id=Var.API_ID,
                 api_hash=Var.API_HASH,
                 udB=udB,
@@ -132,6 +133,7 @@ if run_as_module:
             )
             LOGS.info(f"Klien Tambahan {client_id} berhasil diinisialisasi.")
             return client
+        
         except Exception as e:
             LOGS.error(f"Gagal menginisialisasi Klien Tambahan {client_id}: {e}")
             return None
@@ -156,7 +158,6 @@ if run_as_module:
     # ⚡️ MODIFIKASI MULTI-CLIENT BERAKHIR ⚡️
     # ==========================================================
 
-    # 💥 PERBAIKAN SYNTAX ERROR: Baris ini harus diindentasi dengan benar (sejajar dengan 'if BOT_MODE:')
     if BOT_MODE:
         ultroid_bot = asst
         if udB.get_key("OWNER_ID"):
@@ -175,10 +176,9 @@ if run_as_module:
     DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
     SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
 
-# --- Blok 'else' ini harus sejajar dengan 'if run_as_module:' ---
 else:
     print("xteam 2022 © teamx_cloner")
     from logging import getLogger
     LOGS = getLogger("xteam")
     ultroid_bot = asst = udB = bot = call_py = vcClient = None
-            
+    
