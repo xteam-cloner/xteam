@@ -16,7 +16,7 @@ import contextlib
 import inspect
 import time
 from logging import Logger
-#...
+#from .startup.BaseClient import *
 from telethonpatch import TelegramClient
 from telethon import utils as telethon_utils
 from telethon.errors import (
@@ -26,16 +26,12 @@ from telethon.errors import (
     AuthKeyDuplicatedError,
 )
 from pytgcalls import PyTgCalls
-from .configs import Var # Tambahkan Var di sini jika belum ada
-
-from .startup import *
-from .startup._database import UltroidDB
-from .startup.BaseClient import UltroidClient
-from .startup.connections import validate_session, vc_connection
-from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
-from .version import ultroid_version
-from telethon import __version__ as tver
-    
+#from xteam.core.bot import ChampuBot
+#from xteam.core.dir import dirr
+#from xteam.core.git import git
+#from xteam.core.userbot import Userbot
+#from xteam.misc import dbb, heroku, sudo
+#from .logging import LOGGER
 
 run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
 
@@ -47,8 +43,6 @@ class ULTConfig:
 
 if run_as_module:
     import time
-    
-    # ... [Import Lainnya yang Ada] ...
 
     from .configs import Var
     from .startup import *
@@ -127,11 +121,11 @@ if run_as_module:
             return None
         try:
             session = StringSession(str(session_string))
-            client = UltroidClient( # Gunakan UltroidClient agar memiliki semua properti khusus
+            client = UltroidClient( # Gunakan UltroidClient
                 session=session,
                 api_id=Var.API_ID,
                 api_hash=Var.API_HASH,
-                udB=udB, # Teruskan udB agar klien dapat mengakses database
+                udB=udB,
                 app_version=tver,
                 device_model=f"xteam-urbot-{client_id}",
                 log_attempt=False,
@@ -143,7 +137,6 @@ if run_as_module:
             return None
 
     # Inisialisasi Klien Tambahan (STRING_2 hingga STRING_5)
-    # Asumsi: STRING_2, STRING_3, dll. sudah dimuat ke Var dari Environment
     ULTROID_CLIENTS[2] = create_additional_client(getattr(Var, 'STRING_2', None), 2)
     ULTROID_CLIENTS[3] = create_additional_client(getattr(Var, 'STRING_3', None), 3)
     ULTROID_CLIENTS[4] = create_additional_client(getattr(Var, 'STRING_4', None), 4)
@@ -156,13 +149,15 @@ if run_as_module:
     ALL_CLIENTS = list(ULTROID_CLIENTS.values())
 
     # Jika klien utama (bot) digunakan di kode VC di bawah, gunakan klien 1
+    # Ini memastikan kompatibilitas dengan sisa kode Ultroid
     bot = ULTROID_CLIENTS.get(1) 
 
     # ==========================================================
     # ⚡️ MODIFIKASI MULTI-CLIENT BERAKHIR ⚡️
     # ==========================================================
 
-if BOT_MODE:
+    # 💥 PERBAIKAN SYNTAX ERROR: Baris ini harus diindentasi dengan benar (sejajar dengan 'if BOT_MODE:')
+    if BOT_MODE:
         ultroid_bot = asst
         if udB.get_key("OWNER_ID"):
             try:
@@ -174,14 +169,16 @@ if BOT_MODE:
         elif not asst.me.bot_inline_placeholder and asst._bot:
             ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
 
-vcClient = vc_connection(udB, ultroid_bot)
-_version_changes(udB)
-HNDLR = udB.get_key("HNDLR") or "."
-DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
-SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
+    vcClient = vc_connection(udB, ultroid_bot)
+    _version_changes(udB)
+    HNDLR = udB.get_key("HNDLR") or "."
+    DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
+    SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
 
+# --- Blok 'else' ini harus sejajar dengan 'if run_as_module:' ---
 else:
-print("xteam 2022 © teamx_cloner")
-from logging import getLogger
-LOGS = getLogger("xteam")
-ultroid_bot = asst = udB = bot = call_py = vcClient = None
+    print("xteam 2022 © teamx_cloner")
+    from logging import getLogger
+    LOGS = getLogger("xteam")
+    ultroid_bot = asst = udB = bot = call_py = vcClient = None
+            
