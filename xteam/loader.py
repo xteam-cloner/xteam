@@ -63,21 +63,15 @@ def load_other_plugins(all_clients, addons=None, pmbot=None, manager=None, vcbot
   
 for plugin in sorted(files):
   if func == import_module:
-                plugin = plugin.replace(".py", "").replace("/", ".").replace("\\", ".")
-            try:
-                modl = func(plugin)
-            except ModuleNotFoundError as er:
-                modl = None
-                self._logger.error(f"{plugin}: '{er.name}' not installed!")
-                continue
-            except Exception as exc:
-                modl = None
-                self._logger.error(f"xteam - {self.key} - ERROR - {plugin}")
-                self._logger.exception(exc)
-                continue
-            if _single and log:
-                self._logger.info(f"Successfully Loaded {plugin}!")
-            if callable(after_load):
-                if func == import_module:
-                    plugin = plugin.split(".")[-1]
-                after_load(self, modl, plugin_name=plugin)
+      plugin = plugin.replace(".py", "").replace("/", ".").replace("\\", ".")
+      try:
+    modl = func(plugin)
+except ModuleNotFoundError as er:
+    modl = None
+    self._logger.error(f"{plugin}: '{er.name}' not installed!")
+    continue
+except Exception as exc:
+    modl = None
+    self._logger.error(f"xteam - {self.key} - ERROR - {plugin}")
+    self._logger.exception(exc)
+    continue
