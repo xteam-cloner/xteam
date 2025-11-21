@@ -7,22 +7,92 @@ from shutil import rmtree
 from importlib import import_module
 from decouple import config
 from git import Repo 
+from telethon import events 
+
+# Asumsi impor dari direktori atas (..) sudah benar
 from .. import LOGS, HNDLR, SUDO_HNDLR, USER_MODE, udB, ALL_CLIENTS 
 from ..dB._core import HELP
 from ..loader import Loader
-from telethon import events 
 
-# --- Fungsi Utility (_after_load dan get_plugin_paths) Tetap Sama ---
+# ----------------------------------------------------
+# 🛠️ FUNGSI UTILITY
+# ----------------------------------------------------
 
-# ... (Pastikan _after_load dan get_plugin_paths dari jawaban sebelumnya ada di sini) ...
+def _after_load(loader, module, plugin_name=""):
+    """
+    Fungsi callback setelah modul plugin dimuat, bertanggung jawab memperbarui 
+    dokumentasi Bantuan (HELP).
+    """
+    if not module or plugin_name.startswith("_"):
+        return
+    try:
+        from strings import get_help
+    except ImportError:
+        return
 
-# --- Fungsi Pemuatan Utama yang Diperbaiki ---
+    if doc_ := get_help(plugin_name) or module.__doc__:
+        try:
+            doc = doc_.format(i=HNDLR)
+        except Exception as er:
+            loader._logger.exception(er)
+            loader._logger.info(f"Error formatting help doc in {plugin_name}: {er}")
+            return
+        
+        key = loader.key
+        if key in HELP.keys():
+            update_cmd = HELP[key]
+            try:
+                update_cmd.update({plugin_name: doc})
+            except BaseException as er:
+                loader._logger.exception(er)
+        else:
+            try:
+                HELP.update({key: {plugin_name: doc}})
+            except BaseException as em:
+                loader._logger.exception(em)
+
+
+def get_plugin_paths(path="plugins", include=None, exclude=None, load_all=False):
+    """
+    Mendapatkan path modul Python dari path folder/file yang diberikan.
+    Contoh: 'plugins/spam.py' -> 'plugins.spam'
+    """
+    files = []
+    
+    if include:
+        for file in include:
+            module_path = f"{path}.{file}" if not file.endswith('.py') else file.replace(".py", "")
+            files.append(module_path.replace(os.path.sep, "."))
+            
+    elif os.path.isfile(path):
+        module_path = path.replace(os.path.sep, ".").replace(".py", "")
+        files = [module_path]
+        
+    else:
+        file_paths = glob.glob(f"{path}/*.py")
+             
+        for fp in file_paths:
+            module_path = fp.replace(".py", "").replace(os.path.sep, ".")
+            module_path = module_path.lstrip(".") 
+            
+            if module_path.split('.')[-1].startswith('_'):
+                continue
+            
+            files.append(module_path)
+            
+        if exclude:
+            files = [f for f in files if f.split('.')[-1] not in exclude]
+            
+    return files
+
+
+# ----------------------------------------------------
+# 🚀 FUNGSI PEMUATAN UTAMA
+# ----------------------------------------------------
 
 def load_other_plugins(all_clients=None, addons=None, pmbot=None, manager=None, vcbot=None):
     """
     Memuat semua plugin (resmi, asisten, addon) menggunakan sistem Loader.
-    Argumen 'all_clients' dipertahankan hanya untuk kompatibilitas dengan __main__.py, 
-    tetapi tidak digunakan di dalam fungsi ini karena Loader yang menangani pendaftaran.
     """
     
     LOGS.info("Memulai proses pemuatan plugin...")
@@ -33,6 +103,7 @@ def load_other_plugins(all_clients=None, addons=None, pmbot=None, manager=None, 
     _in_only = udB.get_key("INCLUDE_ONLY") or config("INCLUDE_ONLY", None)
     _in_only = _in_only.split() if _in_only else []
     
+    # PANGGILAN SUKSES: get_plugin_paths kini terdefinisi
     official_paths = get_plugin_paths(path="plugins", include=_in_only, exclude=_exclude)
     
     LOGS.info(f"Memuat {len(official_paths)} plugin resmi...")
@@ -107,4 +178,4 @@ def load_other_plugins(all_clients=None, addons=None, pmbot=None, manager=None, 
     # ... (Blok VCBot yang di-komentar) ...
 
     LOGS.info("Semua proses pemuatan plugin selesai.")
-    
+        
