@@ -171,21 +171,16 @@ if BOT_MODE:
                 )
             except Exception as er:
                 LOGS.exception(er)
-    elif not asst.me.bot_inline_placeholder and asst._bot:
-        ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
+        elif not asst.me.bot_inline_placeholder and asst._bot:
+            ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
 
-    vcClient = vc_connection(udB, ultroid_bot)
-
-    _version_changes(udB)
-
-    HNDLR = udB.get_key("HNDLR") or "."
-    DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
-    SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
+vcClient = vc_connection(udB, ultroid_bot)
+_version_changes(udB)
+HNDLR = udB.get_key("HNDLR") or "."
+DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
+SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
 else:
-    print("xteam 2022 © teamx_cloner")
-
-    from logging import getLogger
-
-    LOGS = getLogger("xteam")
-
-    ultroid_bot = asst = udB = bot = call_py = vcClient = None
+print("xteam 2022 © teamx_cloner")
+from logging import getLogger
+LOGS = getLogger("xteam")
+ultroid_bot = asst = udB = bot = call_py = vcClient = None
