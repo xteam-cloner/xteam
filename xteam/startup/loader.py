@@ -95,12 +95,14 @@ def get_plugin_paths(path="plugins", include=None, exclude=None, load_all=False)
 
 # --- Fungsi Pemuatan Utama ---
 
-def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
-    """
-    Memuat semua plugin (resmi, asisten, addon) menggunakan sistem Loader.
-    """
+def load_other_plugins(all_clients=None, addons=None, pmbot=None, manager=None, vcbot=None):
+    # Perhatikan: Argumen all_clients ditambahkan kembali dengan nilai default None, 
+    # namun tidak digunakan karena pendaftaran kini diurus oleh Loader.
     
     LOGS.info("Memulai proses pemuatan plugin...")
+
+    # --- 1. Plugin Resmi (Official) ---
+    # ... (sisa isi fungsi tetap sama)
 
     # --- 1. Plugin Resmi (Official) ---
     _exclude = udB.get_key("EXCLUDE_OFFICIAL") or config("EXCLUDE_OFFICIAL", None)
