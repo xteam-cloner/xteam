@@ -5,7 +5,7 @@ import inspect
 import os
 from telethon import events
 # Asumsikan LOGS sudah diimpor dari modul utama atau logging Ultroid
-
+from .. import LOGS
 # --- Fungsi Pembantu untuk Mendapatkan Daftar File Plugin ---
 # (Asumsikan fungsi ini sudah ada di loader Anda)
 def get_plugin_files():
@@ -74,28 +74,25 @@ def load_other_plugins(all_clients, addons=None, pmbot=None, manager=None, vcbot
 # yang mungkin berada di file 'xteam/loader.py' yang sebenarnya, tetapi saya hanya
 # menyajikan ulang bagian kodenya dengan indentasi yang benar di sini:
 
-"""
-# Contoh bagaimana blok kode ini seharusnya berada di dalam sebuah metode kelas Loader:
-# class Loader:
-#     def some_method(self, files, func, import_module, after_load, _single, log, self.key):
-#         for plugin in sorted(files):
-#             if func == import_module:
-#                 plugin = plugin.replace(".py", "").replace("/", ".").replace("\\", ".")
-#             try:
-#                 modl = func(plugin)
-#             except ModuleNotFoundError as er:
-#                 modl = None
-#                 self._logger.error(f"{plugin}: '{er.name}' not installed!")
-#                 continue
-#             except Exception as exc:
-#                 modl = None
-#                 self._logger.error(f"xteam - {self.key} - ERROR - {plugin}")
-#                 self._logger.exception(exc)
-#                 continue
-#             if _single and log:
-#                 self._logger.info(f"Successfully Loaded {plugin}!")
-#             if callable(after_load):
-#                 if func == import_module:
-#                     plugin = plugin.split(".")[-1]
-#                 after_load(self, modl, plugin_name=plugin)
-"""
+ class Loader:
+     def some_method(self, files, func, import_module, after_load, _single, log, self.key):
+         for plugin in sorted(files):
+             if func == import_module:
+                 plugin = plugin.replace(".py", "").replace("/", ".").replace("\\", ".")
+             try:
+                 modl = func(plugin)
+             except ModuleNotFoundError as er:
+                 modl = None
+                 self._logger.error(f"{plugin}: '{er.name}' not installed!")
+                 continue
+             except Exception as exc:
+                 modl = None
+                 self._logger.error(f"xteam - {self.key} - ERROR - {plugin}")
+                 self._logger.exception(exc)
+                 continue
+             if _single and log:
+                 self._logger.info(f"Successfully Loaded {plugin}!")
+             if callable(after_load):
+                 if func == import_module:
+                     plugin = plugin.split(".")[-1]
+                 after_load(self, modl, plugin_name=plugin)
