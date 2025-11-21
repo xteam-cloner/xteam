@@ -1,3 +1,10 @@
+# Ultroid - UserBot
+# Copyright (C) 2021-2025 TeamUltroid
+#
+# This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
+# PLease read the GNU Affero General Public License in
+# <https://github.com/TeamUltroid/xteam/blob/main/LICENSE>.
+
 import os
 import sys
 import telethonpatch
@@ -9,6 +16,7 @@ import contextlib
 import inspect
 import time
 from logging import Logger
+#...
 from telethonpatch import TelegramClient
 from telethon import utils as telethon_utils
 from telethon.errors import (
@@ -18,8 +26,19 @@ from telethon.errors import (
     AuthKeyDuplicatedError,
 )
 from pytgcalls import PyTgCalls
+from .configs import Var # Tambahkan Var di sini jika belum ada
+
+from .startup import *
+from .startup._database import UltroidDB
+from .startup.BaseClient import UltroidClient
+from .startup.connections import validate_session, vc_connection
+from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
+from .version import ultroid_version
+from telethon import __version__ as tver
+    
 
 run_as_module = __package__ in sys.argv or sys.argv[0] == "-m"
+
 
 class ULTConfig:
     lang = "en"
@@ -28,8 +47,9 @@ class ULTConfig:
 
 if run_as_module:
     import time
+    
+    # ... [Import Lainnya yang Ada] ...
 
-    # --- IMPOR LOKAL (Dipindahkan ke sini untuk menghindari circular import) ---
     from .configs import Var
     from .startup import *
     from .startup._database import UltroidDB
@@ -38,22 +58,6 @@ if run_as_module:
     from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
     from .version import ultroid_version
     from telethon import __version__ as tver
-    from .dB import DEVLIST
-
-    # --- DEFINISI FUNGSI FULLSUDO (Ditempatkan di dalam if) ---
-    async def update_fullsudo_with_devlist():
-        print("🔄 [SETUP] Memuat dan menggabungkan DEVLIST ke FULLSUDO...")
-        current_full_sudo = udB.get_key("FULLSUDO") or []
-        initial_count = len(set(current_full_sudo))
-        merged_ids_set = set(current_full_sudo)
-        merged_ids_set.update(DEVLIST)
-        final_full_sudo_list = list(merged_ids_set)
-        udB.set_key("FULLSUDO", final_full_sudo_list)
-        final_count = len(final_full_sudo_list)
-        print(f"✅ [SUDO LOADED] FULLSUDO berhasil diperbarui di database.")
-        print(f"   -> DEVLIST ditambahkan (total {len(DEVLIST)} ID).")
-        print(f"   -> ID FULLSUDO di DB: {initial_count} -> {final_count}")
-    # --- AKHIR DEFINISI FUNGSI ---
     
     if not os.path.exists("./plugins"):
         LOGS.error(
@@ -67,11 +71,11 @@ if run_as_module:
 
     udB = UltroidDB()
     update_envs()
+    #self.music = MusicModule(self)
 
     LOGS.info(f"Connecting to {udB.name}...")
     if udB.ping():
         LOGS.info(f"Connected to {udB.name} Successfully!")
-        
 
     BOT_MODE = udB.get_key("BOTMODE")
     DUAL_MODE = udB.get_key("DUAL_MODE")
@@ -82,6 +86,9 @@ if run_as_module:
         DUAL_MODE = False
 
     if BOT_MODE:
+        if DUAL_MODE:
+            udB.del_key("DUAL_MODE")
+            DUAL_MODE = False
         ultroid_bot = None
 
         if not udB.get_key("BOT_TOKEN"):
@@ -97,8 +104,6 @@ if run_as_module:
             app_version=tver,
             device_model="xteam-urbot",
         )
-        # PANGGILAN FUNGSI SETUP FULLSUDO
-        ultroid_bot.run_in_loop(update_fullsudo_with_devlist()) 
         ultroid_bot.run_in_loop(autobot())
 
     if USER_MODE:
@@ -106,7 +111,58 @@ if run_as_module:
     else:
         asst = UltroidClient("asst", bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
 
-    if BOT_MODE:
+    # ==========================================================
+    # ⚡️ MODIFIKASI MULTI-CLIENT: INISIALISASI & KOLEKSI ⚡️
+    # ==========================================================
+
+    ULTROID_CLIENTS = {}
+    
+    # Klien 1: Klien utama Ultroid yang sudah diinisialisasi
+    if ultroid_bot:
+        ULTROID_CLIENTS[1] = ultroid_bot
+
+    def create_additional_client(session_string, client_id):
+        """Membuat klien Telethon tambahan dari string session."""
+        if not session_string:
+            return None
+        try:
+            session = StringSession(str(session_string))
+            client = UltroidClient( # Gunakan UltroidClient agar memiliki semua properti khusus
+                session=session,
+                api_id=Var.API_ID,
+                api_hash=Var.API_HASH,
+                udB=udB, # Teruskan udB agar klien dapat mengakses database
+                app_version=tver,
+                device_model=f"xteam-urbot-{client_id}",
+                log_attempt=False,
+            )
+            LOGS.info(f"Klien Tambahan {client_id} berhasil diinisialisasi.")
+            return client
+        except Exception as e:
+            LOGS.error(f"Gagal menginisialisasi Klien Tambahan {client_id}: {e}")
+            return None
+
+    # Inisialisasi Klien Tambahan (STRING_2 hingga STRING_5)
+    # Asumsi: STRING_2, STRING_3, dll. sudah dimuat ke Var dari Environment
+    ULTROID_CLIENTS[2] = create_additional_client(getattr(Var, 'STRING_2', None), 2)
+    ULTROID_CLIENTS[3] = create_additional_client(getattr(Var, 'STRING_3', None), 3)
+    ULTROID_CLIENTS[4] = create_additional_client(getattr(Var, 'STRING_4', None), 4)
+    ULTROID_CLIENTS[5] = create_additional_client(getattr(Var, 'STRING_5', None), 5)
+    
+    # Bersihkan klien yang gagal diinisialisasi
+    ULTROID_CLIENTS = {k: v for k, v in ULTROID_CLIENTS.items() if v is not None}
+
+    # Definisikan list global ALL_CLIENTS untuk digunakan oleh loader dan main loop
+    ALL_CLIENTS = list(ULTROID_CLIENTS.values())
+
+    # Jika klien utama (bot) digunakan di kode VC di bawah, gunakan klien 1
+    bot = ULTROID_CLIENTS.get(1) 
+
+    # ==========================================================
+    # ⚡️ MODIFIKASI MULTI-CLIENT BERAKHIR ⚡️
+    # ==========================================================
+
+if BOT_MODE:
         ultroid_bot = asst
         if udB.get_key("OWNER_ID"):
             try:
@@ -133,4 +189,3 @@ else:
     LOGS = getLogger("xteam")
 
     ultroid_bot = asst = udB = bot = call_py = vcClient = None
-    
