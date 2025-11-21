@@ -5,7 +5,7 @@ import inspect
 import os
 from telethon import events
 # Hapus atau Komentari baris import Loader yang menyebabkan ImportError
-# from ..loader import Loader 
+from .. import LOGS
 
 
 # Asumsikan LOGS sudah diimpor dari modul utama atau logging Ultroid
