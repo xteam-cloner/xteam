@@ -1,12 +1,3 @@
-# Ultroid - UserBot
-# Copyright (C) 2021-2023 TeamUltroid
-#
-# This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
-# PLease read the GNU Affero General Public License in
-# <https://github.com/TeamUltroid/xteam/blob/main/LICENSE>.
-
-
-
 # Xteam/_misc/_decorators.py - KODE FINAL DAN LENGKAP
 
 import asyncio
@@ -80,6 +71,7 @@ def ultroid_cmd(
 
     def decor(dec):
         async def wrapp(ult):
+            # --- LOGIKA CHECK PERMISSION (TETAP SAMA) ---
             if not ult.out:
                 if owner_only:
                     return
@@ -110,6 +102,8 @@ def ultroid_cmd(
                     get_string("py_d4").format(HNDLR),
                     time=10,
                 )
+            
+            # --- LOGIKA TRY/EXCEPT (TETAP SAMA) ---
             try:
                 await dec(ult)
             except FloodWaitError as fwerr:
@@ -201,11 +195,13 @@ def ultroid_cmd(
                         link_preview=False,
                         parse_mode="html",
                     )
-
-        # 🛑 INDENTASI KRUSIAL! Di sini perbaikan SyntaxError dilakukan.
-        file = Path(inspect.stack()[1].filename) 
-        module = sys.modules[file.stem]
-        # -------------------------------------------------------------
+            
+        # 🛑 KOREKSI KEYERROR: Menggunakan f_globals["__name__"] untuk modul yang aman
+        stack_frame = inspect.stack()[1] 
+        module_name = stack_frame.frame.f_globals["__name__"]
+        module = sys.modules[module_name]
+        file = Path(stack_frame.filename) 
+        # -----------------------------------------------------------------------
 
         cmd = None
         blacklist_chats = False
@@ -263,7 +259,7 @@ def ultroid_cmd(
             )
             module.HANDLER.append((wrapp, edit_event))
             
-        # 4. Logika Manager dan DUAL_MODE (Menggunakan asst.add_event_handler langsung)
+        # 4. Logika Manager dan DUAL_MODE (Tetap menggunakan asst.add_event_handler langsung)
         if manager and MANAGER:
             allow_all = kwargs.get("allow_all", False)
             allow_pm = kwargs.get("allow_pm", False)
@@ -318,19 +314,18 @@ def ultroid_cmd(
             )
             
         # 5. Logika LIST dan LOADED
-        file = Path(inspect.stack()[1].filename) # <-- Baris ini sepertinya duplikasi dari atas (tetapi hanya digunakan untuk LIST)
         if "addons/" in str(file):
-            if LOADED.get(file.stem):
-                LOADED[file.stem].append(wrapp)
+            if LOADED.get(module_name):
+                LOADED[module_name].append(wrapp)
             else:
-                LOADED.update({file.stem: [wrapp]})
+                LOADED.update({module_name: [wrapp]})
         if pattern:
-            if LIST.get(file.stem):
-                LIST[file.stem].append(pattern)
+            if LIST.get(module_name):
+                LIST[module_name].append(pattern)
             else:
-                LIST.update({file.stem: [pattern]})
+                LIST.update({module_name: [pattern]})
 
         return wrapp
 
     return decor
-                
+
