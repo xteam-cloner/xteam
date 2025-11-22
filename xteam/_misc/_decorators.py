@@ -70,17 +70,14 @@ def ultroid_cmd(
     def decor(dec):
         async def wrapp(ult):
             
-            if ultroid_bot and ultroid_bot.me:
-                main_client_id = ultroid_bot.me.id
-                
+            if not ult.out:
                 try:
-                    processing_client_id = ult.client.me.id
+                    main_client_id = ultroid_bot.me.id
                 except AttributeError:
                     pass
                 else:
-                    if processing_client_id != main_client_id:
-                        if ult.sender_id == main_client_id:
-                            return
+                    if ult.sender_id == main_client_id:
+                        return
             
             if not ult.out:
                 if owner_only:
@@ -329,4 +326,4 @@ def ultroid_cmd(
             return wrapp
 
     return decor
-              
+                
