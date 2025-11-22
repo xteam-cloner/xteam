@@ -96,34 +96,28 @@ if run_as_module:
 
     ULTROID_CLIENTS = {}
     
-    # Klien 1: Klien utama Ultroid yang sudah diinisialisasi
     if ultroid_bot:
         ULTROID_CLIENTS[1] = ultroid_bot
 
     def create_additional_client(session_string, client_id):
-        """
-        Membuat klien Telethon tambahan dari string session, 
-        menggunakan validate_session untuk mengkonversi sesi Pyrogram.
-        """
+        
         if not session_string:
             return None
         
         try:
-            # 1. Bersihkan string dari spasi/newline
+            
             cleaned_session_string = str(session_string).strip()
             
-            # 2. VALIDASI DAN KONVERSI: Ini yang memecahkan masalah Pyrogram/Telethon
-            # validate_session mengkonversi sesi Pyrogram ke Telethon.
-            # _exit=False agar program tidak berhenti jika sesi gagal.
+            
             session = validate_session(cleaned_session_string, logger=LOGS, _exit=False) 
             
             if not session:
                 LOGS.error(f"Sesi untuk Klien Tambahan {client_id} tidak valid (format string tidak dikenali).")
                 return None
 
-            # 3. Inisialisasi Klien dengan sesi yang sudah divalidasi/dikonversi
+            
             client = UltroidClient( 
-                session=session, # Menggunakan objek session yang sudah divalidasi/dikonversi
+                session=session,
                 api_id=Var.API_ID,
                 api_hash=Var.API_HASH,
                 udB=udB,
@@ -131,27 +125,46 @@ if run_as_module:
                 device_model=f"xteam-urbot-{client_id}",
                 log_attempt=False,
             )
-            LOGS.info(f"Klien Tambahan {client_id} berhasil diinisialisasi.")
+            
+            
+            account_name = f"Klien ID {client_id}"
+            try:
+                with contextlib.suppress(Exception): 
+                    
+                    client.start(bot_token=None) 
+                    
+                    me = client.run_in_loop(client.get_me())
+                    
+                    
+                    if me:
+                        account_name = f"@{me.username}" if me.username else me.first_name or str(me.id)
+                        
+                    
+                    client.run_in_loop(client.disconnect()) 
+
+            except Exception as e:
+                LOGS.error(f"Gagal mendapatkan info akun untuk Klien Tambahan {client_id}: {e}")
+            
+            LOGS.info(f"Client {client_id} Login As {account_name}.")
             return client
         
         except Exception as e:
             LOGS.error(f"Gagal menginisialisasi Klien Tambahan {client_id}: {e}")
             return None
 
-    # Inisialisasi Klien Tambahan (STRING_2 hingga STRING_5)
+    
     ULTROID_CLIENTS[2] = create_additional_client(getattr(Var, 'STRING_2', None), 2)
     ULTROID_CLIENTS[3] = create_additional_client(getattr(Var, 'STRING_3', None), 3)
     ULTROID_CLIENTS[4] = create_additional_client(getattr(Var, 'STRING_4', None), 4)
     ULTROID_CLIENTS[5] = create_additional_client(getattr(Var, 'STRING_5', None), 5)
     
-    # Bersihkan klien yang gagal diinisialisasi
+    
     ULTROID_CLIENTS = {k: v for k, v in ULTROID_CLIENTS.items() if v is not None}
 
-    # Definisikan list global ALL_CLIENTS untuk digunakan oleh loader dan main loop
+    
     ALL_CLIENTS = list(ULTROID_CLIENTS.values())
 
-    # Jika klien utama (bot) digunakan di kode VC di bawah, gunakan klien 1
-    # Ini memastikan kompatibilitas dengan sisa kode Ultroid
+    
     bot = ULTROID_CLIENTS.get(1) 
 
     # ==========================================================
@@ -181,4 +194,5 @@ else:
     from logging import getLogger
     LOGS = getLogger("xteam")
     ultroid_bot = asst = udB = bot = call_py = vcClient = None
+
     
