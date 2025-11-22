@@ -1,5 +1,3 @@
-# Xteam/_misc/_decorators.py - KODE FINAL DAN LENGKAP
-
 import asyncio
 import inspect
 import re
