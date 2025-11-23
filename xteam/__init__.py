@@ -165,7 +165,7 @@ if run_as_module:
     ALL_CLIENTS = list(ULTROID_CLIENTS.values())
 
     
-            bot = ULTROID_CLIENTS.get(1)
+    bot = ULTROID_CLIENTS.get(1)
     client = bot 
 
     # ==========================================================
