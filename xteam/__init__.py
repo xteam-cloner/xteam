@@ -204,5 +204,5 @@ else:
     from logging import getLogger
     LOGS = getLogger("xteam")
     ultroid_bot = asst = udB = bot = call_py = vcClient = None
-
+    client = clients = None
     
