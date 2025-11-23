@@ -165,19 +165,21 @@ if run_as_module:
     ALL_CLIENTS = list(ULTROID_CLIENTS.values())
 
     
-        bot = ULTROID_CLIENTS.get(1) 
+            bot = ULTROID_CLIENTS.get(1)
+    client = bot 
 
     # ==========================================================
-    # ⚡️ MODIFIKASI MULTI-CLIENT BERAKHIR ⚡️
+    # ⚡️ MULTI-CLIENT MODIFICATION ENDS ⚡️
     # ==========================================================
     
     ADDITIONAL_CLIENTS = [
         client for id, client in ULTROID_CLIENTS.items() if id > 1
     ]
-
-    if ADDITIONAL_CLIENTS:
-        LOGS.info(f"Ditemukan {len(ADDITIONAL_CLIENTS)} Klien Tambahan (ID 2-5) yang aktif.")
     
+    clients = ADDITIONAL_CLIENTS 
+    
+    if ADDITIONAL_CLIENTS:
+        LOGS.info(f"Found {len(ADDITIONAL_CLIENTS)} Additional Clients (ID 2-5) active.")
 
     if BOT_MODE:
         ultroid_bot = asst
