@@ -34,7 +34,7 @@ from telethon.errors.rpcerrorlist import (
 from telethon.events import MessageEdited, NewMessage
 from telethon.utils import get_display_name
 
-from pyUltroid.exceptions import DependencyMissingError
+from xteam.exceptions import DependencyMissingError
 from strings import get_string
 
 from .. import *
