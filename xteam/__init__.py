@@ -70,7 +70,7 @@ if run_as_module:
             validate_session(Var.SESSION, LOGS),
             udB=udB,
             app_version=ultroid_version,
-            device_model="Ultroid",
+            device_model="xteam-urbot",
         )
         ultroid_bot.run_in_loop(autobot())
 
@@ -81,10 +81,10 @@ if run_as_module:
         # Ambil ID klien dari environment variable yang diset oleh launcher
         client_id = os.environ.get("CLIENT_ID", "1")
         # Buat nama sesi unik, misal: asst_client_1, asst_client_2
-        asst_session_name = f"asst_client_{client_id}"
+        asst_session = f"asst{client_id}"
         
         # Gunakan nama sesi unik saat membuat UltroidClient
-        asst = UltroidClient(asst_session_name, bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
+        asst = UltroidClient(asst_session, bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
         # -------------------------------------------------------------
 
     if BOT_MODE:
@@ -107,10 +107,10 @@ if run_as_module:
     DUAL_HNDLR = udB.get_key("DUAL_HNDLR") or "/"
     SUDO_HNDLR = udB.get_key("SUDO_HNDLR") or HNDLR
 else:
-    print("pyUltroid 2022 © TeamUltroid")
+    print("xteam 2022 © Xteam-Cloner")
 
     from logging import getLogger
 
-    LOGS = getLogger("pyUltroid")
+    LOGS = getLogger("xteam")
 
     ultroid_bot = asst = udB = vcClient = None
