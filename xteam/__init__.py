@@ -153,10 +153,10 @@ if run_as_module:
             return None
 
     
-    ULTROID_CLIENTS[2] = create_additional_client(getattr(Var, 'STRING_2', None), 2)
-    ULTROID_CLIENTS[3] = create_additional_client(getattr(Var, 'STRING_3', None), 3)
-    ULTROID_CLIENTS[4] = create_additional_client(getattr(Var, 'STRING_4', None), 4)
-    ULTROID_CLIENTS[5] = create_additional_client(getattr(Var, 'STRING_5', None), 5)
+    ULTROID_CLIENTS[2] = create_additional_client(getattr(Var, 'SESSION2', None), 2)
+    ULTROID_CLIENTS[3] = create_additional_client(getattr(Var, 'SESSION3', None), 3)
+    ULTROID_CLIENTS[4] = create_additional_client(getattr(Var, 'SESSION4', None), 4)
+    ULTROID_CLIENTS[5] = create_additional_client(getattr(Var, 'SESSION5', None), 5)
     
     
     ULTROID_CLIENTS = {k: v for k, v in ULTROID_CLIENTS.items() if v is not None}
