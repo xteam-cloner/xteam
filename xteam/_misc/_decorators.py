@@ -1,3 +1,10 @@
+# Ultroid - UserBot
+# Copyright (C) 2021-2025 TeamUltroid
+#
+# This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
+# PLease read the GNU Affero General Public License in
+# <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
+
 import asyncio
 import inspect
 import re
@@ -27,7 +34,7 @@ from telethon.errors.rpcerrorlist import (
 from telethon.events import MessageEdited, NewMessage
 from telethon.utils import get_display_name
 
-from xteam.exceptions import DependencyMissingError
+from pyUltroid.exceptions import DependencyMissingError
 from strings import get_string
 
 from .. import *
@@ -47,12 +54,14 @@ TAKE_EDITS = udB.get_key("TAKE_EDITS")
 black_list_chats = udB.get_key("BLACKLIST_CHATS")
 allow_sudo = SUDO_M.should_allow_sudo
 
+
 def compile_pattern(data, hndlr):
     if data.startswith("^"):
         data = data[1:]
     if data.startswith("."):
         data = data[1:]
     if hndlr in [" ", "NO_HNDLR"]:
+        # No Hndlr Feature
         return re.compile("^" + data)
     return re.compile("\\" + hndlr + data)
 
@@ -69,7 +78,21 @@ def ultroid_cmd(
 
     def decor(dec):
         async def wrapp(ult):
-            # --- LOGIKA CHECK PERMISSION (TETAP SAMA) ---
+            if udB.get_key("COMMAND_LOGGER"):
+                user_id = ult.sender_id
+                chat_id = ult.chat_id
+                command_name = pattern if pattern else ult.text.split()[0].lstrip(HNDLR)
+                chat_name = get_display_name(ult.chat)
+                LOGS.info(f"Command '{command_name}' executed by user ID {user_id} in chat {chat_id} ({chat_name})")
+                log_channel = udB.get_key("LOG_CHANNEL")
+                if log_channel:
+                    try:
+                        await asst.send_message(
+                            log_channel,
+                            f"Command '{command_name}' executed by user ID {user_id} in chat {chat_id} ({chat_name})"
+                        )
+                    except Exception as e:
+                        LOGS.warning(f"Failed to send command log to log channel {log_channel}: {e}")
             if not ult.out:
                 if owner_only:
                     return
@@ -100,8 +123,6 @@ def ultroid_cmd(
                     get_string("py_d4").format(HNDLR),
                     time=10,
                 )
-            
-            # --- LOGIKA TRY/EXCEPT (TETAP SAMA) ---
             try:
                 await dec(ult)
             except FloodWaitError as fwerr:
@@ -158,7 +179,13 @@ def ultroid_cmd(
                 LOGS.exception(e)
                 date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 naam = get_display_name(chat)
-                ftext = "**Userbot Client Error:** `Forward this to` @xteam-cloner\n\n"
+                ftext = "**Ultroid Client Error:** `Forward this to` @UltroidSupportChat\n\n"
+                ftext += "**Py-Ultroid Version:** `" + str(pyver)
+                ftext += "`\n**Ultroid Version:** `" + str(ult_ver)
+                ftext += "`\n**Telethon Version:** `" + str(telever)
+                ftext += f"`\n**Hosted At:** `{HOSTED_ON}`\n\n"
+                ftext += "--------START ULTROID CRASH LOG--------"
+                ftext += "\n**Date:** `" + date
                 ftext += "`\n**Group:** `" + str(ult.chat_id) + "` " + str(naam)
                 ftext += "\n**Sender ID:** `" + str(ult.sender_id)
                 ftext += "`\n**Replied:** `" + str(ult.is_reply)
@@ -168,6 +195,8 @@ def ultroid_cmd(
                 ftext += str(format_exc())
                 ftext += "`\n\n**Error text:**`\n"
                 ftext += str(sys.exc_info()[1])
+                ftext += "`\n\n--------END ULTROID CRASH LOG--------"
+                ftext += "\n\n\n**Last 5 commits:**`\n"
 
                 stdout, stderr = await bash('git log --pretty=format:"%an: %s" -5')
                 result = stdout + (stderr or "")
@@ -180,7 +209,7 @@ def ultroid_cmd(
                         error_log = await asst.send_file(
                             udB.get_key("LOG_CHANNEL"),
                             file,
-                            caption="**Userbot Client Error:** `Forward this to` @UltroidSupportChat\n\n",
+                            caption="**Ultroid Client Error:** `Forward this to` @UltroidSupportChat\n\n",
                         )
                 else:
                     error_log = await asst.send_message(
@@ -193,13 +222,6 @@ def ultroid_cmd(
                         link_preview=False,
                         parse_mode="html",
                     )
-            
-        # 🛑 KOREKSI KEYERROR: Menggunakan f_globals["__name__"] untuk modul yang aman
-        stack_frame = inspect.stack()[1] 
-        module_name = stack_frame.frame.f_globals["__name__"]
-        module = sys.modules[module_name]
-        file = Path(stack_frame.filename) 
-        # -----------------------------------------------------------------------
 
         cmd = None
         blacklist_chats = False
@@ -207,57 +229,49 @@ def ultroid_cmd(
         if black_list_chats:
             blacklist_chats = True
             chats = list(black_list_chats)
-            
         _add_new = allow_sudo and HNDLR != SUDO_HNDLR
-
-        # Inisialisasi daftar HANDLER jika belum ada
-        if not hasattr(module, "HANDLER"):
-            setattr(module, "HANDLER", [])
-
-        # 1. Pendaftaran untuk Sudo (Incoming)
         if _add_new:
             if pattern:
-                cmd_sudo = compile_pattern(pattern, SUDO_HNDLR)
-            
-            sudo_event = NewMessage(
-                pattern=cmd_sudo,
-                incoming=True,
+                cmd = compile_pattern(pattern, SUDO_HNDLR)
+            ultroid_bot.add_event_handler(
+                wrapp,
+                NewMessage(
+                    pattern=cmd,
+                    incoming=True,
+                    forwards=False,
+                    func=func,
+                    chats=chats,
+                    blacklist_chats=blacklist_chats,
+                ),
+            )
+        if pattern:
+            cmd = compile_pattern(pattern, HNDLR)
+        ultroid_bot.add_event_handler(
+            wrapp,
+            NewMessage(
+                outgoing=True if _add_new else None,
+                pattern=cmd,
                 forwards=False,
                 func=func,
                 chats=chats,
                 blacklist_chats=blacklist_chats,
-            )
-            module.HANDLER.append((wrapp, sudo_event))
-
-        # 2. Pendaftaran untuk Userbot Utama (Outgoing)
-        if pattern:
-            cmd = compile_pattern(pattern, HNDLR)
-        
-        main_event = NewMessage(
-            outgoing=True if _add_new else None,
-            pattern=cmd,
-            forwards=False,
-            func=func,
-            chats=chats,
-            blacklist_chats=blacklist_chats,
+            ),
         )
-        module.HANDLER.append((wrapp, main_event))
-
-        # 3. Pendaftaran untuk Pesan yang Diedit
         if TAKE_EDITS:
+
             def func_(x):
                 return not x.via_bot_id and not (x.is_channel and x.chat.broadcast)
 
-            edit_event = MessageEdited(
-                pattern=cmd,
-                forwards=False,
-                func=func_,
-                chats=chats,
-                blacklist_chats=blacklist_chats,
+            ultroid_bot.add_event_handler(
+                wrapp,
+                MessageEdited(
+                    pattern=cmd,
+                    forwards=False,
+                    func=func_,
+                    chats=chats,
+                    blacklist_chats=blacklist_chats,
+                ),
             )
-            module.HANDLER.append((wrapp, edit_event))
-            
-        # 4. Logika Manager dan DUAL_MODE (Tetap menggunakan asst.add_event_handler langsung)
         if manager and MANAGER:
             allow_all = kwargs.get("allow_all", False)
             allow_pm = kwargs.get("allow_pm", False)
@@ -310,20 +324,17 @@ def ultroid_cmd(
                     blacklist_chats=blacklist_chats,
                 ),
             )
-            
-        # 5. Logika LIST dan LOADED
+        file = Path(inspect.stack()[1].filename)
         if "addons/" in str(file):
-            if LOADED.get(module_name):
-                LOADED[module_name].append(wrapp)
+            if LOADED.get(file.stem):
+                LOADED[file.stem].append(wrapp)
             else:
-                LOADED.update({module_name: [wrapp]})
+                LOADED.update({file.stem: [wrapp]})
         if pattern:
-            if LIST.get(module_name):
-                LIST[module_name].append(pattern)
+            if LIST.get(file.stem):
+                LIST[file.stem].append(pattern)
             else:
-                LIST.update({module_name: [pattern]})
-
+                LIST.update({file.stem: [pattern]})
         return wrapp
 
     return decor
-
