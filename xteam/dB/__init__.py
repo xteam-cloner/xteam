@@ -1,5 +1,5 @@
 from .. import run_as_module
-import resources
+#import resources
 from secrets import choice
 import random
 from secrets import choice
