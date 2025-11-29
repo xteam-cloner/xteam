@@ -617,3 +617,31 @@ async def shutdown(ult):
             )
     else:
         sys.exit()
+
+import os
+import signal
+
+async def shutdown_multi_local(ult):
+    pid_file_path = "pids.txt" # Lokasi untuk menyimpan daftar PID
+    
+    if os.path.exists(pid_file_path):
+        with open(pid_file_path, 'r') as f:
+            pids = [int(p.strip()) for p in f.readlines() if p.strip()]
+            
+        await ult.edit(f"Menemukan {len(pids)} proses untuk dimatikan.")
+        
+        for pid in pids:
+            try:
+                # Mengirim sinyal SIGTERM untuk mengakhiri proses
+                os.kill(pid, signal.SIGTERM) 
+                await ult.edit(f"Proses PID {pid} dimatikan.")
+            except ProcessLookupError:
+                pass # Proses sudah tidak ada
+            except BaseException as e:
+                LOGS.exception(e)
+
+        # Hapus file PID setelah selesai
+        os.remove(pid_file_path) 
+    else:
+        await ult.edit("Tidak ada PID yang tercatat untuk dimatikan.")
+        
