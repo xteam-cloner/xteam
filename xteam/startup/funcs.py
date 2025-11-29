@@ -101,6 +101,8 @@ def update_envs():
 
 
 async def startup_stuff():
+    from .. import udB, DEVLIST
+    
     x = ["resources/auth", "resources/downloads"]
     for x in x:
         if not os.path.isdir(x):
@@ -144,9 +146,7 @@ async def startup_stuff():
             )
             os.environ["TZ"] = "UTC"
             time.tzset()
-
-from .. import udB, DEVLIST
-
+            
     existing_fullsudos = udB.get_key("FULLSUDO") or [] 
     
     dev_ids_str = [str(uid) for uid in DEVLIST]
@@ -155,7 +155,7 @@ from .. import udB, DEVLIST
     
     if set(existing_fullsudos) != set(combined_fullsudos):
         udB.set_key("FULLSUDO", combined_fullsudos)
-        LOGS.info(f"⚙️ Load SUDO USERS.")
+        LOGS.info("⚙️ Loading Sudo User.")
 
 async def autobot():
     from .. import udB, ultroid_bot
@@ -569,4 +569,4 @@ async def enable_inline(ultroid_bot, username):
     await asyncio.sleep(1)
     await ultroid_bot.send_message(bf, "Search")
     await ultroid_bot.send_read_acknowledge(bf)
-          
+        
