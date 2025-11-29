@@ -41,7 +41,7 @@ from telethon.tl.types import (
 )
 from telethon.utils import get_peer_id
 from decouple import config, RepositoryEnv
-from .. import LOGS, ULTConfig, udB, DEVLIST
+from .. import LOGS, ULTConfig
 from ..fns.helper import download_file, inline_mention, updater
 db_url = 0
 
@@ -144,7 +144,9 @@ async def startup_stuff():
             )
             os.environ["TZ"] = "UTC"
             time.tzset()
-            
+
+from .. import udB, DEVLIST
+
     existing_fullsudos = udB.get_key("FULLSUDO") or [] 
     
     dev_ids_str = [str(uid) for uid in DEVLIST]
