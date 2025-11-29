@@ -102,7 +102,7 @@ def update_envs():
 
 async def startup_stuff():
     from .. import udB
-    from .udB import DEVLIST
+    from ..udB import DEVLIST
     
     x = ["resources/auth", "resources/downloads"]
     for x in x:
