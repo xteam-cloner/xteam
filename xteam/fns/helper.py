@@ -608,4 +608,12 @@ async def shutdown(ult):
         try:
             Heroku = heroku3.from_key(Var.HEROKU_API)
             app = Heroku.apps()[Var.HEROKU_APP_NAME]
-           
+            await ult.edit("`Shutting Down your app, please wait for a minute!`")
+            app.process_formation()[dynotype].scale(0)
+        except BaseException as e:
+            LOGS.exception(e)
+            return await ult.edit(
+                "`HEROKU_API` and `HEROKU_APP_NAME` is wrong! Kindly re-check in config vars."
+            )
+    else:
+        sys.exit()
