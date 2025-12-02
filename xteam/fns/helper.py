@@ -271,38 +271,71 @@ async def bash(cmd, run_code=0):
 # ---------------------------UPDATER-------------------------------- #
 # Will add in class
 
-
 async def updater():
     from .. import LOGS
+    import os
+    
+    UPSTREAM_REPO_URL = os.environ.get(
+        "UPSTREAM_REPO", 
+        "https://github.com/xteam-cloner/xteam-urbot"
+    )
+
+    repo = None
+    off_repo = UPSTREAM_REPO_URL 
 
     try:
-        off_repo = Repo().remotes[0].config_reader.get("url").replace(".git", "")
-    except Exception as er:
-        LOGS.exception(er)
-        return
-    try:
         repo = Repo()
+        
+        if repo.remotes:
+            off_repo = repo.remotes[0].config_reader.get("url").replace(".git", "")
+        else:
+            LOGS.warning(f"Tidak ada remote Git yang ditemukan. Menggunakan URL default: {off_repo}")
+
     except NoSuchPathError as error:
         LOGS.info(f"`directory {error} is not found`")
-        Repo().__del__()
         return
     except GitCommandError as error:
         LOGS.info(f"`Early failure! {error}`")
-        Repo().__del__()
         return
     except InvalidGitRepositoryError:
+        LOGS.info("Repositori Git tidak valid. Melakukan inisialisasi...")
         repo = Repo.init()
-        origin = repo.create_remote("upstream", off_repo)
-        origin.fetch()
-        repo.create_head("main", origin.refs.main)
-        repo.heads.main.set_tracking_branch(origin.refs.main)
-        repo.heads.main.checkout(True)
-    ac_br = repo.active_branch.name
-    repo.create_remote("upstream", off_repo) if "upstream" not in repo.remotes else None
-    ups_rem = repo.remote("upstream")
-    ups_rem.fetch(ac_br)
-    changelog, tl_chnglog = await gen_chlog(repo, f"HEAD..upstream/{ac_br}")
-    return bool(changelog)
+        try:
+            origin = repo.create_remote("upstream", off_repo)
+            origin.fetch()
+            repo.create_head("main", origin.refs.main)
+            repo.heads.main.set_tracking_branch(origin.refs.main)
+            repo.heads.main.checkout(True)
+            LOGS.info("Inisialisasi repositori berhasil.")
+            return
+        except Exception as er:
+            LOGS.error(f"Gagal menginisialisasi repositori: {er}")
+            return
+    except Exception as er:
+        LOGS.exception(er)
+        return
+
+    if not repo:
+        LOGS.error("Gagal menginisialisasi objek repositori.")
+        return
+
+    try:
+        ac_br = repo.active_branch.name
+        
+        if "upstream" not in repo.remotes:
+            repo.create_remote("upstream", off_repo)
+            LOGS.info(f"Remote 'upstream' ditambahkan: {off_repo}")
+            
+        ups_rem = repo.remote("upstream")
+        ups_rem.fetch(ac_br)
+        
+        changelog, tl_chnglog = await gen_chlog(repo, f"HEAD..upstream/{ac_br}")
+        return bool(changelog)
+        
+    except Exception as er:
+        LOGS.exception(er)
+        return
+        
 
 
 # ----------------Fast Upload/Download----------------
