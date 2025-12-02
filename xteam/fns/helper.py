@@ -1,9 +1,9 @@
 # Ultroid - UserBot
-# Copyright (C) 2021-2023 TeamUltroid
+# Copyright (C) 2021-2025 TeamUltroid
 #
 # This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
-# <https://github.com/TeamUltroid/xteam/blob/main/LICENSE>.
+# <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
 import asyncio
 import math
@@ -18,7 +18,7 @@ from urllib.request import urlretrieve
 from .. import run_as_module
 
 if run_as_module:
-    from xteam.configs import Var
+    from ..configs import Var
 
 
 try:
@@ -204,21 +204,21 @@ if run_as_module:
             )
         await xx.edit("`Downloading Logs...`")
         ok = app.get_log()
-        with open("userbot-heroku.log", "w") as log:
+        with open("ultroid-heroku.log", "w") as log:
             log.write(ok)
         await event.client.send_file(
             event.chat_id,
-            file="userbot-heroku.log",
+            file="ultroid-heroku.log",
             thumb=ULTConfig.thumb,
-            caption="**Userbot Heroku Logs.**",
+            caption="**Ultroid Heroku Logs.**",
         )
 
-        os.remove("usebot-heroku.log")
+        os.remove("ultroid-heroku.log")
         await xx.delete()
 
     async def def_logs(ult, file):
         await ult.respond(
-            "**Userbot Logs.**",
+            "**Ultroid Logs.**",
             file=file,
             thumb=ULTConfig.thumb,
         )
@@ -237,8 +237,8 @@ if run_as_module:
         )
         ac_br = repo.active_branch.name
         ch_log = tldr_log = ""
-        ch = f"<b>xteam-urbot {ultroid_version} updates for <a href={UPSTREAM_REPO_URL}/tree/{ac_br}>[{ac_br}]</a>:</b>"
-        ch_tl = f"xteam-urbot {ultroid_version} updates for {ac_br}:"
+        ch = f"<b>Ultroid {ultroid_version} updates for <a href={UPSTREAM_REPO_URL}/tree/{ac_br}>[{ac_br}]</a>:</b>"
+        ch_tl = f"Ultroid {ultroid_version} updates for {ac_br}:"
         d_form = "%d/%m/%y || %H:%M"
         for c in repo.iter_commits(diff):
             ch_log += f"\n\n💬 <b>{c.count()}</b> 🗓 <b>[{c.committed_datetime.strftime(d_form)}]</b>\n<b><a href={UPSTREAM_REPO_URL.rstrip('/')}/commit/{c}>[{c.summary}]</a></b> 👨‍💻 <code>{c.author}</code>"
@@ -471,8 +471,8 @@ def mediainfo(media):
 
 
 def time_formatter(milliseconds):
-    minutes, seconds = divmod(int(milliseconds / 100), 6)
-    hours, minutes = divmod(minutes, 6)
+    minutes, seconds = divmod(int(milliseconds / 1000), 60)
+    hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
     weeks, days = divmod(days, 7)
     tmp = (
@@ -580,21 +580,21 @@ async def restart(ult=None):
                 )
             LOGS.exception(er)
     else:
+        # Preserve current working directory for multi-client setup
+        # os.execl() preserves the working directory, so we stay in client_N/ if that's where we are
+        # PYTHONPATH is set in the environment, so pyUltroid can be imported from anywhere
+        
         if len(sys.argv) == 1:
-            os.execl(sys.executable, sys.executable, "-m", "xteam")
+            os.execl(sys.executable, sys.executable, "-m", "pyUltroid")
         else:
-            os.execl(
-                sys.executable,
-                sys.executable,
-                "-m",
-                "xteam",
-                sys.argv[1],
-                sys.argv[2],
-                sys.argv[3],
-                sys.argv[4],
-                sys.argv[5],
-                sys.argv[6],
-            )
+            # Preserve all sys.argv arguments (API_ID, API_HASH, SESSION, etc.)
+            args = [sys.executable, sys.executable, "-m", "pyUltroid"]
+            for i in range(1, min(len(sys.argv), 7)):
+                args.append(sys.argv[i])
+            # Pad with empty strings if needed (pyUltroid expects 6 args total)
+            while len(args) < 8:
+                args.append("")
+            os.execl(*args)
 
 
 async def shutdown(ult):
@@ -608,40 +608,4 @@ async def shutdown(ult):
         try:
             Heroku = heroku3.from_key(Var.HEROKU_API)
             app = Heroku.apps()[Var.HEROKU_APP_NAME]
-            await ult.edit("`Shutting Down your app, please wait for a minute!`")
-            app.process_formation()[dynotype].scale(0)
-        except BaseException as e:
-            LOGS.exception(e)
-            return await ult.edit(
-                "`HEROKU_API` and `HEROKU_APP_NAME` is wrong! Kindly re-check in config vars."
-            )
-    else:
-        sys.exit()
-
-import os
-import signal
-
-async def shutdown_multi_local(ult):
-    pid_file_path = "pids.txt" # Lokasi untuk menyimpan daftar PID
-    
-    if os.path.exists(pid_file_path):
-        with open(pid_file_path, 'r') as f:
-            pids = [int(p.strip()) for p in f.readlines() if p.strip()]
-            
-        await ult.edit(f"Menemukan {len(pids)} proses untuk dimatikan.")
-        
-        for pid in pids:
-            try:
-                # Mengirim sinyal SIGTERM untuk mengakhiri proses
-                os.kill(pid, signal.SIGTERM) 
-                await ult.edit(f"Proses PID {pid} dimatikan.")
-            except ProcessLookupError:
-                pass # Proses sudah tidak ada
-            except BaseException as e:
-                LOGS.exception(e)
-
-        # Hapus file PID setelah selesai
-        os.remove(pid_file_path) 
-    else:
-        await ult.edit("Tidak ada PID yang tercatat untuk dimatikan.")
-        
+           
