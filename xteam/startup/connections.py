@@ -73,77 +73,22 @@ def validate_session(session, logger=LOGS, _exit=True):
         sys.exit()
 
 
-"""def vc_connection(udB, ultroid_bot):
-    from strings import get_string
-    #from pytgcalls import PyTgCalls
-
-    VC_SESSION = Var.VC_SESSION or udB.get_key("VC_SESSION")
-    if VC_SESSION and VC_SESSION != Var.SESSION:
-        LOGS.info("Starting up VcClient.")
-        try:
-            vc_client = UltroidClient(
-                validate_session(VC_SESSION, _exit=False),
-                log_attempt=False,
-                exit_on_error=False,
-            )
-            try:
-                PyTgCalls(vc_client)
-                LOGS.info("PyTgCalls client initiated for VC.")
-                return vc_client
-            except Exception as e:
-                LOGS.error(f"Failed to initialize PyTgCalls for VC: {e}")
-                return ultroid_bot # Fallback to the main bot if PyTgCalls fails
-        except (AuthKeyDuplicatedError, EOFError):
-            LOGS.info(get_string("py_c3"))
-            udB.del_key("VC_SESSION")
-        except Exception as er:
-            LOGS.info("While creating Client for VC.")
-            LOGS.exception(er)
-    return ultroid_bot
-"""
-
 def vc_connection(udB, ultroid_bot):
-    # Imports are assumed to be available or managed by the surrounding module
     from strings import get_string
-    # The 'PyTgCalls' import is typically done outside the function or within a try block 
-    # to handle its potential absence, but it's used inside the function logic here.
-    # from pytgcalls import PyTgCalls # Re-enable if it's not imported globally
 
-    # 1. Retrieve VC Session
     VC_SESSION = Var.VC_SESSION or udB.get_key("VC_SESSION")
-
-    # 2. Check if a separate VC session exists and is different
     if VC_SESSION and VC_SESSION != Var.SESSION:
         LOGS.info("Starting up VcClient.")
         try:
-            # 3. Create the VC client
-            vc_client = UltroidClient(
+            return UltroidClient(
                 validate_session(VC_SESSION, _exit=False),
                 log_attempt=False,
                 exit_on_error=False,
             )
-            try:
-                # Import PyTgCalls inside the function if it's not global
-                from pytgcalls import PyTgCalls 
-                # 4. Initialize PyTgCalls for Voice Chats
-                PyTgCalls(vc_client)
-                LOGS.info("PyTgCalls client initiated for VC.")
-                # 5. Success: Return the dedicated VC client
-                return vc_client
-            except Exception as e:
-                # 6. Fallback if PyTgCalls fails
-                LOGS.error(f"Failed to initialize PyTgCalls for VC: {e}")
-                return ultroid_bot  # Fallback to the main bot
-
         except (AuthKeyDuplicatedError, EOFError):
-            # 7. Handle bad session keys
             LOGS.info(get_string("py_c3"))
             udB.del_key("VC_SESSION")
         except Exception as er:
-            # 8. Handle general client creation errors
             LOGS.info("While creating Client for VC.")
             LOGS.exception(er)
-
-    # 9. Final Fallback: Return the main bot if no VC session was set,
-    # or if any fatal error prevented the VC client from being created.
     return ultroid_bot
