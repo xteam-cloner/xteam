@@ -277,7 +277,7 @@ async def updater():
     
     UPSTREAM_REPO_URL = os.environ.get(
         "UPSTREAM_REPO", 
-        "https://github.com/xteam-cloner/xteam-urbot"
+        "https://github.com/xteam-cloner/xteam-urbot.git"
     )
 
     repo = None
