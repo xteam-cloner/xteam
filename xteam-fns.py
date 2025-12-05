@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 long_description = "# xteam-fns"
 
 name = "xteam-fns"
-author = "TeamX"
+author = "xteam_cloner"
 author_email = "xteamji@gmail.com"
 description = "Function based library for telegram telethon projects."
 license_ = "GNU AFFERO GENERAL PUBLIC LICENSE (v3)"
@@ -18,7 +18,7 @@ url = "https://github.com/xteam-cloner/xteam"
 
 project_urls = {
     "Bug Tracker": "https://github.com/xteam-cloner/xteam/issues",
-    "Documentation": "https://ultroid.tech",
+    "Documentation": "https://t.me/xteam_cloner",
     "Source Code": "https://github.com/xteam-cloner/xteam",
 }
 classifiers = [
@@ -28,6 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
 ]
