@@ -25,44 +25,13 @@ pip3 install git+https://github.com/xteam-cloner/xteam
    API_ID
    API_HASH
    SESSION
-   REDIS_URI
-   REDIS_PASSWORD
+   MONGO_URI
    ```
 - Check
 [`.env.sample`](https://github.com/TeamUltroid/Ultroid/blob/main/.env.sample) for more details.   
 - Run `python3 -m xteam` to start the bot.   
 
-## Creating plugins
- - ### To work everywhere
-
-```python
-@ultroid_cmd(
-    pattern="start"
-)   
-async def _(e):   
-    await e.eor("Ultroid Started!")   
-```
-
-- ### To work only in groups
-
-```python
-@ultroid_cmd(
-    pattern="start",
-    groups_only=True,
-)   
-async def _(e):   
-    await eor(e, "Ultroid Started.")   
-```
-
-- ### Assistant Plugins 👇
-
-```python
-@asst_cmd("start")   
-async def _(e):   
-    await e.reply("Ultroid Started.")   
-```
-
-See more working plugins on [the offical repository](https://github.com/xteam-cloner/Userbotx)!
+See more working plugins on [the offical repository](https://github.com/xteam-cloner/xteam-urbot)!
 
 > Made with ♥️ by [@TeamX](https://t.me/xteam_cloner).    
 
@@ -74,4 +43,5 @@ Userbot is licensed under [GNU Affero General Public License](https://www.gnu.or
 # Credits
 * [![TeamX-Devs](https://img.shields.io/static/v1?label=TeamX&message=devs&color=critical)](https://t.me/UltroidDevs)
 * [Lonami](https://github.com/Lonami) for [Telethon](https://github.com/LonamiWebs/Telethon)
+
 
