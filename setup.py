@@ -55,12 +55,6 @@ requirements = [
     "catbox-uploader",
     "cloudscraper",
     "pymongo",
-    "git+https://github.com/LonamiWebs/Telethon.git",
-    "git+https://github.com/New-dev0/instagrapi.git@39df1b1#egg=instagrapi",
-    "git+https://github.com/xteam-cloner/xteam.git",
-    "git+https://github.com/buddhhu/img2html.git@c44170d#egg=img2html",
-    "git+https://github.com/ufoptg/akipy.git",
-    "git+https://github.com/xteam-cloner/pytgcalls.git"
 ]
 
 with open("xteam/version.py", "rt", encoding="utf8") as x:
