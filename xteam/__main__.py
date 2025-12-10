@@ -82,7 +82,7 @@ async def main():
         
         # *** PERBAIKAN KRITIS 2: Menetapkan Nilai ke Global Client ***
         # Gunakan variabel global yang diimpor dari __init__.py
-        global vcClient
+        #global vcClient
         # *************************************************************
 
     # load_other_plugins: Gunakan klien lokal sebagai argumen
