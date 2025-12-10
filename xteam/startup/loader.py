@@ -45,6 +45,7 @@ def _after_load(loader, module, plugin_name=""):
                 loader._logger.exception(em)
 
 
+# FUNGSI INI HARUS ASYNC DEF
 async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
 
     # for official
@@ -117,7 +118,8 @@ async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
             Loader(path="assistant/pmbot.py").load(log=False)
 
     # vc bot
-    if vcbot and (vcClient and not vcClient.me.bot):
+    # GANTI vcClient MENJADI vcbot
+    if vcbot and (vcbot and not vcbot.me.bot):
         try:
             import pytgcalls  # ignore: pylint
 
@@ -138,3 +140,4 @@ async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
                 LOGS.error(f"{e} Skipping VCBot Installation.")
         except ModuleNotFoundError:
             LOGS.error("'pytgcalls' not installed!\nSkipping loading of VCBOT.")
+            
