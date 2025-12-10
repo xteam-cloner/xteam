@@ -45,7 +45,7 @@ def _after_load(loader, module, plugin_name=""):
                 loader._logger.exception(em)
 
 
-def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
+async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
 
     # for official
     _exclude = udB.get_key("EXCLUDE_OFFICIAL") or config("EXCLUDE_OFFICIAL", None)
