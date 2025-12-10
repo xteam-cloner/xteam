@@ -100,7 +100,7 @@ if run_as_module:
     elif not asst.me.bot_inline_placeholder and asst._bot:
         ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
 
-    from .. import vcClient
+    #from .. import vcClient
     #vcClient = await vc_connection(udB, ultroid_bot)
 
     _version_changes(udB)
