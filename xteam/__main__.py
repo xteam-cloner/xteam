@@ -10,7 +10,7 @@ import os
 import sys
 import time
 import asyncio # Wajib untuk loop.create_task()
-
+from pytgcalls import PyTgCalls
 # --- Import yang diperlukan ---
 from .startup.connections import vc_connection
 from .fns.helper import bash, time_formatter, updater
