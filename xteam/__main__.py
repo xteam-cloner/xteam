@@ -6,28 +6,40 @@
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
 from . import *
+import os
+import sys
+import time
 
-# *** PERUBAHAN 1: Impor Fungsi Asinkron VC ***
-from .startup.connections import vc_connection 
+# --- BARIS BARU: Import yang diperlukan untuk Event Handling & VC ---
+from telethon import events
+from .startup.connections import vc_connection # Import vc_connection
+from .fns.helper import bash, time_formatter, updater
+from .startup.funcs import (
+    WasItRestart,
+    autopilot,
+    customize,
+    plug,
+    ready,
+    startup_stuff,
+)
+from .startup.loader import load_other_plugins 
+# --- AKHIR BARIS BARU ---
 
 
-# *** PERUBAHAN 2: Definisikan main sebagai async def ***
-async def main():
-    import os
-    import sys
-    import time
+# *** PERUBAHAN KRITIS: MENGGANTI async def main() dengan Event Handler ***
+# Handler ini akan dipicu ketika bot menerima pesan pertamanya dari dirinya sendiri (saat online).
+@ultroid_bot.on(events.NewMessage(func=lambda e: not e.is_group and e.is_private and e.is_self))
+async def startup_tasks(event):
+    
+    # --- LOGIKA RUN ONCE (Wajib untuk Startup Handler) ---
+    if hasattr(ultroid_bot, '_setup_done'):
+        # Handler ini sudah dijalankan sebelumnya. Hentikan eksekusi.
+        ultroid_bot.remove_event_handler(startup_tasks)
+        return
+    ultroid_bot._setup_done = True
+    # --------------------------------------------------------
 
-    from .fns.helper import bash, time_formatter, updater
-    from .startup.funcs import (
-        WasItRestart,
-        autopilot,
-        customize,
-        plug,
-        ready,
-        startup_stuff,
-    )
-    # Asumsikan load_other_plugins di loader.py sudah diubah menjadi async def
-    from .startup.loader import load_other_plugins 
+    # --- KODE LAMA DARI async def main() DIMULAI DI SINI ---
 
     try:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -38,17 +50,15 @@ async def main():
     if (
         udB.get_key("UPDATE_ON_RESTART")
         and os.path.exists(".git")
-        # Perlu menggunakan await di sini jika updater() adalah coroutine, 
-        # tetapi kita akan pertahankan pola run_in_loop Ultroid
         and ultroid_bot.run_in_loop(updater())
     ):
         ultroid_bot.run_in_loop(bash("bash installer.sh"))
-
         os.execl(sys.executable, sys.executable, "-m", "pyUltroid")
 
     ultroid_bot.run_in_loop(startup_stuff())
 
-    ultroid_bot.me.phone = None
+    # Diasumsikan ultroid_bot.me sudah tersedia di dalam event handler
+    ultroid_bot.me.phone = None 
 
     if not ultroid_bot.me.bot:
         udB.set_key("OWNER_ID", ultroid_bot.uid)
@@ -70,14 +80,13 @@ async def main():
         _plugins = "autocorrect autopic audiotools compressor forcesubscribe fedutils gdrive glitch instagram nsfwfilter nightmode pdftools profanityfilter writer youtube"
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
-    # *** PERUBAHAN 3: Inisialisasi dan Await Klien VC ***
+    # *** PERBAIKAN VC CLIENT: Await Inisialisasi ***
     vcClient = None
     if vcbot_enabled:
         # Panggil fungsi async vc_connection dan TUNGGU hasilnya
         vcClient = await vc_connection(udB, ultroid_bot) 
         
-    # *** PERUBAHAN 4: Await load_other_plugins dan Teruskan vcClient ***
-    # vcClient adalah objek klien yang valid, bukan lagi boolean/string.
+    # *** PERBAIKAN LOADER: Await load_other_plugins ***
     await load_other_plugins(addons=addons, pmbot=pmbot, manager=manager, vcbot=vcClient)
 
     suc_msg = """
@@ -112,8 +121,16 @@ async def main():
         f"Took {time_formatter((time.time() - start_time)*1000)} to start •ULTROID•"
     )
     LOGS.info(suc_msg)
+    
+    # --- KODE LAMA DARI async def main() BERAKHIR DI SINI ---
 
 
 if __name__ == "__main__":
-    ultroid_bot.run()
-    asst.run()
+    # *** PERBAIKAN KRITIS: Entry Point File Sederhana ***
+    # Ini untuk mengatasi TypeError. Bot akan memulai loop dan menjalankan handler di atas.
+    
+    ultroid_bot.run() # Memulai bot utama dan event loop-nya
+    
+    # asst.run() # Memulai bot asisten di loop yang sama atau loop terpisah
+                 # (Biarkan ini jika diperlukan oleh framework)
+    
