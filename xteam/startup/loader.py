@@ -118,8 +118,9 @@ async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
             Loader(path="assistant/pmbot.py").load(log=False)
 
     # vc bot
-    # GANTI vcClient MENJADI vcbot
-    if vcbot and (vcbot and not vcbot.me.bot):
+    # *** PERBAIKAN KRITIS UNTUK ATRIBUT ME ***
+    # Mengganti vcbot.me.bot menjadi vcbot.client.me.bot
+    if vcbot and (vcbot.client and not vcbot.client.me.bot):
         try:
             import pytgcalls  # ignore: pylint
 
