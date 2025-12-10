@@ -5,13 +5,16 @@
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
-from . import *
+from . import * 
 import os
 import sys
 import time
-import asyncio # Wajib untuk loop.create_task()
+import asyncio 
 from pytgcalls import PyTgCalls
+
 # --- Import yang diperlukan ---
+# IMPOR VARIABEL GLOBAL VC CLIENTS DARI __init__.py
+from . import vcClient, vcUserClient 
 from .startup.connections import vc_connection
 from .fns.helper import bash, time_formatter, updater
 from .startup.funcs import (
@@ -25,7 +28,7 @@ from .startup.funcs import (
 from .startup.loader import load_other_plugins 
 # --- Akhir Import ---
 
-# *** PERBAIKAN KRITIS 1: Mengganti run_in_loop() dengan await ***
+# *** PERBAIKAN KRITIS 1: Menggunakan async def main() ***
 async def main():
     
     try:
@@ -37,14 +40,13 @@ async def main():
     if (
         udB.get_key("UPDATE_ON_RESTART")
         and os.path.exists(".git")
-        # GANTI ultroid_bot.run_in_loop(updater()) MENJADI await updater()
+        # Mengganti run_in_loop() dengan await
         and await updater()
     ):
-        # GANTI ultroid_bot.run_in_loop(bash("...")) MENJADI await bash("...")
         await bash("bash installer.sh") 
         os.execl(sys.executable, sys.executable, "-m", "pyUltroid")
 
-    # GANTI ultroid_bot.run_in_loop(startup_stuff()) MENJADI await startup_stuff()
+    # Mengganti run_in_loop() dengan await
     await startup_stuff()
 
     ultroid_bot.me.phone = None 
@@ -54,7 +56,7 @@ async def main():
 
     LOGS.info("Initialising...")
 
-    # GANTI ultroid_bot.run_in_loop(autopilot()) MENJADI await autopilot()
+    # Mengganti run_in_loop() dengan await
     await autopilot()
 
     pmbot = udB.get_key("PMBOT")
@@ -70,13 +72,29 @@ async def main():
         _plugins = "autocorrect autopic audiotools compressor forcesubscribe fedutils gdrive glitch instagram nsfwfilter nightmode pdftools profanityfilter writer youtube"
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
-    # Inisialisasi Klien VC (Sudah menggunakan await)
-    vcClient = None
+    # Inisialisasi Klien VC (Lokal)
+    _vcClient_local = None
+    _vcUserClient_local = None
+
     if vcbot_enabled:
-        vcClient = await vc_connection(udB, ultroid_bot) 
+        # Panggil koneksi: Menerima (PyTgCalls Client, Telethon User Client)
+        _vcClient_local, _vcUserClient_local = await vc_connection(udB, ultroid_bot) 
         
-    # load_other_plugins (Sudah menggunakan await)
-    await load_other_plugins(addons=addons, pmbot=pmbot, manager=manager, vcbot=vcClient)
+        # *** PERBAIKAN KRITIS 2: Menetapkan Nilai ke Global Client ***
+        # Gunakan variabel global yang diimpor dari __init__.py
+        global vcClient, vcUserClient
+        vcClient = _vcClient_local
+        vcUserClient = _vcUserClient_local
+        # *************************************************************
+
+    # load_other_plugins: Gunakan klien lokal sebagai argumen
+    await load_other_plugins(
+        addons=addons, 
+        pmbot=pmbot, 
+        manager=manager, 
+        vcbot=_vcClient_local, 
+        vcUserClient=_vcUserClient_local # Teruskan klien Telethon VC
+    )
 
     suc_msg = """
             ----------------------------------------------------------------------
@@ -87,21 +105,21 @@ async def main():
     # for channel plugins
     plugin_channels = udB.get_key("PLUGIN_CHANNEL")
 
-    # GANTI ultroid_bot.run_in_loop(customize()) MENJADI await customize()
+    # Mengganti run_in_loop() dengan await
     await customize()
 
     # Load Addons from Plugin Channels.
     if plugin_channels:
-        # GANTI ultroid_bot.run_in_loop(plug(...)) MENJADI await plug(...)
+        # Mengganti run_in_loop() dengan await
         await plug(plugin_channels)
 
     # Send/Ignore Deploy Message..
     if not udB.get_key("LOG_OFF"):
-        # GANTI ultroid_bot.run_in_loop(ready()) MENJADI await ready()
+        # Mengganti run_in_loop() dengan await
         await ready()
 
     # Edit Restarting Message (if It's restarting)
-    # GANTI ultroid_bot.run_in_loop(WasItRestart(udB)) MENJADI await WasItRestart(udB)
+    # Mengganti run_in_loop() dengan await
     await WasItRestart(udB)
 
     try:
@@ -116,14 +134,14 @@ async def main():
 
 
 if __name__ == "__main__":
-    # *** PERUBAHAN KRITIS 2: Entry Point yang Benar ***
+    # *** PERUBAHAN KRITIS 3: Entry Point yang Benar ***
     
     # 1. Start bot non-blocking (membuat event loop)
     ultroid_bot.start() 
 
     # 2. Jadwalkan coroutine main() ke event loop bot utama.
-    # Ini memastikan main() berjalan di event loop yang sudah aktif.
     ultroid_bot.loop.create_task(main()) 
     
-    # 3. asst.run() menjaga loop tetap hidup.
-    asst.run() 
+    # 3. asst.run() menjaga loop tetap hidup (blocking call).
+    asst.run()
+        
