@@ -9,10 +9,10 @@ from . import *
 import os
 import sys
 import time
+import asyncio # *** PASTIKAN ASYNCIO DIIMPOR ***
 
-# --- BARIS BARU: Import yang diperlukan untuk Event Handling & VC ---
-from telethon import events
-from .startup.connections import vc_connection # Import vc_connection
+# --- Import yang diperlukan ---
+from .startup.connections import vc_connection
 from .fns.helper import bash, time_formatter, updater
 from .startup.funcs import (
     WasItRestart,
@@ -23,30 +23,11 @@ from .startup.funcs import (
     startup_stuff,
 )
 from .startup.loader import load_other_plugins 
-# --- AKHIR BARIS BARU ---
+# --- Akhir Import ---
 
-
-@ultroid_bot.on(
-    events.NewMessage(
-        func=lambda e: (
-            hasattr(e, 'is_group') and not e.is_group and # Pastikan itu bukan group
-            hasattr(e, 'is_private') and e.is_private and # Pastikan itu private chat
-            hasattr(e, 'is_self') and e.is_self           # Pastikan itu pesan dari diri sendiri
-        )
-    )
-)
-async def startup_tasks(event):
+# *** PERUBAHAN KRITIS 1: Mengembalikan ke async def main() tanpa argumen ***
+async def main():
     
-    # --- LOGIKA RUN ONCE (Wajib untuk Startup Handler) ---
-    if hasattr(ultroid_bot, '_setup_done'):
-        # Handler ini sudah dijalankan sebelumnya. Hentikan eksekusi.
-        ultroid_bot.remove_event_handler(startup_tasks)
-        return
-    ultroid_bot._setup_done = True
-    # --------------------------------------------------------
-
-    # --- KODE LAMA DARI async def main() DIMULAI DI SINI ---
-
     try:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
     except ImportError:
@@ -63,7 +44,7 @@ async def startup_tasks(event):
 
     ultroid_bot.run_in_loop(startup_stuff())
 
-    # Diasumsikan ultroid_bot.me sudah tersedia di dalam event handler
+    # Diasumsikan ultroid_bot.me sudah tersedia setelah .start()
     ultroid_bot.me.phone = None 
 
     if not ultroid_bot.me.bot:
@@ -127,16 +108,18 @@ async def startup_tasks(event):
         f"Took {time_formatter((time.time() - start_time)*1000)} to start •ULTROID•"
     )
     LOGS.info(suc_msg)
-    
-    # --- KODE LAMA DARI async def main() BERAKHIR DI SINI ---
 
 
 if __name__ == "__main__":
-    # *** PERBAIKAN KRITIS: Entry Point File Sederhana ***
-    # Ini untuk mengatasi TypeError. Bot akan memulai loop dan menjalankan handler di atas.
+    # *** PERUBAHAN KRITIS 2: Menggunakan start() dan create_task() ***
     
-    ultroid_bot.run() # Memulai bot utama dan event loop-nya
+    # 1. Start bot non-blocking. Ini membuat koneksi dan event loop.
+    ultroid_bot.start() 
+
+    # 2. Jadwalkan coroutine main() ke event loop bot utama.
+    # Ini akan menjalankan setup asinkron Anda segera setelah bot online.
+    ultroid_bot.loop.create_task(main()) 
     
-    # asst.run() # Memulai bot asisten di loop yang sama atau loop terpisah
-                 # (Biarkan ini jika diperlukan oleh framework)
-    
+    # 3. asst.run() memulai loop utama (atau menjaga loop tetap hidup).
+    asst.run() 
+        
