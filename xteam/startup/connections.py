@@ -73,7 +73,7 @@ def validate_session(session, logger=LOGS, _exit=True):
         sys.exit()
 
 
-def vc_connection(udB, ultroid_bot):
+"""def vc_connection(udB, ultroid_bot):
     from strings import get_string
 
     VC_SESSION = Var.VC_SESSION or udB.get_key("VC_SESSION")
@@ -92,3 +92,52 @@ def vc_connection(udB, ultroid_bot):
             LOGS.info("While creating Client for VC.")
             LOGS.exception(er)
     return ultroid_bot
+"""
+
+def vc_connection_pytgcalls(udB, ultroid_bot):
+    from strings import get_string
+    from telethon import TelegramClient
+    from pytgcalls import PyTgCalls
+
+    VC_SESSION = Var.VC_SESSION or udB.get_key("VC_SESSION")
+    
+    # Klien MTProto untuk Obrolan Suara (menggunakan Telethon)
+    vc_client = None 
+
+    if VC_SESSION and VC_SESSION != Var.SESSION:
+        LOGS.info("Starting up Telethon Client for VcClient.")
+        
+        try:
+            # 1. Buat Klien MTProto (menggunakan sesi VC)
+            # Anda mungkin perlu menyesuaikan cara validasi/pembuatan sesi
+            # sesuai dengan Ultroid, tapi intinya adalah mendapatkan TelegramClient.
+            vc_client = TelegramClient(
+                session=validate_session(VC_SESSION, _exit=False),
+                api_id=Var.API_ID,  # Ganti dengan cara Ultroid mendapatkan API_ID/HASH
+                api_hash=Var.API_HASH, 
+                log_attempts=False,
+                system_version="UltroidVC"
+            )
+            # Pastikan klien terhubung
+            await vc_client.start()
+            
+            # 2. Buat instance PyTgCalls dengan klien MTProto
+            vc_call = PyTgCalls(vc_client)
+            await vc_call.start()
+            
+            LOGS.info("PyTgCalls Client started successfully.")
+            return vc_call # Mengembalikan klien PyTgCalls
+            
+        except (AuthKeyDuplicatedError, EOFError):
+            LOGS.info(get_string("py_c3"))
+            udB.del_key("VC_SESSION")
+        except Exception as er:
+            LOGS.info("While creating PyTgCalls Client for VC.")
+            LOGS.exception(er)
+            
+    # Jika gagal atau tidak ada sesi VC, kembalikan bot utama atau None
+    return ultroid_bot # Atau kembalikan None, tergantung alur Ultroid
+
+# Catatan: Fungsi ini perlu menjadi 'async def' karena menggunakan 'await'
+# dan PyTgCalls/Telethon bersifat asinkron.
+                
