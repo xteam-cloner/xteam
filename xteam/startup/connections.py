@@ -115,7 +115,7 @@ async def vc_connection(udB, ultroid_bot):
                 session=validate_session(VC_SESSION, _exit=False),
                 api_id=Var.API_ID,  # Ganti dengan cara Ultroid mendapatkan API_ID/HASH
                 api_hash=Var.API_HASH, 
-                log_attempts=False,
+                #log_attempts=False,
                 system_version="UltroidVC"
             )
             # Pastikan klien terhubung
