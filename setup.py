@@ -1,7 +1,7 @@
 import re
 import setuptools
 
-requirements = ["pymongo", "python-decouple", "python-dotenv"]
+requirements = ["redis", "hiredis", "python-decouple", "python-dotenv"]
 
 with open("xteam/version.py", "rt", encoding="utf8") as x:
     version = re.search(r'__version__ = "(.*?)"', x.read()).group(1)
