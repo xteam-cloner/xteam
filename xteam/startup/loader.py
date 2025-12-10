@@ -117,7 +117,7 @@ async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
         if pmbot:
             Loader(path="assistant/pmbot.py").load(log=False)
 
-    # vc bot
+    """# vc bot
     # *** PERUBAHAN KRITIS 2: Menggunakan vcUserClient untuk pemeriksaan .me.bot ***
     if vcbot and vcUserClient: 
         # Cek hanya dilakukan pada klien Telethon yang sudah di-cache (.me)
@@ -143,3 +143,4 @@ async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
             except ModuleNotFoundError:
                 LOGS.error("'pytgcalls' not installed!\nSkipping loading of VCBOT.")
         
+"""
