@@ -20,6 +20,7 @@ class ULTConfig:
 
 if run_as_module:
     import time
+    import asyncio
 
     from .configs import Var
     from .startup import *
