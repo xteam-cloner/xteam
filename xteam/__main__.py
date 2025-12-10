@@ -73,18 +73,16 @@ async def main():
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
     # Inisialisasi Klien VC (Lokal)
-    _vcClient_local = None
-    _vcUserClient_local = None
+    vcClient = None
+    #_vcUserClient_local = None
 
     if vcbot_enabled:
         # Panggil koneksi: Menerima (PyTgCalls Client, Telethon User Client)
-        _vcClient_local, _vcUserClient_local = await vc_connection(udB, ultroid_bot) 
+        vcClient = await vc_connection(udB, ultroid_bot) 
         
         # *** PERBAIKAN KRITIS 2: Menetapkan Nilai ke Global Client ***
         # Gunakan variabel global yang diimpor dari __init__.py
-        global vcClient, vcUserClient
-        vcClient = _vcClient_local
-        vcUserClient = _vcUserClient_local
+        global vcClient
         # *************************************************************
 
     # load_other_plugins: Gunakan klien lokal sebagai argumen
@@ -92,8 +90,7 @@ async def main():
         addons=addons, 
         pmbot=pmbot, 
         manager=manager, 
-        vcbot=_vcClient_local, 
-        vcUserClient=_vcUserClient_local # Teruskan klien Telethon VC
+        vcbot=vcClient # Teruskan klien Telethon VC
     )
 
     suc_msg = """
