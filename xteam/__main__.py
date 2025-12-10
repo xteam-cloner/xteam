@@ -8,7 +8,7 @@
 from . import *
 
 # *** PERUBAHAN 1: Impor Fungsi Asinkron VC ***
-from .startup.vc_client_init import vc_connection 
+from .startup.connections import vc_connection 
 
 
 # *** PERUBAHAN 2: Definisikan main sebagai async def ***
