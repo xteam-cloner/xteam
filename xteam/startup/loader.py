@@ -45,8 +45,8 @@ def _after_load(loader, module, plugin_name=""):
                 loader._logger.exception(em)
 
 
-# FUNGSI INI HARUS ASYNC DEF
-async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
+# *** PERUBAHAN KRITIS 1: Tambahkan vcUserClient sebagai argumen ***
+async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None, vcUserClient=None):
 
     # for official
     _exclude = udB.get_key("EXCLUDE_OFFICIAL") or config("EXCLUDE_OFFICIAL", None)
@@ -118,27 +118,28 @@ async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
             Loader(path="assistant/pmbot.py").load(log=False)
 
     # vc bot
-    # *** PERBAIKAN KRITIS UNTUK ATRIBUT ME ***
-    # Mengganti vcbot.me.bot menjadi vcbot.client.me.bot
-    if vcbot and (vcbot._app and not vcbot._app.me.bot):
-        try:
-            import pytgcalls  # ignore: pylint
-
-            if os.path.exists("vcbot"):
-                if os.path.exists("vcbot/.git"):
-                    subprocess.run("cd vcbot && git pull", shell=True)
-                else:
-                    rmtree("vcbot")
-            if not os.path.exists("vcbot"):
-                subprocess.run(
-                    "git clone https://github.com/xteam-cloner/VcBot vcbot", shell=True
-                )
+    # *** PERUBAHAN KRITIS 2: Menggunakan vcUserClient untuk pemeriksaan .me.bot ***
+    if vcbot and vcUserClient: 
+        # Cek hanya dilakukan pada klien Telethon yang sudah di-cache (.me)
+        if not vcUserClient.me.bot: 
             try:
-                if not os.path.exists("vcbot/downloads"):
-                    os.mkdir("vcbot/downloads")
-                Loader(path="vcbot", key="VCBot").load(after_load=_after_load)
-            except FileNotFoundError as e:
-                LOGS.error(f"{e} Skipping VCBot Installation.")
-        except ModuleNotFoundError:
-            LOGS.error("'pytgcalls' not installed!\nSkipping loading of VCBOT.")
-            
+                import pytgcalls  # ignore: pylint
+
+                if os.path.exists("vcbot"):
+                    if os.path.exists("vcbot/.git"):
+                        subprocess.run("cd vcbot && git pull", shell=True)
+                    else:
+                        rmtree("vcbot")
+                if not os.path.exists("vcbot"):
+                    subprocess.run(
+                        "git clone https://github.com/xteam-cloner/VcBot vcbot", shell=True
+                    )
+                try:
+                    if not os.path.exists("vcbot/downloads"):
+                        os.mkdir("vcbot/downloads")
+                    Loader(path="vcbot", key="VCBot").load(after_load=_after_load)
+                except FileNotFoundError as e:
+                    LOGS.error(f"{e} Skipping VCBot Installation.")
+            except ModuleNotFoundError:
+                LOGS.error("'pytgcalls' not installed!\nSkipping loading of VCBOT.")
+        
