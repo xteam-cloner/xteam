@@ -120,7 +120,7 @@ async def load_other_plugins(addons=None, pmbot=None, manager=None, vcbot=None):
     # vc bot
     # *** PERBAIKAN KRITIS UNTUK ATRIBUT ME ***
     # Mengganti vcbot.me.bot menjadi vcbot.client.me.bot
-    if vcbot and (vcbot.app and not vcbot.app.me.bot):
+    if vcbot and (vcbot._app and not vcbot._app.me.bot):
         try:
             import pytgcalls  # ignore: pylint
 
