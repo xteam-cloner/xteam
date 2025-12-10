@@ -97,7 +97,7 @@ def validate_session(session, logger=LOGS, _exit=True):
 async def vc_connection(udB, ultroid_bot):
     from strings import get_string
     from telethon import TelegramClient
-    from pytgcalls import PyTgCalls
+    import PyTgCalls
 
     VC_SESSION = Var.VC_SESSION or udB.get_key("VC_SESSION")
     
