@@ -121,7 +121,9 @@ if __name__ == "__main__":
     # akan menjalankan coroutine main() sebelum memulai loop.
     
     # Klien bot yang benar harus memulai loop, dan kita menyerahkan main() ke dalamnya.
-    ultroid_bot.run(main()) 
+    ultroid_bot.start()
+    asst.run(main()) 
+
 
     # asst.run() # Baris ini mungkin tidak diperlukan atau harus disesuaikan, 
                 # tergantung bagaimana framework Anda memulai dua klien.
