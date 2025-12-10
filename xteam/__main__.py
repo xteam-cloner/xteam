@@ -100,6 +100,6 @@ async def main():
 
 
 if __name__ == "__main__":
-    ultroid_bot.run(main())
+    ultroid_bot.run()
 
     asst.run()
