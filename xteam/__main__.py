@@ -9,7 +9,7 @@ from . import *
 import os
 import sys
 import time
-import asyncio # *** PASTIKAN ASYNCIO DIIMPOR ***
+import asyncio # Wajib untuk loop.create_task()
 
 # --- Import yang diperlukan ---
 from .startup.connections import vc_connection
@@ -25,7 +25,7 @@ from .startup.funcs import (
 from .startup.loader import load_other_plugins 
 # --- Akhir Import ---
 
-# *** PERUBAHAN KRITIS 1: Mengembalikan ke async def main() tanpa argumen ***
+# *** PERBAIKAN KRITIS 1: Mengganti run_in_loop() dengan await ***
 async def main():
     
     try:
@@ -37,14 +37,16 @@ async def main():
     if (
         udB.get_key("UPDATE_ON_RESTART")
         and os.path.exists(".git")
-        and ultroid_bot.run_in_loop(updater())
+        # GANTI ultroid_bot.run_in_loop(updater()) MENJADI await updater()
+        and await updater()
     ):
-        ultroid_bot.run_in_loop(bash("bash installer.sh"))
+        # GANTI ultroid_bot.run_in_loop(bash("...")) MENJADI await bash("...")
+        await bash("bash installer.sh") 
         os.execl(sys.executable, sys.executable, "-m", "pyUltroid")
 
-    ultroid_bot.run_in_loop(startup_stuff())
+    # GANTI ultroid_bot.run_in_loop(startup_stuff()) MENJADI await startup_stuff()
+    await startup_stuff()
 
-    # Diasumsikan ultroid_bot.me sudah tersedia setelah .start()
     ultroid_bot.me.phone = None 
 
     if not ultroid_bot.me.bot:
@@ -52,7 +54,8 @@ async def main():
 
     LOGS.info("Initialising...")
 
-    ultroid_bot.run_in_loop(autopilot())
+    # GANTI ultroid_bot.run_in_loop(autopilot()) MENJADI await autopilot()
+    await autopilot()
 
     pmbot = udB.get_key("PMBOT")
     manager = udB.get_key("MANAGER")
@@ -67,13 +70,12 @@ async def main():
         _plugins = "autocorrect autopic audiotools compressor forcesubscribe fedutils gdrive glitch instagram nsfwfilter nightmode pdftools profanityfilter writer youtube"
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
-    # *** PERBAIKAN VC CLIENT: Await Inisialisasi ***
+    # Inisialisasi Klien VC (Sudah menggunakan await)
     vcClient = None
     if vcbot_enabled:
-        # Panggil fungsi async vc_connection dan TUNGGU hasilnya
         vcClient = await vc_connection(udB, ultroid_bot) 
         
-    # *** PERBAIKAN LOADER: Await load_other_plugins ***
+    # load_other_plugins (Sudah menggunakan await)
     await load_other_plugins(addons=addons, pmbot=pmbot, manager=manager, vcbot=vcClient)
 
     suc_msg = """
@@ -85,19 +87,22 @@ async def main():
     # for channel plugins
     plugin_channels = udB.get_key("PLUGIN_CHANNEL")
 
-    # Customize Ultroid Assistant...
-    ultroid_bot.run_in_loop(customize())
+    # GANTI ultroid_bot.run_in_loop(customize()) MENJADI await customize()
+    await customize()
 
     # Load Addons from Plugin Channels.
     if plugin_channels:
-        ultroid_bot.run_in_loop(plug(plugin_channels))
+        # GANTI ultroid_bot.run_in_loop(plug(...)) MENJADI await plug(...)
+        await plug(plugin_channels)
 
     # Send/Ignore Deploy Message..
     if not udB.get_key("LOG_OFF"):
-        ultroid_bot.run_in_loop(ready())
+        # GANTI ultroid_bot.run_in_loop(ready()) MENJADI await ready()
+        await ready()
 
     # Edit Restarting Message (if It's restarting)
-    ultroid_bot.run_in_loop(WasItRestart(udB))
+    # GANTI ultroid_bot.run_in_loop(WasItRestart(udB)) MENJADI await WasItRestart(udB)
+    await WasItRestart(udB)
 
     try:
         cleanup_cache()
@@ -111,15 +116,14 @@ async def main():
 
 
 if __name__ == "__main__":
-    # *** PERUBAHAN KRITIS 2: Menggunakan start() dan create_task() ***
+    # *** PERUBAHAN KRITIS 2: Entry Point yang Benar ***
     
-    # 1. Start bot non-blocking. Ini membuat koneksi dan event loop.
+    # 1. Start bot non-blocking (membuat event loop)
     ultroid_bot.start() 
 
     # 2. Jadwalkan coroutine main() ke event loop bot utama.
-    # Ini akan menjalankan setup asinkron Anda segera setelah bot online.
+    # Ini memastikan main() berjalan di event loop yang sudah aktif.
     ultroid_bot.loop.create_task(main()) 
     
-    # 3. asst.run() memulai loop utama (atau menjaga loop tetap hidup).
+    # 3. asst.run() menjaga loop tetap hidup.
     asst.run() 
-        
