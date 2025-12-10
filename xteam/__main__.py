@@ -115,17 +115,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    # *** PERUBAHAN 5: Menjalankan Coroutine main() ***
-    # Ini untuk mengatasi TypeError dan RuntimeWarning sebelumnya.
-    # Kita menggunakan ultroid_bot.run() dan mengharapkan bot framework
-    # akan menjalankan coroutine main() sebelum memulai loop.
-    
-    # Klien bot yang benar harus memulai loop, dan kita menyerahkan main() ke dalamnya.
-    ultroid_bot.start()
-    asst.run(main()) 
-
-
-    # asst.run() # Baris ini mungkin tidak diperlukan atau harus disesuaikan, 
-                # tergantung bagaimana framework Anda memulai dua klien.
-                # Untuk saat ini, kita akan fokus pada bot utama.
-  
+    ultroid_bot.run()
+    asst.run()
