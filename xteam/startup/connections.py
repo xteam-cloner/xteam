@@ -94,7 +94,7 @@ def validate_session(session, logger=LOGS, _exit=True):
     return ultroid_bot
 """
 
-async def vc_connection_pytgcalls(udB, ultroid_bot):
+async def vc_connection(udB, ultroid_bot):
     from strings import get_string
     from telethon import TelegramClient
     from pytgcalls import PyTgCalls
