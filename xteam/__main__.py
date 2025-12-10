@@ -14,7 +14,7 @@ from pytgcalls import PyTgCalls
 
 # --- Import yang diperlukan ---
 # IMPOR VARIABEL GLOBAL VC CLIENTS DARI __init__.py
-from . import vcClient, vcUserClient 
+#from . import vcClient, vcUserClient 
 from .startup.connections import vc_connection
 from .fns.helper import bash, time_formatter, updater
 from .startup.funcs import (
