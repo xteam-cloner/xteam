@@ -8,7 +8,7 @@
 from . import *
 
 
-def main():
+async def main():
     import os
     import sys
     import time
