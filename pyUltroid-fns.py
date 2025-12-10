@@ -1,21 +1,21 @@
-import re
+import os
+import shutil
 
 import setuptools
-
-requirements = ["redis", "hiredis", "python-decouple", "python-dotenv"]
-
-with open("xteam/version.py", "rt", encoding="utf8") as x:
-    version = re.search(r'__version__ = "(.*?)"', x.read()).group(1)
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-name = "xteam"
+long_description = "# xteam-fns"
+
+name = "xteam-fns"
 author = "TeamX"
 author_email = "xteamji@gmail.com"
-description = "A Secure and Powerful Python-Telethon Based Library For xteam Userbot."
+description = "Function based library for telegram telethon projects."
 license_ = "GNU AFFERO GENERAL PUBLIC LICENSE (v3)"
+
 url = "https://github.com/xteam-cloner/xteam"
+
 project_urls = {
     "Bug Tracker": "https://github.com/xteam-cloner/xteam/issues",
     "Documentation": "https://ultroid.tech",
@@ -32,9 +32,12 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+shutil.copy("xteam/_misc/_wrappers.py", "xteam/wrappers.py")
+shutil.copy("xteam/startup/_database.py", "xteam/db.py")
+
 setuptools.setup(
     name=name,
-    version=version,
+    version="1.0.1",
     author=author,
     author_email=author_email,
     description=description,
@@ -43,8 +46,13 @@ setuptools.setup(
     url=url,
     project_urls=project_urls,
     license=license_,
-    packages=setuptools.find_packages(),
-    install_requires=requirements,
+    packages=setuptools.find_packages(
+        exclude=["xteam.dB", "xteam._misc", "xteam.startup"]
+    ),
+    install_requires=["telethon"],
     classifiers=classifiers,
     python_requires=">3.7, <3.13",
 )
+
+for file in ["wrappers", "db"]:
+    os.remove(f"xteam/{file}.py")
