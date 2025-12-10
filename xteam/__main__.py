@@ -26,9 +26,15 @@ from .startup.loader import load_other_plugins
 # --- AKHIR BARIS BARU ---
 
 
-# *** PERUBAHAN KRITIS: MENGGANTI async def main() dengan Event Handler ***
-# Handler ini akan dipicu ketika bot menerima pesan pertamanya dari dirinya sendiri (saat online).
-@ultroid_bot.on(events.NewMessage(func=lambda e: not e.is_group and e.is_private and e.is_self))
+@ultroid_bot.on(
+    events.NewMessage(
+        func=lambda e: (
+            hasattr(e, 'is_group') and not e.is_group and # Pastikan itu bukan group
+            hasattr(e, 'is_private') and e.is_private and # Pastikan itu private chat
+            hasattr(e, 'is_self') and e.is_self           # Pastikan itu pesan dari diri sendiri
+        )
+    )
+)
 async def startup_tasks(event):
     
     # --- LOGIKA RUN ONCE (Wajib untuk Startup Handler) ---
