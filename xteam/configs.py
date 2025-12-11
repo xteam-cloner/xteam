@@ -63,3 +63,4 @@ class Var:
     ASSISTANT_ID = (
         int(sys.argv[1]) if len(sys.argv) > 1 else config("ASSISTANT_ID", default=1012838012, cast=int)
     )
+    CMD_IMG = config("CMD_IMG", default="https://telegra.ph/file/66518ed54301654f0b126.png")
