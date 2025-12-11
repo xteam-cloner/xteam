@@ -114,7 +114,7 @@ async def main_async():
     # 🛑 PENETAPAN KRITIS UNTUK VARIABEL GLOBAL XTEAM (call_py):
     # Baris ini penting untuk memastikan plugin lain dapat mengakses call_py
     #global call_py
-    call_py = call_py 
+    #call_py = call_py 
     
     await load_other_plugins(
         addons=addons, 
