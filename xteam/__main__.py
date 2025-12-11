@@ -113,7 +113,7 @@ async def main_async():
         addons=addons, 
         pmbot=pmbot, 
         manager=manager, 
-        vcbot=xteam.call_py # Teruskan klien PyTgCalls atau None
+        vcbot=call_py # Teruskan klien PyTgCalls atau None
     )
 
     suc_msg = """
