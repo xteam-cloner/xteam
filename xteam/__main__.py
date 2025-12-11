@@ -12,41 +12,36 @@ import time
 import asyncio 
 from pytgcalls import PyTgCalls
 
-# --- Import yang diperlukan ---
-# IMPOR VARIABEL GLOBAL VC CLIENTS DARI __init__.py
-#from .startup.connections import vc_call
-from .startup.connections import vc_connection
+from .startup.connections import vc_connection 
 from .fns.helper import bash, time_formatter, updater
 from .startup.funcs import (
     WasItRestart,
     autopilot,
     customize,
+    fetch_ann, 
     plug,
     ready,
     startup_stuff,
 )
 from .startup.loader import load_other_plugins 
-# --- Akhir Import ---
 
-# *** PERBAIKAN KRITIS 1: Menggunakan async def main() ***
-async def main():
+async def main_async():
     
     try:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
     except ImportError:
         AsyncIOScheduler = None
 
-    # Option to Auto Update On Restarts..
+    global vcClient 
+
     if (
         udB.get_key("UPDATE_ON_RESTART")
         and os.path.exists(".git")
-        # Mengganti run_in_loop() dengan await
         and await updater()
     ):
         await bash("bash installer.sh") 
-        os.execl(sys.executable, sys.executable, "-m", "pyUltroid")
+        os.execl(sys.executable, sys.executable, "-m", "xteam")
 
-    # Mengganti run_in_loop() dengan await
     await startup_stuff()
 
     ultroid_bot.me.phone = None 
@@ -56,13 +51,13 @@ async def main():
 
     LOGS.info("Initialising...")
 
-    # Mengganti run_in_loop() dengan await
     await autopilot()
 
     pmbot = udB.get_key("PMBOT")
     manager = udB.get_key("MANAGER")
     addons = udB.get_key("ADDONS") or Var.ADDONS
     vcbot_enabled = udB.get_key("VCBOT") or Var.VCBOT
+    
     if HOSTED_ON == "okteto":
         vcbot_enabled = False
 
@@ -72,51 +67,34 @@ async def main():
         _plugins = "autocorrect autopic audiotools compressor forcesubscribe fedutils gdrive glitch instagram nsfwfilter nightmode pdftools profanityfilter writer youtube"
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
-    # Inisialisasi Klien VC (Lokal)
-    vcClient = None
-    #_vcUserClient_local = None
+    vcClient = None 
 
     if vcbot_enabled:
-        # Panggil koneksi: Menerima (PyTgCalls Client, Telethon User Client)
         vcClient = await vc_connection(udB, ultroid_bot) 
         
-        # *** PERBAIKAN KRITIS 2: Menetapkan Nilai ke Global Client ***
-        # Gunakan variabel global yang diimpor dari __init__.py
-        #global vcClient
-        # *************************************************************
-
-    # load_other_plugins: Gunakan klien lokal sebagai argumen
     await load_other_plugins(
         addons=addons, 
         pmbot=pmbot, 
         manager=manager, 
-        vcbot=vcClient # Teruskan klien Telethon VC
+        vcbot=vcClient 
     )
 
     suc_msg = """
             ----------------------------------------------------------------------
-                xteam-urbot has been deployed! Visit @xteam_cloner for updates!!
+                xteam-urbot has been deployed! Visit @TheUltroid for updates!!
             ----------------------------------------------------------------------
     """
 
-    # for channel plugins
     plugin_channels = udB.get_key("PLUGIN_CHANNEL")
 
-    # Mengganti run_in_loop() dengan await
     await customize()
 
-    # Load Addons from Plugin Channels.
     if plugin_channels:
-        # Mengganti run_in_loop() dengan await
         await plug(plugin_channels)
 
-    # Send/Ignore Deploy Message..
     if not udB.get_key("LOG_OFF"):
-        # Mengganti run_in_loop() dengan await
         await ready()
 
-    # Edit Restarting Message (if It's restarting)
-    # Mengganti run_in_loop() dengan await
     await WasItRestart(udB)
 
     try:
@@ -131,14 +109,10 @@ async def main():
 
 
 if __name__ == "__main__":
-    # *** PERUBAHAN KRITIS 3: Entry Point yang Benar ***
     
-    # 1. Start bot non-blocking (membuat event loop)
     ultroid_bot.start() 
 
-    # 2. Jadwalkan coroutine main() ke event loop bot utama.
-    ultroid_bot.loop.create_task(main()) 
+    ultroid_bot.loop.create_task(main_async()) 
     
-    # 3. asst.run() menjaga loop tetap hidup (blocking call).
     asst.run()
-        
+    
