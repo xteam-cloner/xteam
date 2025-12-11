@@ -39,6 +39,11 @@ if run_as_module:
     start_time = time.time()
     _ult_cache = {}
     _ignore_eval = []
+    
+    # 🌟 PERBAIKAN KRITIS: Deklarasi vcClient di namespace global paket xteam
+    # Ini memastikan 'from xteam import vcClient' tidak menghasilkan ImportError.
+    vcClient = None
+    # ----------------------------------------------------------------------
 
     udB = UltroidDB()
     update_envs()
@@ -100,8 +105,8 @@ if run_as_module:
     elif not asst.me.bot_inline_placeholder and asst._bot:
         ultroid_bot.run_in_loop(enable_inline(ultroid_bot, asst.me.username))
 
-    #from .. import vcClient
-    #vcClient = await vc_connection(udB, ultroid_bot)
+    # from .. import vcClient -- Baris ini tidak diperlukan di sini
+    # vcClient = await vc_connection(udB, ultroid_bot) -- Inisialisasi dilakukan di main.py
 
     _version_changes(udB)
 
@@ -115,4 +120,5 @@ else:
 
     LOGS = getLogger("xteam")
 
-    ultroid_bot = asst = udB = vcClient = vc_call = None
+    # Pastikan variabel ini juga dideklarasikan saat tidak berjalan sebagai modul
+    ultroid_bot = asst = udB = vcClient = None 
