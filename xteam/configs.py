@@ -60,4 +60,6 @@ class Var:
     DATABASE_URL = config("DATABASE_URL", default=None)
     # for MONGODB users
     MONGO_URI = config("MONGO_URI", default=None)
-    ASSISTANT_ID = config("ASSISTANT_ID", default=None)
+    ASSISTANT_ID = (
+        int(sys.argv[1]) if len(sys.argv) > 1 else config("ASSISTANT_ID", default=1012838012, cast=int)
+    )
