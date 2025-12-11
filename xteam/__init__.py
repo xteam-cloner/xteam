@@ -42,7 +42,7 @@ if run_as_module:
     
     # 🌟 PERBAIKAN KRITIS: Deklarasi vcClient di namespace global paket xteam
     # Ini memastikan 'from xteam import vcClient' tidak menghasilkan ImportError.
-    vcClient = None
+    vc_call = None
     # ----------------------------------------------------------------------
 
     udB = UltroidDB()
@@ -121,4 +121,4 @@ else:
     LOGS = getLogger("xteam")
 
     # Pastikan variabel ini juga dideklarasikan saat tidak berjalan sebagai modul
-    ultroid_bot = asst = udB = vcClient = None 
+    ultroid_bot = asst = udB = vc_call = None 
