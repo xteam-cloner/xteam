@@ -76,7 +76,7 @@ async def main_async():
         addons=addons, 
         pmbot=pmbot, 
         manager=manager, 
-        vcbot=vcClient 
+        vcbot=vc_call 
     )
 
     suc_msg = """
