@@ -136,7 +136,7 @@ async def vc_connection(udB, ultroid_bot):
             LOGS.exception(er)
             
     # Jika gagal atau tidak ada sesi VC, kembalikan bot utama atau None
-    return ultroid_bot # Atau kembalikan None, tergantung alur Ultroid
+    #return ultroid_bot # Atau kembalikan None, tergantung alur Ultroid
 
 # Catatan: Fungsi ini perlu menjadi 'async def' karena menggunakan 'await'
 # dan PyTgCalls/Telethon bersifat asinkron.
