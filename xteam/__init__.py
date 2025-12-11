@@ -22,6 +22,9 @@ if run_as_module:
     import time
     import asyncio
 
+    from typing import Optional
+    from pytgcalls import PyTgCalls
+    
     from .configs import Var
     from .startup import *
     from .startup._database import UltroidDB
@@ -42,7 +45,7 @@ if run_as_module:
     
     # 🌟 PERBAIKAN KRITIS: Deklarasi vcClient di namespace global paket xteam
     # Ini memastikan 'from xteam import vcClient' tidak menghasilkan ImportError.
-    vc_call = None
+    call_py: Optional[PyTgCalls] = None
     # ----------------------------------------------------------------------
 
     udB = UltroidDB()
