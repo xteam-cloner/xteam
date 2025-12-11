@@ -60,3 +60,4 @@ class Var:
     DATABASE_URL = config("DATABASE_URL", default=None)
     # for MONGODB users
     MONGO_URI = config("MONGO_URI", default=None)
+    ASSISTANT_ID = config("ASSISTANT_ID", default=None)
