@@ -89,6 +89,11 @@ async def main_async():
                 )
                 await vc_client.start()
                 
+                # --- LOG SUKSES LOGIN AKUN ASISTEN DITAMBAHKAN DI SINI ---
+                vc_me = await vc_client.get_me()
+                LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
+                # --------------------------------------------------------
+                
                 # 2. Buat instance PyTgCalls 
                 vc_call_instance = PyTgCalls(vc_client)
                 await vc_call_instance.start()
@@ -106,8 +111,9 @@ async def main_async():
             LOGS.info("VCBOT enabled but VC_SESSION missing or same as main session.")
 
     # 🛑 PENETAPAN KRITIS UNTUK VARIABEL GLOBAL XTEAM (call_py):
-    # Ini adalah variabel yang akan diakses oleh plugins (seperti vctools.py)
-    call_py = call_py
+    # Baris ini penting untuk memastikan plugin lain dapat mengakses call_py
+    global call_py
+    call_py = call_py 
     
     await load_other_plugins(
         addons=addons, 
