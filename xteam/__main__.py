@@ -1,18 +1,22 @@
-# Ultroid - UserBot
+# Xteam/__main__.py - Ultroid UserBot Core
 # Copyright (C) 2021-2025 TeamUltroid
 #
-# This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
-from . import * 
+from . import *
 import os
 import sys
 import time
 import asyncio 
+# IMPOR UTAMA UNTUK VC
 from pytgcalls import PyTgCalls
+from telethon import TelegramClient 
+from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
+# Asumsi impor utilitas VC, error, dan strings ada
+from .startup.connections import validate_session # Asumsi ada fungsi ini
+from strings import get_string # Asumsi ada fungsi ini
 
-from .startup.connections import vc_connection 
 from .fns.helper import bash, time_formatter, updater
 from .startup.funcs import (
     WasItRestart,
@@ -31,8 +35,6 @@ async def main_async():
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
     except ImportError:
         AsyncIOScheduler = None
-
-    global vcClient 
 
     if (
         udB.get_key("UPDATE_ON_RESTART")
@@ -67,16 +69,51 @@ async def main_async():
         _plugins = "autocorrect autopic audiotools compressor forcesubscribe fedutils gdrive glitch instagram nsfwfilter nightmode pdftools profanityfilter writer youtube"
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
-    vcClient = None 
-
+    # 🛑 LOGIKA VC_CONNECTION DIINTEGRASIKAN DI SINI
+    call_py = None
+    
     if vcbot_enabled:
-        vcClient = await vc_connection(udB, ultroid_bot) 
+        VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION
         
+        if VC_SESSION and VC_SESSION != Var.SESSION:
+            LOGS.info("Starting up Telethon Client for VcClient (Inlined).")
+            vc_client = None
+            
+            try:
+                # 1. Buat Klien MTProto 
+                vc_client = TelegramClient(
+                    session=validate_session(VC_SESSION, _exit=False),
+                    api_id=Var.API_ID,
+                    api_hash=Var.API_HASH, 
+                    system_version="UltroidVC"
+                )
+                await vc_client.start()
+                
+                # 2. Buat instance PyTgCalls 
+                vc_call_instance = PyTgCalls(vc_client)
+                await vc_call_instance.start()
+                
+                LOGS.info("PyTgCalls Client started successfully.")
+                call_py = vc_call_instance # Simpan hasil sukses
+                
+            except (AuthKeyDuplicatedError, EOFError):
+                LOGS.info(get_string("py_c3"))
+                udB.del_key("VC_SESSION")
+            except Exception as er:
+                LOGS.info("While creating PyTgCalls Client for VC.")
+                LOGS.exception(er)
+        else:
+            LOGS.info("VCBOT enabled but VC_SESSION missing or same as main session.")
+
+    # 🛑 PENETAPAN KRITIS UNTUK VARIABEL GLOBAL XTEAM (call_py):
+    # Ini adalah variabel yang akan diakses oleh plugins (seperti vctools.py)
+    call_py = call_py
+    
     await load_other_plugins(
         addons=addons, 
         pmbot=pmbot, 
         manager=manager, 
-        vcbot=vc_call 
+        vcbot=xteam.call_py # Teruskan klien PyTgCalls atau None
     )
 
     suc_msg = """
