@@ -26,7 +26,7 @@ if run_as_module:
     from .startup import *
     from .startup._database import UltroidDB
     from .startup.BaseClient import UltroidClient
-    from .startup.connections import validate_session, vc_connection, vc_call
+    from .startup.connections import validate_session, vc_connection, vc_client
     from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
     from .version import ultroid_version
 
