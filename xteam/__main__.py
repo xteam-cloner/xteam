@@ -71,7 +71,7 @@ async def main_async():
 
     # 🛑 LOGIKA VC_CONNECTION DIINTEGRASIKAN DI SINI
     global call_py
-    call_py = None
+    call_py = bot = None
     
     if vcbot_enabled:
         VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION
@@ -89,7 +89,8 @@ async def main_async():
                     system_version="UltroidVC"
                 )
                 await vc_client.start()
-                
+                bot = TelegramClient(UltroidVC, bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
+                await bot.start()
                 # --- LOG SUKSES LOGIN AKUN ASISTEN DITAMBAHKAN DI SINI ---
                 vc_me = await vc_client.get_me()
                 LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
