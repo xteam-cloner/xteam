@@ -124,4 +124,4 @@ else:
     LOGS = getLogger("xteam")
 
     # Pastikan variabel ini juga dideklarasikan saat tidak berjalan sebagai modul
-    ultroid_bot = asst = udB = vc_call = None 
+    ultroid_bot = asst = udB = bot = None 
