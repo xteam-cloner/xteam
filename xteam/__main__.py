@@ -71,7 +71,7 @@ async def main_async():
 
     # 🛑 LOGIKA VC_CONNECTION DIINTEGRASIKAN DI SINI
     global call_py
-    call_py = bot = None
+    call_py = None
     
     if vcbot_enabled:
         VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION
@@ -89,21 +89,16 @@ async def main_async():
                     system_version="UltroidVC"
                 )
                 await vc_client.start()
-                bot = TelegramClient("UltroidVC", 
-                                     api_id=Var.API_ID,
-                                     api_hash=Var.API_HASH, udB=udB)
-                await bot.start(bot_token=Var.BOT_TOKEN)
-                # --- LOG SUKSES LOGIN AKUN ASISTEN DITAMBAHKAN DI SINI ---
                 vc_me = await vc_client.get_me()
                 LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
                 # --------------------------------------------------------
                 
                 # 2. Buat instance PyTgCalls 
-                vc_call_instance = PyTgCalls(vc_client)
-                await vc_call_instance.start()
+                call_py = PyTgCalls(vc_client)
+                await call_py.start()
                 
                 LOGS.info("PyTgCalls Client started successfully.")
-                call_py = vc_call_instance # Simpan hasil sukses
+                call_py = call_py # Simpan hasil sukses
                 
             except (AuthKeyDuplicatedError, EOFError):
                 LOGS.info(get_string("py_c3"))
