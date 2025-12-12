@@ -9,13 +9,18 @@ import os
 import sys
 import time
 import asyncio 
-# IMPOR UTAMA UNTUK VC
+
+# Impor untuk PyTgCalls dan Telethon
 from pytgcalls import PyTgCalls
 from telethon import TelegramClient 
 from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
+
+# Impor namespace xteam (penting untuk mengekspos variabel global)
+import xteam # Tambahkan impor eksplisit
+
 # Asumsi impor utilitas VC, error, dan strings ada
-from .startup.connections import validate_session # Asumsi ada fungsi ini
-from strings import get_string # Asumsi ada fungsi ini
+from .startup.connections import validate_session
+from strings import get_string
 
 from .fns.helper import bash, time_formatter, updater
 from .startup.funcs import (
@@ -28,6 +33,9 @@ from .startup.funcs import (
     startup_stuff,
 )
 from .startup.loader import load_other_plugins 
+
+# ⚠️ CATATAN: 'call_py' harus didefinisikan sebagai 'None' di xteam/__init__.py
+# agar dapat diakses oleh modul lain.
 
 async def main_async():
     
@@ -69,8 +77,9 @@ async def main_async():
         _plugins = "autocorrect autopic audiotools compressor forcesubscribe fedutils gdrive glitch instagram nsfwfilter nightmode pdftools profanityfilter writer youtube"
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
-    # 🛑 LOGIKA VC_CONNECTION DIINTEGRASIKAN DI SINI
-    global call_py
+    # 🛑 LOGIKA VC_CONNECTION (REVISI)
+    
+    # 1. Pastikan xteam.call_py diinisialisasi ke None
     call_py = None
     
     if vcbot_enabled:
@@ -81,7 +90,7 @@ async def main_async():
             vc_client = None
             
             try:
-                # 1. Buat Klien MTProto 
+                # 2. Buat Klien MTProto 
                 vc_client = TelegramClient(
                     session=validate_session(VC_SESSION, _exit=False),
                     api_id=Var.API_ID,
@@ -91,39 +100,39 @@ async def main_async():
                 await vc_client.start()
                 vc_me = await vc_client.get_me()
                 LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
-                # --------------------------------------------------------
                 
-                # 2. Buat instance PyTgCalls 
-                call_py = PyTgCalls(vc_client)
-                await call_py.start()
+                # 3. Buat instance PyTgCalls 
+                call_py_instance = PyTgCalls(vc_client) 
+                await call_py_instance.start()
                 
                 LOGS.info("PyTgCalls Client started successfully.")
-                call_py = call_py # Simpan hasil sukses
+                
+                # 🛠️ PERBAIKAN KRITIS: Ekspos klien ke namespace global xteam
+                call_py = call_py_instance
                 
             except (AuthKeyDuplicatedError, EOFError):
                 LOGS.info(get_string("py_c3"))
                 udB.del_key("VC_SESSION")
+                call_py = None # Pastikan tetap None jika gagal otentikasi
             except Exception as er:
                 LOGS.info("While creating PyTgCalls Client for VC.")
                 LOGS.exception(er)
+                call_py = None # Pastikan tetap None jika ada error lain
         else:
             LOGS.info("VCBOT enabled but VC_SESSION missing or same as main session.")
 
-    # 🛑 PENETAPAN KRITIS UNTUK VARIABEL GLOBAL XTEAM (call_py):
-    # Baris ini penting untuk memastikan plugin lain dapat mengakses call_py
-    #global call_py
-    #call_py = call_py 
-    
+    # 🛑 MELEWATKAN KLIEN KE LOADER PLUGIN
+    # load_other_plugins akan mendapatkan objek PyTgCalls yang valid atau None.
     await load_other_plugins(
         addons=addons, 
         pmbot=pmbot, 
         manager=manager, 
-        vcbot=call_py # Teruskan klien PyTgCalls atau None
+        vcbot=call_py # Menggunakan klien yang sudah diekspos
     )
 
     suc_msg = """
             ----------------------------------------------------------------------
-                xteam-urbot has been deployed! Visit @TheUltroid for updates!!
+                xteam-urbot has been deployed! Visit @xteam_cloner for updates!!
             ----------------------------------------------------------------------
     """
 
@@ -157,4 +166,4 @@ if __name__ == "__main__":
     ultroid_bot.loop.create_task(main_async()) 
     
     asst.run()
-    
+            
