@@ -93,8 +93,8 @@ async def main_async():
             try:
                 bot = TelegramClient(
                     session=session,
-                    api_id=API_ID,
-                    api_hash=API_HASH,
+                    api_id=Var.API_ID,
+                    api_hash=Var.API_HASH,
                     connection=ConnectionTcpAbridged,
                     auto_reconnect=True,
                     connection_retries=None,
