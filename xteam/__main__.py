@@ -79,7 +79,7 @@ async def main_async():
         VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION
         
         if VC_SESSION:
-            session = StringSession(str(VC_SESSION))
+            session = validate_session(VC_SESSION)
         elif HOSTED_ON == "heroku":
             LOGS.warning("VCBOT enabled but VC_SESSION is missing. VC Bot disabled.")
             vcbot_enabled = False
