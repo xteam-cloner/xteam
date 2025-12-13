@@ -40,7 +40,7 @@ async def gen_thumb(thumbnail, title, videoid, ctitle):
     image4 = changeImageSize(1280, 720, image2)
     image5 = image3.convert("RGBA")
     image6 = image4.convert("RGBA")
-    Image.alpha_composite(image5, image6).save(f"xteam-urbot/resources/temp{videoid}.png")
+    Image.alpha_composite(image5, image6).save(f"resources/temp{videoid}.png")
     img = Image.open(f"resources/temp{videoid}.png")
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("resources/Roboto-Light.ttf", 52)
