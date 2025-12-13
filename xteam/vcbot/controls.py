@@ -30,6 +30,10 @@ async def skip_item(chat_id: int, x: int):
         LOGS.info(str(e))
         return 0
 
+async def play_next_stream(chat_id: int, file_path: str, is_video: bool = False, ffmpeg_seek: str = None):
+    # Implementasikan logika untuk memulai lagu berikutnya
+    pass
+    
 
 async def skip_current_song(chat_id: int):
     if chat_id not in QUEUE:
