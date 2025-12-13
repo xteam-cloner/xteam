@@ -15,7 +15,7 @@ from pytgcalls.types import MediaStream, AudioQuality, VideoQuality
 # --- PERBAIKAN IMPORT END ---
 
 from xteam import LOGS, call_py
-from userbot.core.vcbot.queues import QUEUE, clear_queue, get_queue, pop_an_item
+from xteam.vcbot.queues import QUEUE, clear_queue, get_queue, pop_an_item
 
 
 async def skip_item(chat_id: int, x: int):
