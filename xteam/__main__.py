@@ -109,8 +109,9 @@ async def main_async():
                 LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
                 LOGS.info("PyTgCalls Client started successfully.")
                 
-                globals()['bot'] = bot
-                globals()['call_py'] = call_py
+                xteam.bot = bot
+                xteam.call_py = call_py
+
         
             except (AuthKeyDuplicatedError, EOFError):
                 LOGS.info(get_string("py_c3"))
