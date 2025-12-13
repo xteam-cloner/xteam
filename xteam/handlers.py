@@ -1,5 +1,5 @@
 from pytgcalls.types import Update
-from pytgcalls.types.update import StreamEnded, GroupCallClosed 
+from pytgcalls.types.stream.stream_ended import StreamEnded, GroupCallClosed 
 from xteam.vcbot import play_next_stream, clear_queue 
 
 # ----------------------------------------------------
