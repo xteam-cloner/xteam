@@ -7,22 +7,23 @@ from xteam import call_py, LOGS
 
 async def join_call(chat_id: int, link: str, video: bool = False):
     
-    # 1. Tentukan Flags yang Benar
-    # Mengakses Flags dari MediaStream karena class Flags ada di dalamnya
+    # 1. Tentukan Flags Video
     if video:
-        # Jika True, kita asumsikan streaming video diperlukan/diinginkan
         video_flag_value = MediaStream.Flags.AUTO_DETECT 
     else:
-        # Jika False, kita setel IGNORE agar tidak mencari sumber video
         video_flag_value = MediaStream.Flags.IGNORE 
 
     try:
-        # Menggunakan metode play() karena join_group_call tidak ada di PyTgCalls v2.2.8
         await call_py.play(
             chat_id,
             MediaStream(
                 media_path=link, 
-                video_flags=video_flag_value # Melewatkan objek Flags, bukan boolean
+                video_flags=video_flag_value,
+                # --- PARAMETER FFmpeg UNTUK MENINGKATKAN STABILITAS ---
+                # '-preset veryfast': Mengurangi beban CPU dan mempercepat encoding.
+                # '-strict -2': Menangani beberapa masalah codec non-standar.
+                ffmpeg_parameters='-preset veryfast -strict -2', 
+                # -----------------------------------------------------
             ), 
         )
         LOGS.info(f"Joined VC and started playback in {chat_id} successfully.")
@@ -32,7 +33,6 @@ async def join_call(chat_id: int, link: str, video: bool = False):
         return 0
         
     except UserAlreadyParticipantError:
-        # Pengecualian ini menangani kasus jika bot sudah ada di VC
         LOGS.info(f"Assistant already in VC in {chat_id}. Playback should start.")
         return 1
         
