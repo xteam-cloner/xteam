@@ -24,6 +24,7 @@ if run_as_module:
 
     from typing import Optional
     from pytgcalls import PyTgCalls
+    from telethon import TelegramClient
     
     from .configs import Var
     from .startup import *
