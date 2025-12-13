@@ -3,7 +3,7 @@
 from pytgcalls.types import Update
 # Import Event Classes
 from pytgcalls.types.stream.stream_ended import StreamEnded 
-from pytgcalls.types.update import ChatUpdate # <-- Impor ChatUpdate
+from pytgcalls.types.chats.chat_update import ChatUpdate # <-- Impor ChatUpdate
 
 # Impor fungsi helper
 from xteam.vcbot import play_next_stream, clear_queue 
