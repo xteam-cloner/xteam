@@ -10,15 +10,14 @@ import sys
 import time
 import asyncio 
 
-# Impor untuk PyTgCalls dan Telethon
 from pytgcalls import PyTgCalls
 from telethon import TelegramClient 
 from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
+from telethon.sessions import StringSession
+from telethon.tl.mtproto.connection import ConnectionTcpAbridged
 
-# Impor namespace xteam (penting untuk mengekspos variabel global)
-import xteam # Tambahkan impor eksplisit
+import xteam 
 
-# Asumsi impor utilitas VC, error, dan strings ada
 from .startup.connections import validate_session
 from strings import get_string
 
@@ -34,8 +33,6 @@ from .startup.funcs import (
 )
 from .startup.loader import load_other_plugins 
 
-# ⚠️ CATATAN: 'call_py' harus didefinisikan sebagai 'None' di xteam/__init__.py
-# agar dapat diakses oleh modul lain.
 
 async def main_async():
     
@@ -77,9 +74,6 @@ async def main_async():
         _plugins = "autocorrect autopic audiotools compressor forcesubscribe fedutils gdrive glitch instagram nsfwfilter nightmode pdftools profanityfilter writer youtube"
         udB.set_key("EXCLUDE_OFFICIAL", _plugins)
 
-    # 🛑 LOGIKA VC_CONNECTION (REVISI)
-    
-    # 1. Pastikan xteam.call_py diinisialisasi ke None
     call_py = None
     
     if vcbot_enabled:
@@ -87,8 +81,16 @@ async def main_async():
         
         if VC_SESSION:
             session = StringSession(str(VC_SESSION))
+        elif HOSTED_ON == "heroku":
+            LOGS.warning("VCBOT enabled but VC_SESSION is missing. VC Bot disabled.")
+            vcbot_enabled = False
+            call_py = None
+            session = None
         else:
-            session = "xteam-urbot"
+            session = "xteam-vc-client"
+            LOGS.info("VCBOT enabled but VC_SESSION missing. Trying local session.")
+
+        if session:
             try:
                 bot = TelegramClient(
                     session=session,
@@ -98,42 +100,33 @@ async def main_async():
                     auto_reconnect=True,
                     connection_retries=None,
                 )
-                await bot.start()
+                
+                await bot.start() 
                 
                 call_py = PyTgCalls(bot)
-            except Exception as e:
-                print(f"VC_SESSION - {e}")
-                sys.exit()
-                
-                vc_me = await bot.get_me()
-                LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
-                 
                 await call_py.start()
                 
+                vc_me = await bot.get_me() 
+                LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
                 LOGS.info("PyTgCalls Client started successfully.")
                 
-                # 🛠️ PERBAIKAN KRITIS: Ekspos klien ke namespace global xteam
                 globals()['bot'] = bot
                 globals()['call_py'] = call_py
         
             except (AuthKeyDuplicatedError, EOFError):
                 LOGS.info(get_string("py_c3"))
                 udB.del_key("VC_SESSION")
-                call_py = None # Pastikan tetap None jika gagal otentikasi
+                call_py = None
             except Exception as er:
-                LOGS.info("While creating PyTgCalls Client for VC.")
+                LOGS.info("While creating or starting PyTgCalls Client for VC. VC Bot disabled.")
                 LOGS.exception(er)
-                #call_py = None # Pastikan tetap None jika ada error lain
-        else:
-            LOGS.info("VCBOT enabled but VC_SESSION missing or same as main session.")
+                call_py = None
 
-    # 🛑 MELEWATKAN KLIEN KE LOADER PLUGIN
-    # load_other_plugins akan mendapatkan objek PyTgCalls yang valid atau None.
     await load_other_plugins(
         addons=addons, 
         pmbot=pmbot, 
         manager=manager, 
-        vcbot=call_py # Menggunakan klien yang sudah diekspos
+        vcbot=call_py
     )
 
     suc_msg = """
@@ -172,4 +165,4 @@ if __name__ == "__main__":
     ultroid_bot.loop.create_task(main_async()) 
     
     asst.run()
-            
+    
