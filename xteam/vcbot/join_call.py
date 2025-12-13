@@ -1,56 +1,31 @@
-# File: xteam/vcbot.py (atau file core VC Anda)
+# File: xteam/vcbot/join_call.py
 
-from ntgcalls import StreamType
-from pytgcalls.types import Update
-from pytgcalls.exceptions import NoActiveGroupCall, AlreadyJoinedError 
-from pytgcalls.types.raw import AudioStream, VideoStream
-# ... import lainnya
+from telethon.errors.rpcerrorlist import UserAlreadyParticipantError 
+from pytgcalls.exceptions import NoActiveGroupCall 
+from pytgcalls.types import MediaStream # Diperlukan untuk join_group_call
+from xteam import call_py, LOGS 
 
-# ASUMSI: 'call_py' adalah instance dari PyTgCalls Anda.
-# call_py = PyTgCalls(client_instance) 
-
-async def join_call(chat_id: int, link: str, video: bool):
-    """
-    Menggabungkan panggilan suara/video grup.
+async def join_call(chat_id: int, link: str, video: bool = False):
     
-    Args:
-        chat_id: ID grup target.
-        link: URL atau path file untuk streaming.
-        video: True jika ini adalah streaming video, False untuk audio.
-    """
-    
-    stream_type = StreamType.video if video else StreamType.audio
-    
-    # Menentukan jenis stream
-    if video:
-        stream = VideoStream(
-            link,
-            resolution=VideoStream.Resolution.HD_720, # Dapat disesuaikan
-        )
-    else:
-        stream = AudioStream(link)
+    # PERINGATAN: Pastikan Anda menambahkan/mengekspor group_assistant di tempat lain
+    # userbot = await group_assistant(chat_id) 
 
-    # Menggunakan try-except untuk penanganan error join
     try:
         await call_py.join_group_call(
             chat_id,
-            Stream(
-                stream,
-                # Jika Anda ingin volume default 100
-                audio_parameters=AudioStream.Config(volume=1.0) 
-            ),
-            stream_type=stream_type,
+            MediaStream(link, video_flags=video),
         )
-    except NoActiveGroupCall:
-        raise Exception("Tidak ada obrolan suara aktif di grup ini.")
-    except AlreadyJoinedError:
-        # Jika sudah bergabung, ganti saja streaming-nya (replace_stream)
-        await call_py.change_stream(
-            chat_id,
-            Stream(stream),
-        )
-    except Exception as e:
-        # Menangani error umum lainnya
-        raise Exception(f"Gagal bergabung: {e}")
+        LOGS.info(f"Joined VC in {chat_id} successfully.")
 
-# ... (fungsi helper lain seperti clear_queue, add_to_queue, dll.)
+    except NoActiveGroupCall:
+        LOGS.warning(f"No active VC in {chat_id}. Cannot join.")
+        return 0
+        
+    except UserAlreadyParticipantError:
+        LOGS.info(f"Assistant already in VC in {chat_id}.")
+        return 1
+        
+    except Exception as e:
+        LOGS.error(f"Error joining VC in {chat_id}: {e}")
+        return 0
+        
