@@ -14,8 +14,7 @@ from pytgcalls import PyTgCalls
 from telethon import TelegramClient 
 from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
 from telethon.sessions import StringSession
-from telethon.tl.mtproto.connection import ConnectionTcpAbridged
-
+from telethon.network.connection.tcpabridged import ConnectionTcpAbridged
 import xteam 
 
 from .startup.connections import validate_session
