@@ -7,7 +7,7 @@
 
 import os
 from secrets import choice
-
+import resources
 import aiofiles
 import aiohttp
 from PIL import Image, ImageDraw, ImageFont
