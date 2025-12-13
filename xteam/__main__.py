@@ -16,7 +16,7 @@ from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
 from telethon.sessions import StringSession
 from telethon.network.connection.tcpabridged import ConnectionTcpAbridged
 import xteam 
-from xteam.handlers import register_vc_handlers # <-- Perhatikan perubahan ini
+#from xteam.handlers import register_vc_handlers # <-- Perhatikan perubahan ini
 from .startup.connections import validate_session
 from strings import get_string
 
@@ -31,6 +31,22 @@ from .startup.funcs import (
     startup_stuff,
 )
 from .startup.loader import load_other_plugins 
+
+def register_vc_handlers():
+    """
+    Mendaftarkan unified_update_handler ke instance PyTgCalls.
+    Fungsi ini dipindahkan ke sini (__main__.py) untuk memecahkan circular dependency.
+    """
+    # Impor handler-nya langsung dari modul handlers.py
+    from xteam.handlers import unified_update_handler 
+    from xteam import call_py 
+    
+    # Pastikan call_py sudah ada dan diinisialisasi
+    if call_py:
+        call_py.on_update()(unified_update_handler)
+        LOGS.info("✅ Event handler PyTgCalls telah didaftarkan.")
+    else:
+        LOGS.warning("call_py not available, handler registration skipped.")
 
 
 async def main_async():
