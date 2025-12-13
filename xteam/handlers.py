@@ -11,7 +11,7 @@ from xteam.vcbot import play_next_stream, clear_queue
 # ----------------------------------------------------
 # FUNGSI HANDLER UTAMA
 # ----------------------------------------------------
-async def unified_update_handler(client, update: Update) -> None:
+def unified_update_handler(client, update: Update) -> None:
     
     chat_id = update.chat_id
     
