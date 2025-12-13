@@ -11,7 +11,7 @@ async def join_call(chat_id: int, link: str, video: bool = False):
     # userbot = await group_assistant(chat_id) 
 
     try:
-        await call_py.join_group_call(
+        await call_py.play(
             chat_id,
             MediaStream(link, video_flags=video),
         )
