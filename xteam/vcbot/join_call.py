@@ -1,9 +1,9 @@
 # File: xteam/vcbot.py (atau file core VC Anda)
 
-from pytgcalls import StreamType
+from ntgcalls import StreamType
 from pytgcalls.types import Update
-from pytgcalls.types.input_stream import InputStream, InputAudioStream, InputVideoStream
 from pytgcalls.exceptions import NoActiveGroupCall, AlreadyJoinedError 
+from pytgcalls.types.raw.video_stream import AudiooStream, VideoStream
 # ... import lainnya
 
 # ASUMSI: 'call_py' adalah instance dari PyTgCalls Anda.
