@@ -46,6 +46,7 @@ if run_as_module:
     # 🌟 PERBAIKAN KRITIS: Deklarasi call_py di namespace global paket xteam
     # Ini memastikan 'from xteam import call_py' tidak menghasilkan AttributeError.
     call_py: Optional[PyTgCalls] = None
+    vc_client: Optional[TelegramClient] = None
     # ----------------------------------------------------------------------
 
     udB = UltroidDB()
