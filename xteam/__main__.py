@@ -109,7 +109,9 @@ async def main_async():
                 
                 # 🛠️ PERBAIKAN KRITIS: Ekspos klien ke namespace global xteam
                 call_py = call_py_instance
-                
+                globals()['vc_client'] = vc_client
+                globals()['call_py'] = call_py
+        
             except (AuthKeyDuplicatedError, EOFError):
                 LOGS.info(get_string("py_c3"))
                 udB.del_key("VC_SESSION")
