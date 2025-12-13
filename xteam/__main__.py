@@ -85,31 +85,35 @@ async def main_async():
     if vcbot_enabled:
         VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION
         
-        if VC_SESSION and VC_SESSION != Var.SESSION:
-            LOGS.info("Starting up Telethon Client for VcClient (Inlined).")
-            vc_client = None
-            
+        if VC_SESSION:
+            session = StringSession(str(VC_SESSION))
+        else:
+            session = "xteam-urbot"
             try:
-                # 2. Buat Klien MTProto 
-                vc_client = TelegramClient(
-                    session=validate_session(VC_SESSION, _exit=False),
-                    api_id=Var.API_ID,
-                    api_hash=Var.API_HASH, 
-                    system_version="UltroidVC"
+                bot = TelegramClient(
+                    session=session,
+                    api_id=API_KEY,
+                    api_hash=API_HASH,
+                    connection=ConnectionTcpAbridged,
+                    auto_reconnect=True,
+                    connection_retries=None,
                 )
-                await vc_client.start()
-                vc_me = await vc_client.get_me()
-                LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
+                await bot.start()
                 
-                # 3. Buat instance PyTgCalls 
-                call_py_instance = PyTgCalls(vc_client) 
-                await call_py_instance.start()
+                call_py = PyTgCalls(bot)
+            except Exception as e:
+                print(f"VC_SESSION - {e}")
+                sys.exit()
+                
+                vc_me = await bot.get_me()
+                LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
+                 
+                await call_py.start()
                 
                 LOGS.info("PyTgCalls Client started successfully.")
                 
                 # 🛠️ PERBAIKAN KRITIS: Ekspos klien ke namespace global xteam
-                call_py = call_py_instance
-                globals()['vc_client'] = vc_client
+                globals()['bot'] = bot
                 globals()['call_py'] = call_py
         
             except (AuthKeyDuplicatedError, EOFError):
@@ -119,7 +123,7 @@ async def main_async():
             except Exception as er:
                 LOGS.info("While creating PyTgCalls Client for VC.")
                 LOGS.exception(er)
-                call_py = None # Pastikan tetap None jika ada error lain
+                #call_py = None # Pastikan tetap None jika ada error lain
         else:
             LOGS.info("VCBOT enabled but VC_SESSION missing or same as main session.")
 
