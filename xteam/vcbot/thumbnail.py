@@ -29,26 +29,26 @@ async def gen_thumb(thumbnail, title, videoid, ctitle):
         async with session.get(thumbnail) as resp:
             if resp.status == 200:
                 f = await aiofiles.open(
-                    f"userbot/resources/thumb{videoid}.png", mode="wb"
+                    f"xteam-urbot/resources/thumb{videoid}.png", mode="wb"
                 )
                 await f.write(await resp.read())
                 await f.close()
     theme = choice(themes)
-    image1 = Image.open(f"userbot/resources/thumb{videoid}.png")
-    image2 = Image.open(f"userbot/resources/{theme}.png")
+    image1 = Image.open(f"xteam-urbot/resources/thumb{videoid}.png")
+    image2 = Image.open(f"xteam-urbot/resources/{theme}.png")
     image3 = changeImageSize(1280, 720, image1)
     image4 = changeImageSize(1280, 720, image2)
     image5 = image3.convert("RGBA")
     image6 = image4.convert("RGBA")
-    Image.alpha_composite(image5, image6).save(f"userbot/resources/temp{videoid}.png")
-    img = Image.open(f"userbot/resources/temp{videoid}.png")
+    Image.alpha_composite(image5, image6).save(f"xteam-urbot/resources/temp{videoid}.png")
+    img = Image.open(f"xteam-urbot/resources/temp{videoid}.png")
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("userbot/resources/Roboto-Light.ttf", 52)
-    font2 = ImageFont.truetype("userbot/resources/Roboto-Medium.ttf", 76)
+    font = ImageFont.truetype("xteam-urbot/resources/Roboto-Light.ttf", 52)
+    font2 = ImageFont.truetype("xteam-urbot/resources/Roboto-Medium.ttf", 76)
     draw.text((27, 538), f"Playing on {ctitle[:15]}...", (0, 0, 0), font=font)
     draw.text((27, 612), f"{title[:20]}...", (0, 0, 0), font=font2)
-    img.save(f"userbot/resources/final{videoid}.png")
-    os.remove(f"userbot/resources/temp{videoid}.png")
-    os.remove(f"userbot/resources/thumb{videoid}.png")
-    final = f"userbot/resources/final{videoid}.png"
+    img.save(f"xteam-urbot/resources/final{videoid}.png")
+    os.remove(f"xteam-urbot/resources/temp{videoid}.png")
+    os.remove(f"xteam-urbot/resources/thumb{videoid}.png")
+    final = f"xteam-urbot/resources/final{videoid}.png"
     return final
