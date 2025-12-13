@@ -1,19 +1,18 @@
-# File: xteam/handlers.py
+# File: xteam/handlers.py (KODE FINAL YANG BERSIH)
 
 from pytgcalls.types import Update
 # Import Event Classes
 from pytgcalls.types.stream.stream_ended import StreamEnded 
-from pytgcalls.types.chats.chat_update import ChatUpdate # <-- Impor ChatUpdate
-# ...
+from pytgcalls.types.chats.chat_update import ChatUpdate # <-- Dipertahankan
 
-# Impor fungsi helper
-from xteam.vcbot import play_next_stream, clear_queue 
-
+# Impor fungsi helper (Core Logic)
+from xteam.vcbot import play_next_stream, clear_queue # <-- Dipertahankan
 
 
-# FUNGSI HANDLER UTAMA
+
+# FUNGSI HANDLER UTAMA (Dipertahankan dan sudah async)
 # ----------------------------------------------------
-async def unified_update_handler(client, update: Update) -> None: # <-- Tambahkan 'async' di sini
+async def unified_update_handler(client, update: Update) -> None: 
     
     chat_id = update.chat_id
     
@@ -27,9 +26,7 @@ async def unified_update_handler(client, update: Update) -> None: # <-- Tambahka
     elif isinstance(update, ChatUpdate):
         if update.status & ChatUpdate.Status.CLOSED_VOICE_CHAT:
             print(f"[{chat_id}] Group call closed by admin. Clearing queue...")
-            clear_queue(chat_id) # clear_queue asumsikan synchronous, jika async perlu await.
+            clear_queue(chat_id) 
         
     else:
         pass 
-
-# ... (lanjutkan ke register_vc_handlers)
