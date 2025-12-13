@@ -16,7 +16,7 @@ from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
 from telethon.sessions import StringSession
 from telethon.network.connection.tcpabridged import ConnectionTcpAbridged
 import xteam 
-from .handlers import register_vc_handlers
+from xteam.handlers import register_vc_handlers # <-- Perhatikan perubahan ini
 from .startup.connections import validate_session
 from strings import get_string
 
