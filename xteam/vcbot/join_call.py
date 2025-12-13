@@ -3,7 +3,7 @@
 from ntgcalls import StreamType
 from pytgcalls.types import Update
 from pytgcalls.exceptions import NoActiveGroupCall, AlreadyJoinedError 
-from pytgcalls.types.raw.video_stream import AudiooStream, VideoStream
+from pytgcalls.types.raw import AudioStream, VideoStream
 # ... import lainnya
 
 # ASUMSI: 'call_py' adalah instance dari PyTgCalls Anda.
@@ -23,21 +23,21 @@ async def join_call(chat_id: int, link: str, video: bool):
     
     # Menentukan jenis stream
     if video:
-        stream = InputVideoStream(
+        stream = VideoStream(
             link,
-            resolution=InputVideoStream.Resolution.HD_720, # Dapat disesuaikan
+            resolution=VideoStream.Resolution.HD_720, # Dapat disesuaikan
         )
     else:
-        stream = InputAudioStream(link)
+        stream = AudioStream(link)
 
     # Menggunakan try-except untuk penanganan error join
     try:
         await call_py.join_group_call(
             chat_id,
-            InputStream(
+            Stream(
                 stream,
                 # Jika Anda ingin volume default 100
-                audio_parameters=InputAudioStream.Config(volume=1.0) 
+                audio_parameters=AudioStream.Config(volume=1.0) 
             ),
             stream_type=stream_type,
         )
@@ -47,7 +47,7 @@ async def join_call(chat_id: int, link: str, video: bool):
         # Jika sudah bergabung, ganti saja streaming-nya (replace_stream)
         await call_py.change_stream(
             chat_id,
-            InputStream(stream),
+            Stream(stream),
         )
     except Exception as e:
         # Menangani error umum lainnya
