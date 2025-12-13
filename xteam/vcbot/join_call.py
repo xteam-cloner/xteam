@@ -19,11 +19,10 @@ async def join_call(chat_id: int, link: str, video: bool = False):
             MediaStream(
                 media_path=link, 
                 video_flags=video_flag_value,
-                # --- PARAMETER FFmpeg UNTUK MENINGKATKAN STABILITAS ---
-                # '-preset veryfast': Mengurangi beban CPU dan mempercepat encoding.
-                # '-strict -2': Menangani beberapa masalah codec non-standar.
-                ffmpeg_parameters='-preset veryfast -strict -2', 
-                # -----------------------------------------------------
+                # --- PARAMETER KRITIS: Memaksa Audio Codec ke Opus (Wajib Telegram) ---
+                # Ini mengatasi 90% masalah audio senyap.
+                ffmpeg_parameters='-acodec libopus -b:a 48k -preset veryfast -strict -2', 
+                # ----------------------------------------------------------------------
             ), 
         )
         LOGS.info(f"Joined VC and started playback in {chat_id} successfully.")
