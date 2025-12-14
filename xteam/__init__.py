@@ -119,9 +119,14 @@ if run_as_module:
 else:
     print("xteam 2022 © Xteam-Cloner")
 
+    import logging
     from logging import getLogger
 
     LOGS = getLogger("xteam")
+    
+    logging.basicConfig(level=logging.DEBUG)
+    LOGS.setLevel(logging.DEBUG)
+
 
     # Pastikan variabel ini juga dideklarasikan saat tidak berjalan sebagai modul
     ultroid_bot = asst = udB = bot = call_py = None
