@@ -5,34 +5,34 @@ from pytgcalls.exceptions import NoActiveGroupCall
 from pytgcalls.types import MediaStream 
 from xteam import call_py, LOGS 
 
-async def join_call(chat_id: int, link: str, video: bool = False):
+async def join_call(chat_id: int, link: str, video: bool = False, resolution: int = 480):
     
-    # 1. Tentukan Flags Video
     if video:
         video_flag_value = MediaStream.Flags.AUTO_DETECT 
     else:
         video_flag_value = MediaStream.Flags.IGNORE 
 
+    extra_params = {}
+    if video and resolution:
+        extra_params['video_resolution'] = resolution 
+        
     try:
         await call_py.play(
             chat_id,
             MediaStream(
                 media_path=link, 
                 video_flags=video_flag_value,
-                # --- PARAMETER KRITIS: Memaksa Audio Codec ke Opus (Wajib Telegram) ---
-                # Ini mengatasi 90% masalah audio senyap.
-                ffmpeg_parameters='-acodec libopus -b:a 48k -preset veryfast -strict -2', 
-                # ----------------------------------------------------------------------
+                **extra_params
             ), 
         )
-        LOGS.info(f"Joined VC and started playback in {chat_id} successfully.")
+        LOGS.info(f"Joined VC and started playback in {chat_id} successfully. Link: {link}")
 
     except NoActiveGroupCall:
         LOGS.warning(f"No active VC in {chat_id}. Cannot start playback.")
         return 0
         
     except UserAlreadyParticipantError:
-        LOGS.info(f"Assistant already in VC in {chat_id}. Playback should start.")
+        LOGS.info(f"Assistant already in VC in {chat_id}. New Playback started.")
         return 1
         
     except Exception as e:
