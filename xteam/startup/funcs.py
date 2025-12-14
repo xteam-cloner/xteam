@@ -15,6 +15,7 @@ from random import randint
 from telethon import __version__ as tver
 from pyrogram import __version__ as pver
 from platform import python_version
+from pytgcalls import __version__ as pyt
 from xteam.version import ultroid_version as UltVer
 from xteam.version import __version__ as xtver
 from xteam.configs import Var
@@ -487,7 +488,7 @@ async def ready():
         udB.set_key("INIT_DEPLOY", "Done")
 
     else:
-        MSG = f"<blockquote>▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n🔥 xᴛᴇᴀᴍ-ᴜʀʙᴏᴛ ᴀᴄᴛɪᴠᴀᴛᴇᴅ 🔥\n Owner : {ultroid_bot.full_name}\n xteam-urbot : {UltVer} {HOSTED_ON}\n XteamLib : {xtver}\n Telethon : {tver}\n Python : {platform.python_version()}\n Kurgram : {pver}\n Support : @xteam_cloner\n▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰</blockquote>"        
+        MSG = f"<blockquote>▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n🔥 xᴛᴇᴀᴍ-ᴜʀʙᴏᴛ ᴀᴄᴛɪᴠᴀᴛᴇᴅ 🔥\n Owner : {ultroid_bot.full_name}\n xteam-urbot : {UltVer} {HOSTED_ON}\n XteamLib : {xtver}\n Telethon : {tver}\n Python : {platform.python_version()}\n PyTgCalls : {pyt}\n Support : @xteam_cloner\n▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰</blockquote>"        
         
         PHOTO = "https://files.catbox.moe/k9ljse.jpg"
         
