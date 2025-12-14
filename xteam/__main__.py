@@ -114,8 +114,11 @@ async def main_async():
                 )
                 
                 await bot.start() 
-                vc_me = await bot.get_me() 
-                LOGS.info(f"Assistans Start as {vc_me.full_name}") 
+                vc_me = await bot.get_me()
+                full_name = vc_me.first_name
+                if vc_me.last_name:
+                    full_name += f" {vc_me.last_name}"
+                LOGS.info(f"Assistans Start as {full_name}") 
                 
                 call_py = PyTgCalls(bot)
                 await call_py.start()
