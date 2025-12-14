@@ -7,7 +7,7 @@ from xteam import call_py, LOGS
 async def join_call(chat_id: int, link: str, video: bool = False, resolution: int = 480):
     
     try:
-        await call_py.join_group_call(chat_id)
+        await call_py.join_call(chat_id)
         LOGS.info(f"Successfully joined VC in {chat_id}.")
         
     except UserAlreadyParticipantError:
