@@ -5,7 +5,7 @@ from xteam.vcbot import play_next_stream, clear_queue
 import os
 import logging
 from pytgcalls.types import StreamEnded
-
+from xteam import call_py
 async def unified_update_handler(client, update: Update) -> None:
     
     chat_id = update.chat_id
