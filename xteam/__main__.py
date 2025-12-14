@@ -1,25 +1,22 @@
-# Xteam/__main__.py - Ultroid UserBot Core
-# Copyright (C) 2021-2025 TeamUltroid
+# xteam-urbot 
+# Copyright (C) 2021-2025 Xteam_clonet
 #
 # PLease read the GNU Affero General Public License in
-# <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
+# <https://github.com/xteam-cloner/xteam/blob/main/LICENSE>.
 
 from . import *
 import os
 import sys
 import time
 import asyncio 
-
 from pytgcalls import PyTgCalls
 from telethon import TelegramClient 
 from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
 from telethon.sessions import StringSession
 from telethon.network.connection.tcpabridged import ConnectionTcpAbridged
 import xteam 
-#from xteam.handlers import register_vc_handlers # <-- Perhatikan perubahan ini
 from .startup.connections import validate_session
 from strings import get_string
-
 from .fns.helper import bash, time_formatter, updater
 from .startup.funcs import (
     WasItRestart,
@@ -44,7 +41,7 @@ def register_vc_handlers():
     # Pastikan call_py sudah ada dan diinisialisasi
     if call_py:
         call_py.on_update()(unified_update_handler)
-        LOGS.info("✅ Event handler PyTgCalls telah didaftarkan.")
+        #LOGS.info("✅ Event handler PyTgCalls telah didaftarkan.")
     else:
         LOGS.warning("call_py not available, handler registration skipped.")
 
@@ -117,12 +114,11 @@ async def main_async():
                 )
                 
                 await bot.start() 
+                vc_me = await bot.get_me() 
+                LOGS.info(f"Assistans Start as {vc_me.full_name}") 
                 
                 call_py = PyTgCalls(bot)
                 await call_py.start()
-                
-                vc_me = await bot.get_me() 
-                LOGS.info(f"VC Client login successful: @{vc_me.username} (ID: {vc_me.id})") 
                 LOGS.info("PyTgCalls Client started successfully.")
                 
                 xteam.bot = bot
@@ -169,7 +165,7 @@ async def main_async():
         pass
 
     LOGS.info(
-        f"Took {time_formatter((time.time() - start_time)*1000)} to start •ULTROID•"
+        f"Took {time_formatter((time.time() - start_time)*1000)} to start "
     )
     LOGS.info(suc_msg)
 
