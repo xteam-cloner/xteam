@@ -3,6 +3,8 @@ from pytgcalls.exceptions import NoActiveGroupCall
 from pytgcalls.types import MediaStream
 from pytgcalls.types.stream import VideoQuality, AudioQuality
 from xteam import call_py, LOGS 
+import os
+import logging
 
 FILE_PATH = os.path.join(os.getcwd(), 'resources', 'audio-man.mp3') 
 
