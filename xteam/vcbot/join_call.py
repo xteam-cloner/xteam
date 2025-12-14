@@ -2,7 +2,6 @@ from telethon.errors.rpcerrorlist import UserAlreadyParticipantError
 from pytgcalls.exceptions import NoActiveGroupCall 
 from pytgcalls.types import MediaStream
 from pytgcalls.types.stream import VideoQuality, AudioQuality
-from pytgcalls.stream import VideoQuality, AudioQuality
 from xteam import call_py, LOGS 
 
 async def join_call(chat_id: int, link: str, video: bool = False, resolution: int = 480):
