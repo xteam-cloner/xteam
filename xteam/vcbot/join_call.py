@@ -12,7 +12,7 @@ FILE_PATH = os.path.join(os.getcwd(), 'resources', 'audio-man.mp3')
 async def join_call(chat_id: int, link: str, video: bool = False, resolution: int = 480):
     
     try:
-        await join_call(chat_id, media_path=link, video=False)
+        await join_call(chat_id, link, video=False)
         LOGS.info(f"Successfully joined VC in {chat_id} ")
         
     except UserAlreadyParticipantError:
