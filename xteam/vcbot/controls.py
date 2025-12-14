@@ -18,6 +18,24 @@ async def skip_item(chat_id: int, x: int):
 
 async def play_next_stream(chat_id: int, file_path: str, is_video: bool = False, ffmpeg_seek: str = None):
     pass
+
+async def unmute_self(chat_id: int):
+    # FUNGSI UNMUTE BARU
+    bot_id = await call_py.get_id() 
+    bot_peer = await call_py.resolve_peer(bot_id)
+
+    try:
+        await call_py.set_call_status(
+            chat_id,
+            muted_status=False,  
+            video_paused=False,
+            video_stopped=True,
+            presentation_paused=False,
+            participant=bot_peer,
+        )
+        LOGS.info(f"Self-unmute executed successfully in chat {chat_id}")
+    except Exception as e:
+        LOGS.error(f"Error setting call status (unmute): {e}")
     
 
 async def skip_current_song(chat_id: int):
@@ -70,8 +88,11 @@ async def skip_current_song(chat_id: int):
     
     try:
         await call_py.play(chat_id, stream)
+        # Panggil unmute setelah berhasil play
+        await unmute_self(chat_id) 
+        
     except Exception as e:
-        LOGS.error(f"Error playing next stream: {e}")
+        LOGS.error(f"Error playing next stream: {e}. URL: {url}")
         pop_an_item(chat_id)
         return await skip_current_song(chat_id)
         
