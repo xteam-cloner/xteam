@@ -6,13 +6,6 @@ from xteam import call_py, LOGS
 
 async def join_call(chat_id: int, link: str, video: bool = False, resolution: int = 480):
     
-    if video:
-        video_params = VideoQuality.HD_720p if resolution >= 720 else VideoQuality.SD_480p 
-        video_flags = MediaStream.Flags.AUTO_DETECT
-    else:
-        video_params = VideoQuality.NONE
-        video_flags = MediaStream.Flags.IGNORE
-
     try:
         await call_py.join_group_call(chat_id)
         LOGS.info(f"Successfully joined VC in {chat_id}.")
@@ -29,15 +22,27 @@ async def join_call(chat_id: int, link: str, video: bool = False, resolution: in
         return 0
 
     try:
-        await call_py.play(
-            chat_id,
-            MediaStream(
+        
+        if video:
+            video_params = VideoQuality.HD_720p if resolution >= 720 else VideoQuality.SD_480p 
+            
+            stream = MediaStream(
                 media_path=link, 
                 audio_parameters=AudioQuality.HIGH,
                 video_parameters=video_params,
-                video_flags=video_flags,
-            ), 
+            )
+        else:
+            stream = MediaStream(
+                media_path=link, 
+                audio_parameters=AudioQuality.HIGH,
+                video_flags=MediaStream.Flags.IGNORE, 
+            )
+            
+        await call_py.play(
+            chat_id,
+            stream,
         )
+        
         LOGS.info(f"Started playback in {chat_id} successfully. Link: {link}")
         return 1
         
