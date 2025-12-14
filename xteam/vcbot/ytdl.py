@@ -26,53 +26,72 @@ def ytsearch(query: str):
         return 0
 
 
-# Import atau definisikan kembali DOWNLOAD_DIR
+import re
+import hashlib
+import asyncio
+import shlex
 import os
-import yt_dlp
-# Asumsi DOWNLOAD_DIR diimpor atau didefinisikan secara global
-DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads") 
-# ... (pastikan folder dibuat jika belum ada) ...
+from os.path import basename
+import os.path
+from PIL import Image
+from yt_dlp import YoutubeDL
+from typing import Optional, Union
+from xteam import bot
+LOGS = {}
+SUDO_USERS = {}
 
-async def ytdl(url):
-    """
-    Mengunduh audio dari URL YouTube dan menyimpannya di DOWNLOAD_DIR.
-    """
-    
-    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-    
-    ydl_opts = {
-        # *** GANTI outtmpl MENGGUNAKAN ID UNTUK NAMA FILE BERSIH ***
-        # '%(id)s' adalah ID video YouTube, selalu unik dan pendek.
-        'outtmpl': os.path.join(DOWNLOAD_DIR, '%(id)s.%(ext)s'),
-        
-        'format': 'bestaudio/best',
-        'noplaylist': True,
-        'quiet': True,
-        'nocheckcertificate': True,
-        'extract_flat': 'in_playlist',
-        
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'ogg',
-            'preferredquality': '192',
-        }],
-    }
-    
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(url, download=True)
-            
-            # Mendapatkan ID unik untuk membangun nama file
-            video_id = info_dict.get('id', 'unknown') 
+from telethon.tl.functions.channels import GetParticipantRequest
+from telethon.tl.types import ChannelParticipantAdmin, ChannelParticipantCreator, DocumentAttributeFilename
 
-            # Menggunakan ID video untuk membuat jalur file OGG akhir
-            final_link = os.path.join(DOWNLOAD_DIR, f"{video_id}.ogg")
-            
-            # Jika Anda mengunduh, Anda mungkin ingin melakukan pemeriksaan
-            # apakah file tersebut benar-benar ada di final_link sebelum kembali.
-            
-            return 1, final_link
-            
-    except Exception as e:
-        return 0, f"Error: {e}"
-    
+
+
+
+async def is_admin(chat_id, user_id):
+    req_jo = await bot(GetParticipantRequest(
+        channel=chat_id,
+        user_id=user_id
+    ))
+    chat_participant = req_jo.participant
+    if isinstance(
+            chat_participant,
+            ChannelParticipantCreator) or isinstance(
+            chat_participant,
+            ChannelParticipantAdmin):
+        return True
+    return False
+
+
+
+
+
+# https://github.com/TeamUltroid/pyUltroid/blob/31c271cf4d35ab700e5880e952e54c82046812c2/pyUltroid/functions/helper.py#L154
+
+
+async def bash(cmd):
+    process = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await process.communicate()
+    err = stderr.decode().strip()
+    out = stdout.decode().strip()
+    return out, err
+
+
+ydl_opts = {
+    "format": "best",
+    "geo-bypass": True,
+    "noprogress": True,
+    "user-agent": "Mozilla/5.0 (Linux; Android 7.0; k960n_mt6580_32_n) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36",
+    "extractor-args": "youtube:player_client=all",
+    "nocheckcertificate": True,
+    "outtmpl": "downloads/%(id)s.%(ext)s",
+}
+ydl = YoutubeDL(ydl_opts)
+
+
+def download_lagu(url: str) -> str:
+    info = ydl.extract_info(url, download=False)
+    ydl.download([url])
+    return os.path.join("downloads", f"{info['id']}.{info['ext']}")
