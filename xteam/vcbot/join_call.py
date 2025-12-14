@@ -1,5 +1,6 @@
 from telethon.errors.rpcerrorlist import UserAlreadyParticipantError 
-#from telethon.tl.types.phone import GroupCall
+from telethon.tl import functions
+from telethon.tl.types import InputPeerChannel, InputPeerChat
 from pytgcalls.exceptions import NoActiveGroupCall 
 from pytgcalls.types import MediaStream
 from pytgcalls.types.stream import VideoQuality, AudioQuality
@@ -13,17 +14,15 @@ FILE_PATH = os.path.join(os.getcwd(), 'resources', 'audio-man.mp3')
 async def join_call(chat_id: int, link: str, video: bool = False, resolution: int = 480):
     
     try:
-        params = None(
-            start_call=True,
-        )
+        input_peer = await bot.get_input_entity(chat_id)
         
-        await bot.join_group_call(
-            chat_id,
-            join_as=chat_id, 
-            params=params
-        )
+        await bot(functions.phone.JoinGroupCallRequest(
+            call=input_peer,
+            join_as=input_peer,
+            params=None
+        ))
         
-        LOGS.info(f"Successfully joined VC in {chat_id} using xteam.bot.")
+        LOGS.info(f"Successfully joined VC in {chat_id} using Telethon TL function.")
         
     except UserAlreadyParticipantError:
         LOGS.warning(f"Assistant already in VC in {chat_id}. Proceeding to play.")
