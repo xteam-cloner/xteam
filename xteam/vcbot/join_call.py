@@ -1,5 +1,5 @@
 from telethon.errors.rpcerrorlist import UserAlreadyParticipantError 
-from telethon.tl.custom.groupcall import GroupCallParams
+#from telethon.tl.types.phone import GroupCall
 from pytgcalls.exceptions import NoActiveGroupCall 
 from pytgcalls.types import MediaStream
 from pytgcalls.types.stream import VideoQuality, AudioQuality
@@ -13,7 +13,7 @@ FILE_PATH = os.path.join(os.getcwd(), 'resources', 'audio-man.mp3')
 async def join_call(chat_id: int, link: str, video: bool = False, resolution: int = 480):
     
     try:
-        params = GroupCallParams(
+        params = None(
             start_call=True,
         )
         
