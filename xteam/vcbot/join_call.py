@@ -3,16 +3,15 @@ from pytgcalls.types import MediaStream
 from pytgcalls.types.stream import VideoQuality, AudioQuality
 from pytgcalls.exceptions import (
     NoActiveGroupCall,
-    ChatAdminRequired,
     NoAudioSourceFound,
     NoVideoSourceFound,
     ConnectionNotFound,
     TelegramServerError,
+    # ChatAdminRequired Dihapus dari import
 )
 
 from xteam import call_py as assistant_call
-# Variabel 'assistant_client' (Telethon/Pyrogram Client) dihapus 
-# karena tidak ada lagi logika yang membutuhkannya (autoend)
+# from xteam import bot as assistant_client Dihapus
 
 
 class XteamMusicBot:
@@ -50,8 +49,12 @@ class XteamMusicBot:
         try:
             await vc_client.play(chat_id, stream)
 
-        except (NoActiveGroupCall, ChatAdminRequired):
-            raise Exception("Gagal bergabung. Obrolan Suara tidak aktif atau Asisten bukan admin.")
+        except NoActiveGroupCall:
+            # Menggantikan (NoActiveGroupCall, ChatAdminRequired)
+            # Karena ChatAdminRequired dilemparkan oleh klien dasar, 
+            # PyTgCalls mungkin melemparkan Exception umum atau NoActiveGroupCall jika gagal join.
+            # Kami menangkap NoActiveGroupCall secara spesifik:
+            raise Exception("Gagal bergabung. Obrolan Suara tidak aktif.")
 
         except NoAudioSourceFound:
             raise Exception("Sumber audio tidak ditemukan.")
@@ -63,10 +66,12 @@ class XteamMusicBot:
             raise Exception("Masalah koneksi Telegram atau server.")
 
         except Exception as e:
+            # Exception umum ini sekarang juga akan menangkap ChatAdminRequiredError dari klien dasar
+            # (misalnya, pyrogram.errors.ChatAdminRequired atau telethon.errors.ChatAdminRequiredError)
+            # yang menyebabkan PyTgCalls gagal.
             raise Exception(
                 f"ᴜɴᴀʙʟᴇ ᴛᴏ ᴊᴏɪɴ ᴛʜᴇ ɢʀᴏᴜᴘ ᴄᴀʟʟ. Rᴇᴀsᴏɴ: {e}"
             )
 
-        # Penanganan Status (Tinggal penambahan ke active_calls)
         self.active_calls.add(chat_id)
         
