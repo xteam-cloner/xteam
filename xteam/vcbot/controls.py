@@ -1,5 +1,5 @@
 from pytgcalls.types import MediaStream, AudioQuality, VideoQuality
-
+from plugins.vcplug import play_next_song
 from xteam import LOGS, call_py
 from xteam.vcbot.queues import QUEUE, clear_queue, get_queue, pop_an_item
 
@@ -39,19 +39,21 @@ async def unmute_self(chat_id: int):
     
 
 async def skip_current_song(chat_id: int):
-    if chat_id not in QUEUE:
-        return 0
+    if chat_id not in QUEUE or not QUEUE[chat_id]:
+        return 0 
     
+    # Memicu transisi yang sudah benar: menghapus lagu lama & memutar lagu baru.
+    await play_next_song(chat_id) 
+    
+    # Ambil lagu yang BARU diputar (sekarang di indeks 0 yang baru) untuk respons
     chat_queue = get_queue(chat_id)
     
-    if len(chat_queue) == 1:
-        try:
-            await call_py.leave_call(chat_id)
-        except Exception as e:
-            LOGS.info(f"Error leaving call: {e}")
-            pass
-            
-        clear_queue(chat_id)
+    if chat_queue:
+        # songname, file_path, url_ref, media_type, resolution
+        new_songname, new_url, new_link, new_type, new_RESOLUSI = chat_queue[0]
+        return [new_songname, new_link, new_type] 
+    else:
+        # Antrian kosong setelah skip
         return 1
         
     songname = chat_queue[1][0]
