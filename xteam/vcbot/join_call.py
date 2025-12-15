@@ -5,13 +5,10 @@ from pytgcalls.exceptions import (
     NoActiveGroupCall,
     NoAudioSourceFound,
     NoVideoSourceFound,
-    ConnectionNotFound,
-    TelegramServerError,
-    # ChatAdminRequired Dihapus dari import
 )
+# Exceptions yang tidak ada (ChatAdminRequired, ConnectionNotFound, TelegramServerError) telah dihapus dari import
 
 from xteam import call_py as assistant_call
-# from xteam import bot as assistant_client Dihapus
 
 
 class XteamMusicBot:
@@ -50,11 +47,8 @@ class XteamMusicBot:
             await vc_client.play(chat_id, stream)
 
         except NoActiveGroupCall:
-            # Menggantikan (NoActiveGroupCall, ChatAdminRequired)
-            # Karena ChatAdminRequired dilemparkan oleh klien dasar, 
-            # PyTgCalls mungkin melemparkan Exception umum atau NoActiveGroupCall jika gagal join.
-            # Kami menangkap NoActiveGroupCall secara spesifik:
-            raise Exception("Gagal bergabung. Obrolan Suara tidak aktif.")
+            # Menangkap NoActiveGroupCall (VC tidak aktif)
+            raise Exception("Gagal bergabung. Obrolan Suara tidak aktif atau Asisten bukan admin.")
 
         except NoAudioSourceFound:
             raise Exception("Sumber audio tidak ditemukan.")
@@ -62,13 +56,11 @@ class XteamMusicBot:
         except NoVideoSourceFound:
             raise Exception("Sumber video tidak ditemukan.")
 
-        except (ConnectionNotFound, TelegramServerError):
-            raise Exception("Masalah koneksi Telegram atau server.")
-
         except Exception as e:
-            # Exception umum ini sekarang juga akan menangkap ChatAdminRequiredError dari klien dasar
-            # (misalnya, pyrogram.errors.ChatAdminRequired atau telethon.errors.ChatAdminRequiredError)
-            # yang menyebabkan PyTgCalls gagal.
+            # Blok ini menangkap semua error lainnya, termasuk:
+            # - Error koneksi/server Telegram (ConnectionNotFound/TelegramServerError)
+            # - Error izin admin (ChatAdminRequired dari klien dasar)
+            # - Error lainnya dari PyTgCalls yang tidak didefinisikan di list exceptions.py Anda.
             raise Exception(
                 f"ᴜɴᴀʙʟᴇ ᴛᴏ ᴊᴏɪɴ ᴛʜᴇ ɢʀᴏᴜᴘ ᴄᴀʟʟ. Rᴇᴀsᴏɴ: {e}"
             )
