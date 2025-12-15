@@ -1,61 +1,72 @@
-from telethon.errors.rpcerrorlist import UserAlreadyParticipantError 
-from telethon.tl import functions
-from telethon.tl.types import InputPeerChannel, InputPeerChat
-from pytgcalls.exceptions import NoActiveGroupCall 
+from typing import Union
 from pytgcalls.types import MediaStream
 from pytgcalls.types.stream import VideoQuality, AudioQuality
-from xteam import call_py, LOGS, bot
-import os
-import logging
+from pytgcalls.exceptions import (
+    NoActiveGroupCall,
+    ChatAdminRequired,
+    NoAudioSourceFound,
+    NoVideoSourceFound,
+    ConnectionNotFound,
+    TelegramServerError,
+)
 
-FILE_PATH = os.path.join(os.getcwd(), 'resources', 'audio-man.mp3') 
+from xteam import call_py as assistant_call
+# Variabel 'assistant_client' (Telethon/Pyrogram Client) dihapus 
+# karena tidak ada lagi logika yang membutuhkannya (autoend)
 
 
-async def join_call(chat_id: int, link: str, video: bool = False, resolution: int = 480):
-    
-    try:
-        input_peer = await bot.get_input_entity(chat_id)
-        
-        await bot(functions.phone.JoinGroupCallRequest(
-            call=input_peer,
-            join_as=input_peer,
-            params=None
-        ))
-        
-        LOGS.info(f"Successfully joined VC in {chat_id} using Telethon TL function.")
-        
-    except UserAlreadyParticipantError:
-        LOGS.warning(f"Assistant already in VC in {chat_id}. Proceeding to play.")
-        
-    except Exception as e:
-        if 'NoActiveGroupCall' in str(e):
-             LOGS.warning(f"No active VC in {chat_id}. Cannot start playback.")
-             return 0
-        LOGS.error(f"Error trying to join VC in {chat_id}: {e}")
-        return 0
+class XteamMusicBot:
+    def __init__(self):
+        self.active_calls = set()
 
-    try:
-        
+    def create_media_stream(self, link: str, video: bool = False) -> MediaStream:
         if video:
-            video_params = VideoQuality.HD_720p if resolution >= 720 else VideoQuality.SD_480p 
-            stream = MediaStream(
-                media_path=link, 
+            return MediaStream(
+                media_path=link,
                 audio_parameters=AudioQuality.HIGH,
-                video_parameters=video_params,
+                video_parameters=VideoQuality.HD_720p,
             )
         else:
-            stream = MediaStream(
-                media_path=link, 
+            return MediaStream(
+                media_path=link,
                 audio_parameters=AudioQuality.HIGH,
-                video_flags=MediaStream.Flags.IGNORE, 
+                video_flags=MediaStream.Flags.IGNORE,
             )
-            
-        await call_py.play(chat_id, stream)
+
+
+    async def join_call(
+        self,
+        chat_id: int,
+        original_chat_id: int,
+        link: str,
+        video: Union[bool, str] = None,
+        image: Union[bool, str] = None,
+    ) -> None:
+
+        stream = self.create_media_stream(link=link, video=bool(video))
         
-        LOGS.info(f"Started playback in {chat_id} successfully. Link: {link}")
-        return 1
-        
-    except Exception as e:
-        LOGS.error(f"Error during playback in {chat_id}: {e}")
-        return 0
+        vc_client = assistant_call 
+
+        try:
+            await vc_client.play(chat_id, stream)
+
+        except (NoActiveGroupCall, ChatAdminRequired):
+            raise Exception("Gagal bergabung. Obrolan Suara tidak aktif atau Asisten bukan admin.")
+
+        except NoAudioSourceFound:
+            raise Exception("Sumber audio tidak ditemukan.")
+
+        except NoVideoSourceFound:
+            raise Exception("Sumber video tidak ditemukan.")
+
+        except (ConnectionNotFound, TelegramServerError):
+            raise Exception("Masalah koneksi Telegram atau server.")
+
+        except Exception as e:
+            raise Exception(
+                f"ᴜɴᴀʙʟᴇ ᴛᴏ ᴊᴏɪɴ ᴛʜᴇ ɢʀᴏᴜᴘ ᴄᴀʟʟ. Rᴇᴀsᴏɴ: {e}"
+            )
+
+        # Penanganan Status (Tinggal penambahan ke active_calls)
+        self.active_calls.add(chat_id)
         
