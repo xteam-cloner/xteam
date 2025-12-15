@@ -19,22 +19,27 @@ def get_queue(chat_id):
 
 
 def pop_an_item(chat_id):
+    """
+    Menghapus item pertama dari antrian dan mengembalikan datanya.
+    TIDAK MENGHAPUS FILE FISIK DARI DISK.
+    """
     if chat_id not in QUEUE:
         return 0
 
+    # Ambil data lagu di indeks 0
     song_data = QUEUE[chat_id][0] 
-    file_path_to_delete = song_data[1]
     
+    # Hapus dari antrian
     QUEUE[chat_id].pop(0)
     
-    if os.path.exists(file_path_to_delete):
-        with contextlib.suppress(Exception):
-            os.remove(file_path_to_delete)
-    
-    return 1
+    # Mengembalikan data lagu yang dihapus (untuk digunakan oleh play_next_song)
+    return song_data
 
 
 def clear_queue(chat_id: int):
+    """
+    Menghapus seluruh antrian dan SEMUA file fisik yang terkait.
+    """
     if chat_id not in QUEUE:
         return 0
 
