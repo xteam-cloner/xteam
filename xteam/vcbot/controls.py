@@ -1,5 +1,4 @@
 from pytgcalls.types import MediaStream, AudioQuality, VideoQuality
-from plugins.vcplug import play_next_song
 from xteam import LOGS, call_py
 from xteam.vcbot.queues import QUEUE, clear_queue, get_queue, pop_an_item
 
@@ -39,6 +38,8 @@ async def unmute_self(chat_id: int):
     
 
 async def skip_current_song(chat_id: int):
+    from plugins.vcplug import play_next_song
+    
     if chat_id not in QUEUE or not QUEUE[chat_id]:
         return 0 
     
