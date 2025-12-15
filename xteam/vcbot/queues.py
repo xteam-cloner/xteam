@@ -30,11 +30,7 @@ def pop_an_item(chat_id):
     return song_data # Ubah return 1 menjadi return song_data (Lebih informatif)
     
 
-
 def clear_queue(chat_id: int):
-    """
-    Menghapus seluruh antrian dan SEMUA file fisik yang terkait.
-    """
     if chat_id not in QUEUE:
         return 0
 
