@@ -52,15 +52,6 @@ async def unified_update_handler(client, update: Update) -> None:
         status = update.status
         
         if (status & ChatUpdate.Status.LEFT_CALL) or (status & CRITICAL):
-            if chat_id in QUEUE:
-                for song_data in QUEUE.get(chat_id, []):
-                    file_path = song_data[1]
-                    if os.path.exists(file_path):
-                        try:
-                            os.remove(file_path)
-                            logger.info(f"Dihapus file karena VC ditutup: {file_path}")
-                        except Exception:
-                            pass
                             
             clear_queue(chat_id) 
             
