@@ -1,4 +1,3 @@
-#xteam-urbot
 from pytgcalls.types import Update
 from pytgcalls.types.stream.stream_ended import StreamEnded
 from pytgcalls.types.chats.chat_update import ChatUpdate
@@ -27,13 +26,6 @@ async def unified_update_handler(client, update: Update) -> None:
             file_to_delete = current_song[1]
             
             op = await skip_current_song(chat_id)
-            
-            if os.path.exists(file_to_delete):
-                try:
-                    os.remove(file_to_delete)
-                    logger.info(f"Berhasil membersihkan file otomatis: {file_to_delete}")
-                except Exception as e:
-                    logger.error(f"Gagal menghapus file {file_to_delete} setelah diputar: {e}")
             
             if op not in [0, 1]:
                 next_song_name, next_song_url = op[0], op[2] 
