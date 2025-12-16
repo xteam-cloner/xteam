@@ -19,16 +19,18 @@ def get_queue(chat_id):
 
 
 
-def pop_an_item(chat_id):
-    if chat_id not in QUEUE:
-        return 0
+def pop_an_item(chat_id: int):
+    if chat_id not in QUEUE or not QUEUE[chat_id]:
+        return
+        
+    song_data = QUEUE[chat_id][0]
+    file_path = song_data[1]
 
-    song_data = QUEUE[chat_id][0] 
-    
-    QUEUE[chat_id].pop(0)
-    
-    return song_data # Ubah return 1 menjadi return song_data (Lebih informatif)
-    
+    try:
+        QUEUE[chat_id].pop(0)
+    except IndexError:
+        pass
+        
 
 def clear_queue(chat_id: int):
     if chat_id not in QUEUE:
