@@ -37,7 +37,7 @@ async def unmute_self(chat_id: int):
         return
         
     try:
-        bot_peer = await bot.resolve_peer(bot_id) 
+        bot_peer = await bot.resolve_chat_id(chat_id) 
 
         await call_py.set_call_status(
             chat_id,
