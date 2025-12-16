@@ -56,7 +56,7 @@ async def unified_update_handler(client, update: Update) -> None:
             clear_queue(chat_id) 
             
             try:
-                await client.leave_call(chat_id) 
+                await call_py.leave_call(chat_id) 
             except Exception:
                 pass
                 
