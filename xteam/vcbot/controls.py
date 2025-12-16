@@ -1,5 +1,5 @@
 from pytgcalls.types import MediaStream, AudioQuality, VideoQuality
-from xteam import LOGS, call_py
+from xteam import LOGS, call_py, bot
 from xteam.vcbot.queues import QUEUE, clear_queue, get_queue, pop_an_item
 from telethon.errors.rpcerrorlist import UserAlreadyParticipantError
 
