@@ -33,13 +33,6 @@ def pop_an_item(chat_id):
 def clear_queue(chat_id: int):
     if chat_id not in QUEUE:
         return 0
-
-    for song_data in QUEUE[chat_id]:
-        file_path_to_delete = song_data[1]
-        if os.path.exists(file_path_to_delete):
-            with contextlib.suppress(Exception):
-                os.remove(file_path_to_delete)
-    
     QUEUE.pop(chat_id)
     return 1
-    
+
