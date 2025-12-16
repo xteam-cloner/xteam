@@ -1,4 +1,5 @@
-From pytgcalls.types import Update
+#xteam-urbot
+from pytgcalls.types import Update
 from pytgcalls.types.stream.stream_ended import StreamEnded
 from pytgcalls.types.chats.chat_update import ChatUpdate
 from xteam.vcbot import play_next_stream, clear_queue, skip_current_song, QUEUE
