@@ -19,10 +19,21 @@ async def play_next_stream(chat_id: int, file_path: str, is_video: bool = False,
     pass
 
 async def unmute_self(chat_id: int):
-    bot_id = await call_py.get_id() 
-    bot_peer = await call_py.resolve_peer(bot_id)
-
+    bot_id = None
+    
     try:
+        bot_me = await call_py.client.get_me()
+        bot_id = bot_me.id
+    except Exception as e:
+        LOGS.error(f"FATAL: Gagal mendapatkan ID bot dari call_py.client.get_me(): {e}")
+        return
+
+    if not bot_id:
+        return
+        
+    try:
+        bot_peer = await call_py.resolve_peer(bot_id)
+
         await call_py.set_call_status(
             chat_id,
             muted_status=False,  
@@ -31,10 +42,8 @@ async def unmute_self(chat_id: int):
             presentation_paused=False,
             participant=bot_peer,
         )
-        LOGS.info(f"Self-unmute executed successfully in chat {chat_id}")
     except Exception as e:
         LOGS.error(f"Error setting call status (unmute): {e}")
-    
 
 async def skip_current_song(chat_id: int):
     from plugins.vcplug import play_next_song
