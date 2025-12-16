@@ -22,10 +22,10 @@ async def unmute_self(chat_id: int):
     bot_id = None
     
     try:
-        bot_me = await call_py.client.get_me()
+        bot_me = await bot.get_me() 
         bot_id = bot_me.id
     except Exception as e:
-        LOGS.error(f"FATAL: Gagal mendapatkan ID bot dari call_py.client.get_me(): {e}")
+        LOGS.error(f"FATAL: Gagal mendapatkan ID bot dari klien utama (bot.get_me()): {e}")
         return
 
     if not bot_id:
@@ -44,6 +44,7 @@ async def unmute_self(chat_id: int):
         )
     except Exception as e:
         LOGS.error(f"Error setting call status (unmute): {e}")
+
 
 async def skip_current_song(chat_id: int):
     from plugins.vcplug import play_next_song
