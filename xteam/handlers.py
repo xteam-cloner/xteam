@@ -1,4 +1,4 @@
-from pytgcalls.types import Update
+From pytgcalls.types import Update
 from pytgcalls.types.stream.stream_ended import StreamEnded
 from pytgcalls.types.chats.chat_update import ChatUpdate
 from xteam.vcbot import play_next_stream, clear_queue, skip_current_song, QUEUE
@@ -46,6 +46,11 @@ async def unified_update_handler(client, update: Update) -> None:
                     chat_id,
                     "Antrian kosong. Meninggalkan obrolan suara.",
                  )
+                 
+                 try:
+                     await call_py.leave_call(chat_id) 
+                 except Exception:
+                     pass
 
 
     elif isinstance(update, ChatUpdate):
