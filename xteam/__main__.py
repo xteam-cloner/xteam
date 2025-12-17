@@ -121,7 +121,7 @@ async def main_async():
                 LOGS.info(f"Assistans Start as {full_name}") 
                 
                 call_py = PyTgCalls(bot)
-                await call_py.start()
+                #await call_py.start()
                 LOGS.info("PyTgCalls Client started successfully.")
                 
                 xteam.bot = bot
@@ -144,6 +144,13 @@ async def main_async():
         vcbot=call_py
     )
 
+    if vcbot_enabled and call_py:
+        try:
+            await call_py.start()
+            # LOGS.info("PyTgCalls Client started successfully.")
+        except Exception as e:
+            LOGS.error(f"Gagal menjalankan PyTgCalls: {e}")
+            
     suc_msg = """
             ----------------------------------------------------------------------
                 xteam-urbot has been deployed! Visit @xteam_cloner for updates!!
