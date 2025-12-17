@@ -1,6 +1,7 @@
 from pytgcalls.types import MediaStream, AudioQuality, VideoQuality
 from xteam import LOGS, call_py, bot
-from xteam.vcbot.queues import QUEUE, clear_queue, get_queue, pop_an_item
+# Hapus pop_an_item dari baris di bawah ini
+from xteam.vcbot.queues import QUEUE, clear_queue, get_queue 
 from telethon.errors.rpcerrorlist import UserAlreadyParticipantError
 from telethon.tl.functions.users import GetFullUserRequest
 import os, contextlib
@@ -29,19 +30,15 @@ async def skip_item(chat_id: int, x: int):
 async def skip_current_song(chat_id: int):
     from plugins.vcplug import play_next_song
     
-    if chat_id not in QUEUE:
+    if chat_id not in QUEUE or not QUEUE[chat_id]:
         return 0 
     
-    if QUEUE[chat_id]:
-        pop_an_item(chat_id) 
+    # Jangan panggil pop_an_item di sini karena 
+    # fungsi play_next_song sudah melakukan pop(0) di dalamnya.
     
-    if not QUEUE[chat_id]:
-         return 1
-         
     result = await play_next_song(chat_id) 
     
     if result is None:
         return 1
-    else:
-        return result
-        
+    return result
+    
