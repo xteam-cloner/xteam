@@ -34,6 +34,10 @@ if run_as_module:
     from .startup.funcs import _version_changes, autobot, enable_inline, update_envs
     from .version import ultroid_version
 
+    import logging
+    logging.getLogger('apscheduler.scheduler').setLevel(logging.ERROR)
+    logging.getLogger('apscheduler.executors.default').setLevel(logging.ERROR)
+
     if not os.path.exists("./plugins"):
         LOGS.error(
             "'plugins' folder not found!\nMake sure that, you are on correct path."
