@@ -6,10 +6,12 @@
 # t.me/SharingUserbot & t.me/Lunatic0de
 
 from youtubesearchpython import VideosSearch
+from xteam import LOGS, bash
 
-from xteam import LOGS
-from plugins import bash
 
+FFMPEG_ABSOLUTE_PATH = "/usr/bin/ffmpeg"
+DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
+COOKIES_FILE_PATH = "cookies.txt"
 
 def ytsearch(query: str):
     try:
@@ -25,73 +27,101 @@ def ytsearch(query: str):
         LOGS.info(str(e))
         return 0
 
+async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, Union[str, Any]]:
+    loop = asyncio.get_running_loop()
+    
+    if not os.path.isdir(DOWNLOAD_DIR):
+        try:
+            os.makedirs(DOWNLOAD_DIR)
+        except OSError as e:
+            return 0, f"Gagal membuat direktori unduhan: {e}"
 
-import re
-import hashlib
-import asyncio
-import shlex
-import os
-from os.path import basename
-import os.path
-from PIL import Image
-from yt_dlp import YoutubeDL
-from typing import Optional, Union
-from xteam import bot
-LOGS = {}
-SUDO_USERS = {}
+    def vc_audio_dl_sync():
+        
+        if video_mode:
+            ydl_opts_vc = {
+                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
+                "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]",
+                "merge_output_format": "mp4",
+                "noplaylist": True,
+                "quiet": True,
+                "nocheckcertificate": True,
+                "prefer_ffmpeg": True,
+                "exec_path": FFMPEG_ABSOLUTE_PATH,
+                "cookiefile": COOKIES_FILE_PATH,
+                "postprocessors": [
+                    {
+                        "key": "FFmpegVideoConvertor",
+                        "preferedformat": "mp4"
+                    },
+                    {
+                        "key": "FFmpegMetadata",
+                        "add_metadata": False,
+                    },
+                ],
+            }
+        else:
+            ydl_opts_vc = {
+                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s"), 
+                "format": "bestaudio/best",
+                "noplaylist": True,
+                "quiet": True,
+                "nocheckcertificate": True,
+                "prefer_ffmpeg": True,
+                "exec_path": FFMPEG_ABSOLUTE_PATH,
+                "cookiefile": COOKIES_FILE_PATH,
+                "js_runtimes": {
+                    "node": {},
+                },
+                "postprocessors": [
+                    {
+                        "key": "FFmpegExtractAudio",
+                        "preferredcodec": "opus",
+                        "preferredquality": "128",
+                    },
+                    {
+                        "key": "FFmpegMetadata",
+                        "add_metadata": False,
+                    },
+                ],
+            }
+        
+        video_id = 'unknown' 
+        
+        try:
+            x = yt_dlp.YoutubeDL(ydl_opts_vc)
+            info = x.extract_info(url, download=True)
+            video_id = info.get('id', 'unknown')
+            
+            if video_mode:
+                target_ext = 'mp4'
+            else:
+                target_ext = 'opus'
 
-from telethon.tl.functions.channels import GetParticipantRequest
-from telethon.tl.types import ChannelParticipantAdmin, ChannelParticipantCreator, DocumentAttributeFilename
+            final_files = [f for f in os.listdir(DOWNLOAD_DIR) if f.startswith(video_id) and f.endswith(f'.{target_ext}')]
+            
+            if not final_files:
+                logger.error(f"FFmpeg gagal membuat file {target_ext.upper()} setelah processing untuk ID: {video_id}.")
+                raise FileNotFoundError(f"Konversi {target_ext.upper()} gagal.")
+                
+            final_link = os.path.join(DOWNLOAD_DIR, final_files[0])
+            return final_link
+            
+        except Exception as e:
+            logger.error(f"YTDL VC Error during sync operation: {e}", exc_info=True)
+            
+            for f in os.listdir(DOWNLOAD_DIR):
+                if f.startswith(video_id):
+                    try:
+                        os.remove(os.path.join(DOWNLOAD_DIR, f))
+                    except OSError:
+                        pass 
+            
+            raise 
 
-
-
-
-async def is_admin(chat_id, user_id):
-    req_jo = await bot(GetParticipantRequest(
-        channel=chat_id,
-        user_id=user_id
-    ))
-    chat_participant = req_jo.participant
-    if isinstance(
-            chat_participant,
-            ChannelParticipantCreator) or isinstance(
-            chat_participant,
-            ChannelParticipantAdmin):
-        return True
-    return False
-
-
-
-
-
-# https://github.com/TeamUltroid/pyUltroid/blob/31c271cf4d35ab700e5880e952e54c82046812c2/pyUltroid/functions/helper.py#L154
-
-
-async def bash(cmd):
-    process = await asyncio.create_subprocess_shell(
-        cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await process.communicate()
-    err = stderr.decode().strip()
-    out = stdout.decode().strip()
-    return out, err
-
-
-ydl_opts = {
-    "format": "best",
-    "geo-bypass": True,
-    "noprogress": True,
-    "user-agent": "Mozilla/5.0 (Linux; Android 7.0; k960n_mt6580_32_n) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36",
-    "extractor-args": "youtube:player_client=all",
-    "nocheckcertificate": True,
-    "outtmpl": "downloads/%(id)s.%(ext)s",
-}
-ydl = YoutubeDL(ydl_opts)
-
-
-def download_lagu(url: str) -> str:
-    info = ydl.extract_info(url, download=False)
-    ydl.download([url])
-    return os.path.join("downloads", f"{info['id']}.{info['ext']}")
+    try:
+        downloaded_file = await loop.run_in_executor(None, vc_audio_dl_sync)
+        return 1, downloaded_file
+    except Exception as e:
+        return 0, f"Error saat mengunduh atau konversi: {e}"
+                    
