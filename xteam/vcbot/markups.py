@@ -79,7 +79,7 @@ async def timer_task(client, chat_id, message_id, duration):
     active_chats.pop(chat_id, None)
 
 @callback(data=re.compile(b"(pauseit|resumeit|stopit|skipit|closeit)"), owner=True)
-from plugin.musik import skip_current_song 
+from plugin.music import skip_current_song 
 async def music_manager(e):
     query = e.data.decode("utf-8")
     chat_id = e.chat_id
