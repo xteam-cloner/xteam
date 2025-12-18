@@ -6,8 +6,8 @@
 # t.me/SharingUserbot & t.me/Lunatic0de
 import os
 from youtubesearchpython import VideosSearch
-from xteam import LOGS, bash
-
+from xteam import LOGS
+from xteam.fns.helper import bash
 
 FFMPEG_ABSOLUTE_PATH = "/usr/bin/ffmpeg"
 DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
