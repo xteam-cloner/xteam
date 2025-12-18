@@ -6,11 +6,13 @@
 # t.me/SharingUserbot & t.me/Lunatic0de
 import os
 import asyncio
-import logging
 from typing import Tuple, Union, Any
 from youtubesearchpython import VideosSearch
 from xteam import LOGS
 from xteam.fns.helper import bash
+import logging
+
+logger = logging.getLogger(__name__)
 
 FFMPEG_ABSOLUTE_PATH = "/usr/bin/ffmpeg"
 DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
