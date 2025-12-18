@@ -126,7 +126,6 @@ async def main_async():
                 
                 xteam.bot = bot
                 xteam.call_py = call_py
-                register_vc_handlers()
         
             except (AuthKeyDuplicatedError, EOFError):
                 LOGS.info(get_string("py_c3"))
