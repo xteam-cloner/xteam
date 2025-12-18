@@ -6,6 +6,7 @@
 # t.me/SharingUserbot & t.me/Lunatic0de
 import os
 import asyncio
+import yt_dlp
 from typing import Tuple, Union, Any
 from youtubesearchpython import VideosSearch
 from xteam import LOGS
