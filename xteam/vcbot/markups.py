@@ -3,17 +3,18 @@ import math
 import re
 from telethon import events, Button
 from xteam._misc._assistant import callback
+from xteam import call_py
 
 active_chats = {} 
 
 MUSIC_BUTTONS = [
     [
-        Button.inline("⏸", data="pauseit"),
-        Button.inline("▶️", data="resumeit")
+        Button.inline("II", data="pauseit"),
+        Button.inline("▷", data="resumeit")
     ],
     [
-        Button.inline("⏭", data="skipit"),
-        Button.inline("⏹", data="stopit")
+        Button.inline("‣‣I", data="skipit"),
+        Button.inline("▢", data="stopit")
     ],
     [
         Button.inline("🗑", data="closeit")
@@ -34,10 +35,28 @@ def time_to_seconds(time_str):
 def telegram_markup_timer(played, dur):
     played_sec = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
-    percentage = (played_sec / max(1, duration_sec)) * 10
-    pos = min(max(math.floor(percentage), 0), 10)
-    bar = ("─" * pos) + "◉" + ("─" * (10 - pos))
-    timer_row = [[Button.inline(f"{played} {bar} {dur}", data="GetTimer")]]
+    percentage = (played_sec / duration_sec) * 100
+    umm = math.floor(percentage)
+    if 0 < umm <= 10:
+        bar = "◉—————————"
+    elif 10 < umm < 20:
+        bar = "—◉————————"
+    elif 20 <= umm < 30:
+        bar = "——◉———————"
+    elif 30 <= umm < 40:
+        bar = "———◉——————"
+    elif 40 <= umm < 50:
+        bar = "————◉—————"
+    elif 50 <= umm < 60:
+        bar = "—————◉————"
+    elif 60 <= umm < 70:
+        bar = "——————◉———"
+    elif 70 <= umm < 80:
+        bar = "———————◉——"
+    elif 80 <= umm < 95:
+        bar = "————————◉—"
+    else:
+        bar = "—————————◉"
     return timer_row + MUSIC_BUTTONS
 
 async def timer_task(client, chat_id, message_id, duration):
@@ -60,16 +79,17 @@ async def timer_task(client, chat_id, message_id, duration):
     active_chats.pop(chat_id, None)
 
 @callback(data=re.compile(b"(pauseit|resumeit|stopit|skipit|closeit)"), owner=True)
+from plugin.musik import skip_current_song 
 async def music_manager(e):
     query = e.data.decode("utf-8")
     chat_id = e.chat_id
     try:
         if query == "pauseit":
-            await call_py.pause_stream(chat_id)
+            await call_py.pause(chat_id)
             active_chats[chat_id] = "paused"
             await e.answer("⏸ Paused", alert=False)
         elif query == "resumeit":
-            await call_py.resume_stream(chat_id)
+            await call_py.resume(chat_id)
             active_chats[chat_id] = "playing"
         elif query == "stopit":
             active_chats.pop(chat_id, None)
