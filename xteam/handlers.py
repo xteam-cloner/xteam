@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 @call_py.on_update()
 async def unified_update_handler(client, update: Update) -> None:
-    
     chat_id = update.chat_id
     
     CRITICAL = (
@@ -20,41 +19,24 @@ async def unified_update_handler(client, update: Update) -> None:
     )
 
     if isinstance(update, StreamEnded):
-        if update.stream_type == StreamEnded.Type.AUDIO and chat_id in QUEUE:
-            
-            current_song = QUEUE[chat_id][0]
-            file_to_delete = current_song[1]
-            
+        # Pastikan antrean diproses jika ada lagu selanjutnya
+        if chat_id in QUEUE:
             op = await skip_current_song(chat_id)
             
-            if op not in [0, 1]:
-                next_song_name, next_song_url = op[0], op[2] 
+            # Jika op adalah list [songname, link], berarti ada lagu selanjutnya
+            if isinstance(op, list):
+                next_song_name, next_song_url = op[0], op[1] 
                 await client.send_message(
                     chat_id,
                     f"**🎧 Sekarang Memutar:** [{next_song_name}]({next_song_url})",
                     link_preview=False,
                 )
+            # Jika op == 1 berarti antrean benar-benar habis
             elif op == 1:
-                 await client.send_message(
+                # Jika ingin bot tetap standby, hapus baris leave_call di bawah ini
+                await client.send_message(
                     chat_id,
-                    "Antrian kosong. Meninggalkan obrolan suara.",
-                 )
-                 
-                 try:
-                     await call_py.leave_call(chat_id) 
-                 except Exception:
-                     pass
-
-
-    elif isinstance(update, ChatUpdate):
-        status = update.status
-        
-        if (status & ChatUpdate.Status.LEFT_CALL) or (status & CRITICAL):
-                            
-            clear_queue(chat_id) 
-            
-            try:
-                await call_py.leave_call(chat_id) 
-            except Exception:
-                pass
+                    "**💡 Antrean habis. Bot Standby.**",
+                )
+                # await call_py.leave_call(chat_id) # Beri pagar (#) jika ingin standby
                 
