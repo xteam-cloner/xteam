@@ -48,11 +48,8 @@ if run_as_module:
     _ult_cache = {}
     _ignore_eval = []
     
-    # 🌟 PERBAIKAN KRITIS: Deklarasi call_py di namespace global paket xteam
-    # Ini memastikan 'from xteam import call_py' tidak menghasilkan AttributeError.
     call_py: Optional[PyTgCalls] = None
     bot : Optional[TelegramClient] = None
-    # ----------------------------------------------------------------------
 
     udB = UltroidDB()
     update_envs()
@@ -62,26 +59,21 @@ if run_as_module:
         LOGS.info(f"Connected to {udB.name} Successfully!")
 
     BOT_MODE = udB.get_key("BOTMODE")
-    DUAL_MODE = udB.get_key("DUAL_MODE")
-
+    
+    # Force DUAL_MODE to always be True
+    DUAL_MODE = True
     USER_MODE = udB.get_key("USER_MODE")
-    if USER_MODE:
-        DUAL_MODE = False
 
     if BOT_MODE:
-        if DUAL_MODE:
-            udB.del_key("DUAL_MODE")
-            DUAL_MODE = False
+        # Menghapus batasan yang mematikan DUAL_MODE saat BOT_MODE aktif
         ultroid_bot = None
 
         if not udB.get_key("BOT_TOKEN"):
             LOGS.critical(
                 '"BOT_TOKEN" not Found! Please add it, in order to use "BOTMODE"'
             )
-
             sys.exit()
     else:
-        # Inisialisasi klien UserBot utama
         ultroid_bot = UltroidClient(
             validate_session(Var.SESSION, LOGS),
             udB=udB,
@@ -93,15 +85,9 @@ if run_as_module:
     if USER_MODE:
         asst = ultroid_bot
     else:
-        # --- PERUBAHAN 2: GUNAKAN CLIENT_ID UNTUK SESI BOT UNIK ---
-        # Ambil ID klien dari environment variable yang diset oleh launcher
         client_id = os.environ.get("CLIENT_ID", "1")
-        # Buat nama sesi unik, misal: asst_client_1, asst_client_2
         asst_session = f"asst{client_id}"
-        
-        # Gunakan nama sesi unik saat membuat UltroidClient
         asst = UltroidClient(asst_session, bot_token=udB.get_key("BOT_TOKEN"), udB=udB)
-        # -------------------------------------------------------------
 
     if BOT_MODE:
         ultroid_bot = asst
@@ -131,7 +117,5 @@ else:
     logging.basicConfig(level=logging.DEBUG)
     LOGS.setLevel(logging.DEBUG)
 
-
-    # Pastikan variabel ini juga dideklarasikan saat tidak berjalan sebagai modul
     ultroid_bot = asst = udB = bot = call_py = None
     
