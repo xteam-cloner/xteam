@@ -5,6 +5,7 @@
 # This file is a part of < https://github.com/mrismanaziz/Man-Userbot/ >
 # t.me/SharingUserbot & t.me/Lunatic0de
 import os
+from typing import Tuple, Union, Any
 from youtubesearchpython import VideosSearch
 from xteam import LOGS
 from xteam.fns.helper import bash
