@@ -35,28 +35,25 @@ def time_to_seconds(time_str):
 def telegram_markup_timer(played, dur):
     played_sec = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
+    
+    if duration_sec == 0:
+        return MUSIC_BUTTONS
+        
     percentage = (played_sec / duration_sec) * 100
     umm = math.floor(percentage)
-    if 0 < umm <= 10:
-        bar = "◉—————————"
-    elif 10 < umm < 20:
-        bar = "—◉————————"
-    elif 20 <= umm < 30:
-        bar = "——◉———————"
-    elif 30 <= umm < 40:
-        bar = "———◉——————"
-    elif 40 <= umm < 50:
-        bar = "————◉—————"
-    elif 50 <= umm < 60:
-        bar = "—————◉————"
-    elif 60 <= umm < 70:
-        bar = "——————◉———"
-    elif 70 <= umm < 80:
-        bar = "———————◉——"
-    elif 80 <= umm < 95:
-        bar = "————————◉—"
-    else:
-        bar = "—————————◉"
+    
+    if umm <= 10: bar = "◉—————————"
+    elif 10 < umm < 20: bar = "—◉————————"
+    elif 20 <= umm < 30: bar = "——◉———————"
+    elif 30 <= umm < 40: bar = "———◉——————"
+    elif 40 <= umm < 50: bar = "————◉—————"
+    elif 50 <= umm < 60: bar = "—————◉————"
+    elif 60 <= umm < 70: bar = "——————◉———"
+    elif 70 <= umm < 80: bar = "———————◉——"
+    elif 80 <= umm < 95: bar = "————————◉—"
+    else: bar = "—————————◉"
+    
+    timer_row = [[Button.inline(f"{played} {bar} {dur}", data="timer_info")]]
     return timer_row + MUSIC_BUTTONS
 
 async def timer_task(client, chat_id, message_id, duration):
@@ -79,27 +76,29 @@ async def timer_task(client, chat_id, message_id, duration):
     active_chats.pop(chat_id, None)
 
 @callback(data=re.compile(b"(pauseit|resumeit|stopit|skipit|closeit)"), owner=True)
-from plugin.music import skip_current_song 
 async def music_manager(e):
+    from plugins.music import skip_current_song 
+    
     query = e.data.decode("utf-8")
     chat_id = e.chat_id
     try:
         if query == "pauseit":
             await call_py.pause(chat_id)
             active_chats[chat_id] = "paused"
-            await e.answer("⏸ Paused", alert=False)
+            await e.answer("⏸ Paused")
         elif query == "resumeit":
             await call_py.resume(chat_id)
             active_chats[chat_id] = "playing"
+            await e.answer("▶️ Resumed")
         elif query == "stopit":
             active_chats.pop(chat_id, None)
             await call_py.leave_call(chat_id)
             await e.delete()
         elif query == "skipit":
-            active_chats.pop(chat_id, None)
-            await skip_current_song(chat_id)
-            await e.answer("⏭ Skipped", alert=False)
+            await skip_current_song(e)
+            await e.answer("⏭ Skipped")
         elif query == "closeit":
             await e.delete()
     except Exception as err:
         await e.answer(f"⚠️ Error: {str(err)}", alert=True)
+        
