@@ -2,7 +2,7 @@ import asyncio
 import math
 import re
 from telethon import events, Button
-import xteam
+from xteam._misc._assistant import callback
 
 active_chats = {} 
 
