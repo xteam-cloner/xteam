@@ -22,13 +22,17 @@ COOKIES_FILE_PATH = "cookies.txt"
 def ytsearch(query: str):
     try:
         search = VideosSearch(query, limit=1).result()
+        if not search["result"]:
+            return 0
         data = search["result"][0]
         songname = data["title"]
         url = data["link"]
         duration = data["duration"]
         thumbnail = data["thumbnails"][0]["url"]
         videoid = data["id"]
-        return [songname, url, duration, thumbnail, videoid]
+        # Mengambil nama channel sebagai Artist
+        artist = data["channel"]["name"]
+        return [songname, url, duration, thumbnail, videoid, artist]
     except Exception as e:
         LOGS.info(str(e))
         return 0
