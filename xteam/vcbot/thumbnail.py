@@ -11,7 +11,7 @@ from youtubesearchpython.__future__ import VideosSearch
 MUSIC_BOT_NAME = "Xteam Music"
 YOUTUBE_IMG_URL = "https://telegra.ph/file/95d96663b73dbf278f28c.jpg"
 
-# --- PERBAIKAN 1: Pastikan Folder Cache & Thumbnail Ada ---
+# --- Pastikan Folder Cache & Thumbnail Ada ---
 if not os.path.exists("cache"):
     os.makedirs("cache")
 if not os.path.exists("thumbnail"):
@@ -22,10 +22,33 @@ for filename in os.listdir("./thumbnail"):
     if filename.endswith("png"): 
         files.append(filename[:-4])
 
-# --- PERBAIKAN 2: Penanganan Jika Folder Thumbnail Kosong ---
 if not files:
-    # Jika kosong, tambahkan satu nama default agar random.choice tidak error
     files = ["default"]
+
+# --- Fungsi Helper Tampilan (YANG ANDA MINTA) ---
+def get_play_text(songname, artist, duration, views, from_user, status="Sedang Memutar"):
+    """
+    Fungsi untuk menghasilkan caption rapi dengan emoji.
+    Ditaruh di sini agar mudah dipanggil dari vc_play atau unified_handler.
+    """
+    # Logika Pemisah Nama & Judul Otomatis
+    if "|" in songname:
+        nama_artis, judul_lagu = songname.split("|", 1)
+    elif "-" in songname:
+        nama_artis, judul_lagu = songname.split("-", 1)
+    else:
+        nama_artis = artist  # Gunakan nama channel jika tidak ada pemisah
+        judul_lagu = songname
+
+    return f"""
+💡 **Status:** `{status}`
+🏷 **Nama:** {nama_artis.strip()}
+🔍 **Judul:** {judul_lagu.strip()}
+🧭 **Durasi:** {duration}
+👀 **Dilihat:** {views}
+📢 **Channel:** {artist}
+🎧 **Request By:** {from_user}
+"""
 
 def changeImageSize(maxWidth, maxHeight, image):
     widthRatio = maxWidth / image.size[0]
@@ -39,7 +62,6 @@ def add_corners(im):
     bigsize = (im.size[0] * 3, im.size[1] * 3)
     mask = Image.new('L', bigsize, 0)
     ImageDraw.Draw(mask).ellipse((0, 0) + bigsize, fill=255)
-    # PERBAIKAN 3: Image.ANTIALIAS diganti ke Image.LANCZOS (Untuk Pillow terbaru)
     mask = mask.resize(im.size, Image.LANCZOS)
     mask = ImageChops.darker(mask, im.split()[-1])
     im.putalpha(mask)
@@ -61,7 +83,6 @@ async def gen_thumb(videoid):
         else:
             return YOUTUBE_IMG_URL
 
-        # --- PERBAIKAN 4: Pastikan File Benar-benar Terunduh ---
         async with aiohttp.ClientSession() as session:
             async with session.get(thumbnail) as resp:
                 if resp.status == 200:
@@ -69,18 +90,12 @@ async def gen_thumb(videoid):
                     async with aiofiles.open(f"cache/thumb{videoid}.png", mode="wb") as f:
                         await f.write(content)
 
-        # Cek apakah file benar-benar ada sebelum dibuka PIL
         if not os.path.exists(f"cache/thumb{videoid}.png"):
              return YOUTUBE_IMG_URL
 
         youtube = Image.open(f"cache/thumb{videoid}.png")
-        
-        # Cek background, jika tidak ada pakai gambar kosong (blank)
         bg_path = f"thumbnail/{anime}.png"
-        if os.path.exists(bg_path):
-            bg = Image.open(bg_path)
-        else:
-            bg = Image.new('RGBA', (1280, 720), (0, 0, 0, 255))
+        bg = Image.open(bg_path) if os.path.exists(bg_path) else Image.new('RGBA', (1280, 720), (0, 0, 0, 255))
 
         image1 = changeImageSize(1280, 720, youtube)
         image2 = image1.convert("RGBA")
@@ -88,7 +103,6 @@ async def gen_thumb(videoid):
         enhancer = ImageEnhance.Brightness(background)
         background = enhancer.enhance(0.6)
         
-        # Lingkaran overlay
         cir_path = "thumbnail/IMG_20221129_201846_195.png"
         if os.path.exists(cir_path):
             cir = Image.open(cir_path)
@@ -102,30 +116,24 @@ async def gen_thumb(videoid):
 
         Xcenter = youtube.width / 2
         Ycenter = youtube.height / 2
-        x1 = Xcenter - 250
-        y1 = Ycenter - 250
-        x2 = Xcenter + 250
-        y2 = Ycenter + 250
+        x1, y1, x2, y2 = Xcenter - 250, Ycenter - 250, Xcenter + 250, Ycenter + 250
         logo = youtube.crop((x1, y1, x2, y2))
-        logo.thumbnail((520, 520), Image.LANCZOS) # Ganti ANTIALIAS
+        logo.thumbnail((520, 520), Image.LANCZOS)
         logo.save(f"cache/chop{videoid}.png")
         
-        if not os.path.isfile(f"cache/cropped{videoid}.png"):
-            im = Image.open(f"cache/chop{videoid}.png").convert('RGBA')
-            add_corners(im)
-            im.save(f"cache/cropped{videoid}.png")
+        im = Image.open(f"cache/chop{videoid}.png").convert('RGBA')
+        add_corners(im)
+        im.save(f"cache/cropped{videoid}.png")
 
         crop_img = Image.open(f"cache/cropped{videoid}.png")
         logo = crop_img.convert("RGBA")
-        logo.thumbnail((365, 365), Image.LANCZOS) # Ganti ANTIALIAS
+        logo.thumbnail((365, 365), Image.LANCZOS)
         width = int((1280 - 365)/ 2)
         background = Image.open(f"cache/temp{videoid}.png")
         background.paste(logo, (width + 2, 134), mask=logo)
         background.paste(circle, mask=circle)
         
         draw = ImageDraw.Draw(background)
-        # --- PERBAIKAN 5: Penanganan Font ---
-        # Pastikan file font ada, atau gunakan default
         def get_font(path, size):
             return ImageFont.truetype(path, size) if os.path.exists(path) else ImageFont.load_default()
 
@@ -134,24 +142,20 @@ async def gen_thumb(videoid):
 
         para = textwrap.wrap(title, width=32)
         try:
-            # PERBAIKAN 6: Menggunakan textbbox (Untuk Pillow terbaru)
             if para[0]:
-                left, top, right, bottom = draw.textbbox((0, 0), para[0], font=font)
-                draw.text(((1280 - (right - left))/2, 530), para[0], fill="white", stroke_width=1, stroke_fill="white", font=font)
+                l, t, r, b = draw.textbbox((0, 0), para[0], font=font)
+                draw.text(((1280 - (r - l))/2, 530), para[0], fill="white", font=font)
             if len(para) > 1:
-                left, top, right, bottom = draw.textbbox((0, 0), para[1], font=font)
-                draw.text(((1280 - (right - left))/2, 580), para[1], fill="white", stroke_width=1, stroke_fill="white", font=font)
-        except:
-            pass
+                l, t, r, b = draw.textbbox((0, 0), para[1], font=font)
+                draw.text(((1280 - (r - l))/2, 580), para[1], fill="white", font=font)
+        except: pass
 
         duration_text = f"Duration: {duration} Mins"
-        left, top, right, bottom = draw.textbbox((0, 0), duration_text, font=arial)
-        draw.text(((1280 - (right - left))/2, 660), duration_text, fill="white", font=arial)
+        l, t, r, b = draw.textbbox((0, 0), duration_text, font=arial)
+        draw.text(((1280 - (r - l))/2, 660), duration_text, fill="white", font=arial)
 
-        # Bersihkan file sampah
         for temp in [f"cache/thumb{videoid}.png", f"cache/temp{videoid}.png", f"cache/chop{videoid}.png", f"cache/cropped{videoid}.png"]:
-            if os.path.exists(temp):
-                os.remove(temp)
+            if os.path.exists(temp): os.remove(temp)
 
         final_path = f"cache/{videoid}_{anime}.png"
         background.save(final_path)
@@ -159,4 +163,4 @@ async def gen_thumb(videoid):
     except Exception as e:
         print(f"Error gen_thumb: {e}")
         return YOUTUBE_IMG_URL
-         
+        
