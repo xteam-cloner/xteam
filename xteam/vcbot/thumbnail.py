@@ -8,7 +8,7 @@ import aiohttp
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageOps, ImageChops
 from youtubesearchpython.__future__ import VideosSearch
  
-MUSIC_BOT_NAME = "Telethon Music"
+MUSIC_BOT_NAME = "Xteam Music"
 YOUTUBE_IMG_URL = "https://telegra.ph/file/95d96663b73dbf278f28c.jpg"
 files = [] 
 
