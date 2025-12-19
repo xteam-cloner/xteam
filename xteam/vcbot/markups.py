@@ -21,6 +21,7 @@ MUSIC_BUTTONS = [
     ]
 ]
 
+
 def time_to_seconds(time_str):
     try:
         parts = str(time_str).split(':')
