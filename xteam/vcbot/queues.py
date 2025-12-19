@@ -7,13 +7,13 @@
 
 QUEUE = {}
 
-def add_to_queue(chat_id, songname, url, duration, thumb_url, videoid, artist, requester):
+def add_to_queue(chat_id, songname, url, duration, thumb_url, videoid, artist, from_user):
     if chat_id not in QUEUE:
         QUEUE[chat_id] = []
-    # Simpan 7 data sekarang (tambah requester di akhir)
-    QUEUE[chat_id].append([songname, url, duration, thumb_url, videoid, artist, requester])
+    # Menyimpan 7 data lagu ke dalam list antrean (tanpa chat_id)
+    QUEUE[chat_id].append([songname, url, duration, thumb_url, videoid, artist, from_user])
     return len(QUEUE[chat_id])
-    
+
 def get_queue(chat_id):
     if chat_id in QUEUE:
         return QUEUE[chat_id]
