@@ -26,7 +26,7 @@ if not files:
     files = ["default"]
 
 # --- Fungsi Helper Tampilan (YANG ANDA MINTA) ---
-def get_play_text(songname, artist, duration, views, from_user, status="Sedang Memutar"):
+def get_play_text(songname, artist, duration, from_user, status="Now Playing"):
     """
     Fungsi untuk menghasilkan caption rapi dengan emoji.
     Ditaruh di sini agar mudah dipanggil dari vc_play atau unified_handler.
@@ -45,7 +45,6 @@ def get_play_text(songname, artist, duration, views, from_user, status="Sedang M
 🏷 **Nama:** {nama_artis.strip()}
 🔍 **Judul:** {judul_lagu.strip()}
 🧭 **Durasi:** {duration}
-👀 **Dilihat:** {views}
 📢 **Channel:** {artist}
 🎧 **Request By:** {from_user}
 """
