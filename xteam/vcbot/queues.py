@@ -11,15 +11,7 @@ def add_to_queue(chat_id, songname, url, duration, thumb_url, videoid, artist):
     if chat_id not in QUEUE:
         QUEUE[chat_id] = []
     
-    data = [
-        songname, 
-        url, 
-        duration, 
-        thumb_url, 
-        videoid, 
-        artist
-    ]
-    
+    data = [songname, url, duration, thumb_url, videoid, artist]
     QUEUE[chat_id].append(data)
     return len(QUEUE[chat_id]) - 1
 
