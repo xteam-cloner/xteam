@@ -49,6 +49,28 @@ def get_play_text(songname, artist, duration, from_user, status="Now Playing"):
 🎧 **Request By:** {from_user}
 """
 
+def get_play_queue(songname, artist, duration, from_user):
+    """
+    Fungsi untuk menghasilkan caption rapi dengan emoji.
+    Ditaruh di sini agar mudah dipanggil dari vc_play atau unified_handler.
+    """
+    # Logika Pemisah Nama & Judul Otomatis
+    if "|" in songname:
+        nama_artis, judul_lagu = songname.split("|", 1)
+    elif "-" in songname:
+        nama_artis, judul_lagu = songname.split("-", 1)
+    else:
+        nama_artis = artist  # Gunakan nama channel jika tidak ada pemisah
+        judul_lagu = songname
+
+    return f"""
+    🏷 **Nama:** {nama_artis.strip()}
+    🔍 **Judul:** {judul_lagu.strip()}
+    🧭 **Durasi:** {duration}
+    📢 **Channel:** {artist}
+    🎧 **Request By:** {from_user}
+"""
+
 def changeImageSize(maxWidth, maxHeight, image):
     widthRatio = maxWidth / image.size[0]
     heightRatio = maxHeight / image.size[1]
