@@ -25,7 +25,7 @@ for filename in os.listdir("./thumbnail"):
 if not files:
     files = ["default"]
 
-def get_play_text(songname, artist, duration, from_user, status="Start Streaming"):
+def get_play_text(songname, artist, duration, from_user):
     if "|" in songname:
         judul_lagu, nama_artis = songname.split("|", 1)
     elif "-" in songname:
@@ -35,12 +35,12 @@ def get_play_text(songname, artist, duration, from_user, status="Start Streaming
         nama_artis = artist
 
     return f"""
-💡 `{status}`
-🏷 **Nama:** {nama_artis.strip()}
-🔍 **Judul:** {judul_lagu.strip()}
-🧭 **Durasi:** {duration}
-📢 **Channel:** {artist}
-🎧 **Request By:** {from_user}
+💡 Start Streaming!
+🏷 **Artist :** {nama_artis.strip()}
+🔍 **Title :** {judul_lagu.strip()}
+🧭 **Duration :** {duration}
+📢 **Channel :** {artist}
+🎧 **Request :** {from_user}
 """
 
 def get_play_queue(songname, artist, duration, from_user):
@@ -53,11 +53,12 @@ def get_play_queue(songname, artist, duration, from_user):
         nama_artis = artist
 
     return f"""
-    🏷 **Nama:** {nama_artis.strip()}
-    🔍 **Judul:** {judul_lagu.strip()}
-    🧭 **Durasi:** {duration}
-    📢 **Channel:** {artist}
-    🎧 **Request By:** {from_user}"""
+    🎧 Add to queue 🎥
+    🏷 **Artist :** {nama_artis.strip()}
+    🔍 **Title :** {judul_lagu.strip()}
+    🧭 **Duration :** {duration}
+    📢 **Channel :** {artist}
+    🎧 **Request :** {from_user}"""
         
 
 def changeImageSize(maxWidth, maxHeight, image):
