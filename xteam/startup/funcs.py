@@ -345,10 +345,7 @@ async def customize():
         if hasattr(asst, 'me') and asst.me and asst.me.photo:
             return
         LOGS.info("Customising Ur Assistant Bot in @BOTFATHER")
-        if hasattr(asst, 'me') and asst.me:
-            UL = f"@{asst.me.username}" if asst.me.username else "Assistant"
-        else:
-            UL = "Assistant"
+        UL = f"@{asst.me.username}"
         if not ultroid_bot.me.username:
             sir = ultroid_bot.me.first_name
         else:
