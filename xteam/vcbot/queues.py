@@ -1,17 +1,15 @@
 # Man - UserBot
 # Copyright (c) 2022 Man-Userbot
 # Credits: @mrismanaziz || https://github.com/mrismanaziz
-#
 # This file is a part of < https://github.com/mrismanaziz/Man-Userbot/ >
 # t.me/SharingUserbot & t.me/Lunatic0de
 
 QUEUE = {}
 
-def add_to_queue(chat_id, songname, url, duration, thumb_url, videoid, artist, from_user):
+def add_to_queue(chat_id, songname, url, duration, thumb_url, videoid, artist, from_user, is_video):
     if chat_id not in QUEUE:
         QUEUE[chat_id] = []
-    # Menyimpan 7 data lagu ke dalam list antrean (tanpa chat_id)
-    QUEUE[chat_id].append([songname, url, duration, thumb_url, videoid, artist, from_user])
+    QUEUE[chat_id].append([songname, url, duration, thumb_url, videoid, artist, from_user, is_video])
     return len(QUEUE[chat_id])
 
 def get_queue(chat_id):
