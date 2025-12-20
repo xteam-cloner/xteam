@@ -1,5 +1,5 @@
 # xteam-urbot 
-# Copyright (C) 2021-2025 Xteam_clonet
+# Copyright (C) 2021-2025 Xteam_cloner
 #
 # PLease read the GNU Affero General Public License in
 # <https://github.com/xteam-cloner/xteam/blob/main/LICENSE>.
