@@ -1,5 +1,4 @@
 import sys
-
 from decouple import config
 
 try:
@@ -10,7 +9,7 @@ except ImportError:
 
 
 class Var:
-    # mandatory
+    # --- MANDATORY (UTAMA) ---
     API_ID = (
         int(sys.argv[1]) if len(sys.argv) > 1 else config("API_ID", default=6, cast=int)
     )
@@ -21,20 +20,20 @@ class Var:
     )
     SESSION = sys.argv[3] if len(sys.argv) > 3 else config("SESSION", default=None)
         
+    # --- MULTI CLIENT ---
     API_ID2 = config("API_ID2", default=None) 
     if API_ID2 is not None:
         API_ID2 = int(API_ID2)
-        
     API_HASH2 = config("API_HASH2", default=None) 
     SESSION2 = config("SESSION2", default=None)
     
     API_ID3 = config("API_ID3", default=None) 
     if API_ID3 is not None:
         API_ID3 = int(API_ID3)
-        
     API_HASH3 = config("API_HASH3", default=None)
     SESSION3 = config("SESSION3", default=None)
     
+    # --- DATABASE (REDIS) ---
     REDIS_URI = (
         sys.argv[4]
         if len(sys.argv) > 4
@@ -43,24 +42,34 @@ class Var:
     REDIS_PASSWORD = (
         sys.argv[5] if len(sys.argv) > 5 else config("REDIS_PASSWORD", default=None)
     )
-    # extras
-    BOT_TOKEN = config("BOT_TOKEN", default=None)
-    LOG_CHANNEL = config("LOG_CHANNEL", default=0, cast=int)
-    HEROKU_APP_NAME = config("HEROKU_APP_NAME", default=None)
-    HEROKU_API = config("HEROKU_API", default=None)
-    VC_SESSION = config("VC_SESSION", default=None)
-    ADDONS = config("ADDONS", default=False, cast=bool)
-    VCBOT = config("VCBOT", default=False, cast=bool)
-    # for railway
+    # Railway/Other Redis Compatibility
     REDISPASSWORD = config("REDISPASSWORD", default=None)
     REDISHOST = config("REDISHOST", default=None)
     REDISPORT = config("REDISPORT", default=None)
     REDISUSER = config("REDISUSER", default=None)
-    # for sql
+    
+    # --- DATABASE (SQL & MONGO) ---
     DATABASE_URL = config("DATABASE_URL", default=None)
-    # for MONGODB users
     MONGO_URI = config("MONGO_URI", default=None)
+
+    # VC BOT CONFIGURATION
+    VCBOT = config("VCBOT", default=False, cast=bool)
+    VC_SESSION = config("VC_SESSION", default=None)
+    VC_SESSION1 = config("VC_SESSION1", default=None)
+    VC_SESSION2 = config("VC_SESSION2", default=None)
+    VC_SESSION3 = config("VC_SESSION3", default=None)
+    VC_SESSION4 = config("VC_SESSION4", default=None)
+    VC_SESSION5 = config("VC_SESSION5", default=None)
+
+    # --- EXTRAS & BOT SETTINGS ---
+    BOT_TOKEN = config("BOT_TOKEN", default=None)
+    LOG_CHANNEL = config("LOG_CHANNEL", default=0, cast=int)
+    HEROKU_APP_NAME = config("HEROKU_APP_NAME", default=None)
+    HEROKU_API = config("HEROKU_API", default=None)
+    ADDONS = config("ADDONS", default=False, cast=bool)
+    
     ASSISTANT_ID = (
         int(sys.argv[1]) if len(sys.argv) > 1 else config("ASSISTANT_ID", default=1012838012, cast=int)
     )
     CMD_IMG = config("CMD_IMG", default="https://telegra.ph/file/66518ed54301654f0b126.png")
+    
