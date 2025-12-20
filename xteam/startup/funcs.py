@@ -342,7 +342,7 @@ async def customize():
     rem = None
     try:
         chat_id = udB.get_key("LOG_CHANNEL")
-        if asst.me.photo:
+        if hasattr(asst, 'me') and asst.me and asst.me.photo:
             return
         LOGS.info("Customising Ur Assistant Bot in @BOTFATHER")
         UL = f"@{asst.me.username}"
