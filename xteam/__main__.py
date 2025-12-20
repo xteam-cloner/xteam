@@ -118,8 +118,10 @@ async def main_async():
                 
                 await bot.start() 
                 vc_me = await bot.get_me()
-                full_name = vc_me.first_name + (f" {vc_me.last_name}" if vc_me.last_name else "")
-                LOGS.info(f"Assistant Berhasil Login sebagai: {full_name}") 
+                full_name = vc_me.first_name
+                if vc_me.last_name:
+                    full_name += f" {vc_me.last_name}"
+                LOGS.info(f"Assistans Start as {full_name}") 
                 
                 call_py = PyTgCalls(bot)
                 await call_py.start()
@@ -129,7 +131,7 @@ async def main_async():
                 xteam.call_py = call_py
                 
                 # Registrasi handler untuk auto-skip/stream ended
-                register_vc_handlers()
+                #register_vc_handlers()
                 
             except (AuthKeyDuplicatedError, EOFError):
                 LOGS.error("Sesi duplikat atau kadaluarsa. VC Bot dimatikan.")
