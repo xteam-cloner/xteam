@@ -96,13 +96,13 @@ async def main_async():
         session = None
         if selected_session:
             session = validate_session(selected_session)
-            LOGS.info("✅ VCBOT Berhasil menemukan sesi yang tersedia.")
+            #LOGS.info("✅ VCBOT Berhasil menemukan sesi yang tersedia.")
         elif HOSTED_ON == "heroku":
             LOGS.warning("VCBOT enabled tapi semua VC_SESSION kosong. VC Bot disabled.")
             vcbot_enabled = False
             call_py = None
         else:
-            session = "xteam-vc-client"
+            session = "xteamvc"
             LOGS.info("VCBOT enabled tapi VC_SESSION kosong. Menggunakan sesi lokal.")
 
         if session:
@@ -117,11 +117,16 @@ async def main_async():
                 )
                 
                 await bot.start() 
-                vc_me = await bot.get_me()
-                full_name = vc_me.first_name
-                if vc_me.last_name:
-                    full_name += f" {vc_me.last_name}"
-                LOGS.info(f"Assistans Start as {full_name}") 
+                asst_me = await bot.get_me() 
+                full_name = asst_me.first_name
+                if asst_me.last_name:
+                    full_name += f" {asst_me.last_name}"
+                
+                LOGS.info(f"Assistant Started as {full_name}") 
+                
+                # Menetapkan ke variabel global agar bisa dipakai plugin lain
+                xteam.BOT_NAME = full_name
+                xteam.BOT_USERNAME = asst_me.username
                 
                 call_py = PyTgCalls(bot)
                 await call_py.start()
@@ -140,7 +145,6 @@ async def main_async():
                 LOGS.error("Gagal memulai PyTgCalls Client.")
                 LOGS.exception(er)
                 call_py = None
-        # --- LOGIKA MULTI SESSION END ---
 
     await load_other_plugins(
         addons=addons, 
