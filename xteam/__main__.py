@@ -27,7 +27,7 @@ from .startup.funcs import (
 )
 from .startup.loader import load_other_plugins 
 
-LOGS = logging.getLogger(__name__)
+#LOGS = logging.getLogger(__name__)
 
 def register_vc_handlers():
     """
