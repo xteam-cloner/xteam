@@ -28,7 +28,7 @@ pip3 install git+https://github.com/xteam-cloner/xteam
    MONGO_URI
    ```
 - Check
-[`.env.sample`](https://github.com/xtam-cloner/xteam-urbot/blob/main/.env.sample) for more details.   
+[`.env.sample`](https://github.com/xteam-cloner/xteam-urbot/blob/main/.env.sample) for more details.   
 - Run `python3 -m xteam` to start the bot.   
 
 See more working plugins on [the offical repository](https://github.com/xteam-cloner/xteam-urbot)!
@@ -43,6 +43,7 @@ Userbot is licensed under [GNU Affero General Public License](https://www.gnu.or
 # Credits
 * [![TeamX-Devs](https://img.shields.io/static/v1?label=TeamX&message=devs&color=critical)](https://t.me/UltroidDevs)
 * [Lonami](https://github.com/Lonami) for [Telethon](https://github.com/LonamiWebs/Telethon)
+
 
 
 
