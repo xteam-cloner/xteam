@@ -2,11 +2,11 @@
 
 Core library of [xteam-urbot](https://github.com/xteam-cloner/xteam-urbot), a python based telegram userbot.
 
-[![CodeFactor](https://www.codefactor.io/repository/github/teamultroid/pyultroid/badge)](https://www.codefactor.io/repository/github/teamultroid/pyultroid)
+[![CodeFactor](https://www.codefactor.io/repository/github/teamultroid/pyultroid/badge)](https://www.codefactor.io/repository/github/xteam-cloner/xteam-urbot)
 [![PyPI - Version](https://img.shields.io/pypi/v/xteam?style=round)](https://pypi.org/project/xteam)    
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/xteam?label=DOWNLOADS&style=round)](https://pypi.org/project/xteam)    
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/TeamUltroid/Ultroid/graphs/commit-activity)
-[![Open Source Love svg2](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/TeamUltroid/Ultroid)
+[![Open Source Love svg2](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/xteam-cloner/xteam-urbot)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
 
 # Installation
@@ -15,7 +15,7 @@ pip3 install git+https://github.com/xteam-cloner/xteam
 ```
 
 # Documentation 
-[![Documentation](https://img.shields.io/badge/Documentation-Ultroid-blue)](http://ultroid.tech/)
+[![Documentation](https://img.shields.io/badge/Documentation-ultroid-blue)](http://ultroid.tech/)
 
 # Usage
 - Create folders named `plugins`, `addons`, `assistant` and `resources`.   
@@ -28,7 +28,7 @@ pip3 install git+https://github.com/xteam-cloner/xteam
    MONGO_URI
    ```
 - Check
-[`.env.sample`](https://github.com/TeamUltroid/Ultroid/blob/main/.env.sample) for more details.   
+[`.env.sample`](https://github.com/xtam-cloner/xteam-urbot/blob/main/.env.sample) for more details.   
 - Run `python3 -m xteam` to start the bot.   
 
 See more working plugins on [the offical repository](https://github.com/xteam-cloner/xteam-urbot)!
@@ -43,5 +43,6 @@ Userbot is licensed under [GNU Affero General Public License](https://www.gnu.or
 # Credits
 * [![TeamX-Devs](https://img.shields.io/static/v1?label=TeamX&message=devs&color=critical)](https://t.me/UltroidDevs)
 * [Lonami](https://github.com/Lonami) for [Telethon](https://github.com/LonamiWebs/Telethon)
+
 
 
