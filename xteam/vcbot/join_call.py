@@ -21,13 +21,13 @@ async def join_call(chat_id: int, link: str, video: bool = False):
         if video:
             stream = MediaStream(
                 media_path=link, 
-                audio_parameters=AudioQuality.HIGH,
-                video_parameters=VideoQuality.FHD_1080p,
+                audio_parameters=AudioQuality.STUDIO,
+                video_parameters=VideoQuality.HD_720p,
             )
         else:
             stream = MediaStream(
                 media_path=link, 
-                audio_parameters=AudioQuality.HIGH,
+                audio_parameters=AudioQuality.STUDIO,
                 video_flags=MediaStream.Flags.IGNORE,
             )
     except Exception as e:
