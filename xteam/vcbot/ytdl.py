@@ -41,7 +41,10 @@ async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, Union[str, Any]
 
     def vc_audio_dl_sync():
         common_opts = {
-            "js_runtimes": ["deno", "node"],
+            "js_runtimes": {
+                "deno": {},
+                "node": {},
+            },
             "remote_components": "ejs:github",
             "allow_dynamic_mpd": True,
             "nocheckcertificate": True,
@@ -125,3 +128,4 @@ async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, Union[str, Any]
         return 1, downloaded_file
     except Exception as e:
         return 0, f"Error saat mengunduh atau konversi: {e}"
+                                               
