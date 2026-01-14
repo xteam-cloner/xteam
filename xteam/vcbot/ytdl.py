@@ -1,9 +1,3 @@
-# Man - UserBot
-# Copyright (c) 2022 Man-Userbot
-# Credits: @mrismanaziz || https://github.com/mrismanaziz
-#
-# This file is a part of < https://github.com/mrismanaziz/Man-Userbot/ >
-# t.me/SharingUserbot & t.me/Lunatic0de
 import os
 import asyncio
 import yt_dlp
@@ -30,7 +24,6 @@ def ytsearch(query: str):
         duration = data["duration"]
         thumbnail = data["thumbnails"][0]["url"]
         videoid = data["id"]
-        # Mengambil nama channel sebagai Artist
         artist = data["channel"]["name"]
         return [songname, url, duration, thumbnail, videoid, artist]
     except Exception as e:
@@ -47,18 +40,24 @@ async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, Union[str, Any]
             return 0, f"Gagal membuat direktori unduhan: {e}"
 
     def vc_audio_dl_sync():
+        common_opts = {
+            "js_runtimes": ["deno", "node"],
+            "remote_components": "ejs:github",
+            "allow_dynamic_mpd": True,
+            "nocheckcertificate": True,
+            "noplaylist": True,
+            "quiet": True,
+            "prefer_ffmpeg": True,
+            "exec_path": FFMPEG_ABSOLUTE_PATH,
+            "cookiefile": COOKIES_FILE_PATH,
+        }
         
         if video_mode:
             ydl_opts_vc = {
+                **common_opts,
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
                 "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]",
                 "merge_output_format": "mp4",
-                "noplaylist": True,
-                "quiet": True,
-                "nocheckcertificate": True,
-                "prefer_ffmpeg": True,
-                "exec_path": FFMPEG_ABSOLUTE_PATH,
-                "cookiefile": COOKIES_FILE_PATH,
                 "postprocessors": [
                     {
                         "key": "FFmpegVideoConvertor",
@@ -72,17 +71,9 @@ async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, Union[str, Any]
             }
         else:
             ydl_opts_vc = {
+                **common_opts,
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s"), 
                 "format": "bestaudio/best",
-                "noplaylist": True,
-                "quiet": True,
-                "nocheckcertificate": True,
-                "prefer_ffmpeg": True,
-                "exec_path": FFMPEG_ABSOLUTE_PATH,
-                "cookiefile": COOKIES_FILE_PATH,
-                "js_runtimes": {
-                    "node": {},
-                },
                 "postprocessors": [
                     {
                         "key": "FFmpegExtractAudio",
@@ -134,4 +125,3 @@ async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, Union[str, Any]
         return 1, downloaded_file
     except Exception as e:
         return 0, f"Error saat mengunduh atau konversi: {e}"
-                    
