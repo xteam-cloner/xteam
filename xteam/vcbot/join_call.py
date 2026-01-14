@@ -21,13 +21,13 @@ async def join_call(chat_id: int, link: str, video: bool = False):
         if video:
             stream = MediaStream(
                 media_path=link, 
-                audio_parameters=AudioQuality.STUDIO,
+                audio_parameters=AudioQuality.HIGH,
                 video_parameters=VideoQuality.HD_720p,
             )
         else:
             stream = MediaStream(
                 media_path=link, 
-                audio_parameters=AudioQuality.STUDIO,
+                audio_parameters=AudioQuality.HIGH,
                 video_flags=MediaStream.Flags.IGNORE,
             )
     except Exception as e:
@@ -36,7 +36,7 @@ async def join_call(chat_id: int, link: str, video: bool = False):
 
     try:
         await call_py.play(chat_id, stream)
-        LOGS.info(f"Berhasil memulai playback FHD 1080p di VC {chat_id}. Link: {link}")
+        LOGS.info(f"Berhasil memulai playback di VC {chat_id}. Link: {link}")
         return 1
         
     except NoActiveGroupCall:
