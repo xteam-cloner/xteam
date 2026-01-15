@@ -65,7 +65,7 @@ if run_as_module:
     USER_MODE = udB.get_key("USER_MODE")
 
     CURRENT_SESSION = os.environ.get("SESSION") or Var.SESSION
-        CURRENT_SESSION = os.environ.get("SESSION") or Var.SESSION
+    CURRENT_SESSION = os.environ.get("SESSION") or Var.SESSION
     client_id = os.environ.get("CLIENT_ID", "1")
 
     if BOT_MODE:
