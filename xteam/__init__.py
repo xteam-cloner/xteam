@@ -64,23 +64,24 @@ if run_as_module:
     DUAL_MODE = True
     USER_MODE = udB.get_key("USER_MODE")
 
-    if BOT_MODE:
-        # Menghapus batasan yang mematikan DUAL_MODE saat BOT_MODE aktif
+        if BOT_MODE:
         ultroid_bot = None
-
         if not udB.get_key("BOT_TOKEN"):
-            LOGS.critical(
-                '"BOT_TOKEN" not Found! Please add it, in order to use "BOTMODE"'
-            )
+            LOGS.critical('"BOT_TOKEN" not Found!')
             sys.exit()
     else:
+        # HAPUS YANG LAMA, GANTI DENGAN INI:
+        CURRENT_SESSION = os.environ.get("SESSION") or Var.SESSION
+        client_id = os.environ.get("CLIENT_ID", "1")
         ultroid_bot = UltroidClient(
-            validate_session(Var.SESSION, LOGS),
+            validate_session(CURRENT_SESSION, LOGS),
             udB=udB,
             app_version=ultroid_version,
-            device_model="xteam-urbot",
+            session_name=f"ultroid{client_id}", 
+            device_model=f"xteam-urbot{client_id}",
         )
         ultroid_bot.run_in_loop(autobot())
+        
 
     if USER_MODE:
         asst = ultroid_bot
