@@ -65,6 +65,7 @@ if run_as_module:
     USER_MODE = udB.get_key("USER_MODE")
 
     CURRENT_SESSION = os.environ.get("SESSION") or Var.SESSION
+        CURRENT_SESSION = os.environ.get("SESSION") or Var.SESSION
     client_id = os.environ.get("CLIENT_ID", "1")
 
     if BOT_MODE:
@@ -73,15 +74,16 @@ if run_as_module:
             LOGS.critical('"BOT_TOKEN" not Found!')
             sys.exit()
     else:
-        # Perbaikan: session_name dihapus, diganti posisi pertama
+        # Kita masukkan hasil validasi ke parameter pertama (session)
+        # Nama file session akan otomatis mengikuti ID client
         ultroid_bot = UltroidClient(
-            f"ultroid_{client_id}",
-            session_payload=validate_session(CURRENT_SESSION, LOGS),
+            validate_session(CURRENT_SESSION, LOGS),
             udB=udB,
             app_version=ultroid_version,
-            device_model=f"xteam-urbot-{client_id}",
+            device_model=f"xteam-urbot{client_id}",
         )
         ultroid_bot.run_in_loop(autobot())
+        
         
     if USER_MODE:
         asst = ultroid_bot
