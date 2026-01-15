@@ -64,7 +64,7 @@ if run_as_module:
     DUAL_MODE = True
     USER_MODE = udB.get_key("USER_MODE")
 
-        if BOT_MODE:
+    if BOT_MODE:
         ultroid_bot = None
         if not udB.get_key("BOT_TOKEN"):
             LOGS.critical('"BOT_TOKEN" not Found!')
