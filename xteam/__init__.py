@@ -64,27 +64,24 @@ if run_as_module:
     DUAL_MODE = True
     USER_MODE = udB.get_key("USER_MODE")
 
-    CURRENT_SESSION = os.environ.get("SESSION") or Var.SESSION
-    CURRENT_SESSION = os.environ.get("SESSION") or Var.SESSION
-    client_id = os.environ.get("CLIENT_ID", "1")
-
     if BOT_MODE:
+        # Menghapus batasan yang mematikan DUAL_MODE saat BOT_MODE aktif
         ultroid_bot = None
+
         if not udB.get_key("BOT_TOKEN"):
-            LOGS.critical('"BOT_TOKEN" not Found!')
+            LOGS.critical(
+                '"BOT_TOKEN" not Found! Please add it, in order to use "BOTMODE"'
+            )
             sys.exit()
     else:
-        # Kita masukkan hasil validasi ke parameter pertama (session)
-        # Nama file session akan otomatis mengikuti ID client
         ultroid_bot = UltroidClient(
-            validate_session(CURRENT_SESSION, LOGS),
+            validate_session(Var.SESSION, LOGS),
             udB=udB,
             app_version=ultroid_version,
-            device_model=f"xteam-urbot{client_id}",
+            device_model="xteam-urbot",
         )
         ultroid_bot.run_in_loop(autobot())
-        
-        
+
     if USER_MODE:
         asst = ultroid_bot
     else:
@@ -121,4 +118,3 @@ else:
     LOGS.setLevel(logging.DEBUG)
 
     ultroid_bot = asst = udB = bot = call_py = None
-    
