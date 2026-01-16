@@ -8,11 +8,17 @@
 from telethon.tl.types import UpdateGroupCall
 
 _original_init = UpdateGroupCall.__init__
-def _patched_init(self, call, params, *args, **kwargs):
+
+# Tambahkan =None pada params agar tidak wajib diisi
+def _patched_init(self, call, params=None, *args, **kwargs):
+    # Panggil init asli dengan argumen yang diterima
     _original_init(self, call, params, *args, **kwargs)
+    
+    # Tetap suntikkan chat_id dari objek call jika tersedia
     self.chat_id = getattr(call, 'id', None)
 
 UpdateGroupCall.__init__ = _patched_init
+
 
 import os
 import sys
