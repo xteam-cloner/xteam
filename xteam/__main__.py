@@ -55,12 +55,13 @@ def patched_init(self, call, params, *args, **kwargs):
 # Ganti fungsi init Telethon dengan yang sudah dipatch
 UpdateGroupCall.__init__ = patched_init
 # --- MONKEY PATCH END ---
+
 # Pastikan call_py sudah ada dan diinisialisasi
-    if call_py:
-        call_py.on_update()(unified_update_handler)
+if call_py:
+    call_py.on_update()(unified_update_handler)
         #LOGS.info("✅ Event handler PyTgCalls telah didaftarkan.")
-    else:
-        LOGS.warning("call_py not available, handler registration skipped.")
+else:
+    LOGS.warning("call_py not available, handler registration skipped.")
 
 
 async def main_async():
