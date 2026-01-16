@@ -38,7 +38,24 @@ def register_vc_handlers():
     from xteam.handlers import unified_update_handler 
     from xteam import call_py 
     
-    # Pastikan call_py sudah ada dan diinisialisasi
+    
+    # --- MONKEY PATCH START ---
+from telethon.tl.types import UpdateGroupCall
+
+# Simpan fungsi init yang asli
+original_init = UpdateGroupCall.__init__
+
+def patched_init(self, call, params, *args, **kwargs):
+    # Jalankan init aslinya
+    original_init(self, call, params, *args, **kwargs)
+    # Suntikkan chat_id agar PyTgCalls tidak error
+    # Kita mengambil ID dari objek 'call' yang ada di dalam update
+    self.chat_id = getattr(call, 'id', None)
+
+# Ganti fungsi init Telethon dengan yang sudah dipatch
+UpdateGroupCall.__init__ = patched_init
+# --- MONKEY PATCH END ---
+# Pastikan call_py sudah ada dan diinisialisasi
     if call_py:
         call_py.on_update()(unified_update_handler)
         #LOGS.info("✅ Event handler PyTgCalls telah didaftarkan.")
