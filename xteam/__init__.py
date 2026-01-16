@@ -5,6 +5,15 @@
 # PLease read the GNU Affero General Public License in
 # <https://github.com/TeamUltroid/pyUltroid/blob/main/LICENSE>.
 
+from telethon.tl.types import UpdateGroupCall
+
+_original_init = UpdateGroupCall.__init__
+def _patched_init(self, call, params, *args, **kwargs):
+    _original_init(self, call, params, *args, **kwargs)
+    self.chat_id = getattr(call, 'id', None)
+
+UpdateGroupCall.__init__ = _patched_init
+
 import os
 import sys
 import telethonpatch
