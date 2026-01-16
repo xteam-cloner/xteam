@@ -48,7 +48,6 @@ else:
 
 # --------------------------------------------------------------------------------------------- #
 
-
 class _BaseDatabase:
     def __init__(self, *args, **kwargs):
         self._cache = {}
@@ -65,6 +64,51 @@ class _BaseDatabase:
         for key in self.keys():
             self._cache.update({key: self.get_key(key)})
 
+    def _get_data(self, key=None, data=None):
+        if key:
+            # 1. Coba ambil dari Database Utama (Mongo/Redis/SQL)
+            data = self.get(str(key))
+            # 2. Jika di Database tidak ada, coba ambil dari Env Var
+            if data is None:
+                data = os.getenv(str(key))
+        
+        if data and isinstance(data, str):
+            try:
+                data = ast.literal_eval(data)
+            except BaseException:
+                pass
+        return data
+
+    def set_key(self, key, value, cache_only=False):
+        value = self._get_data(data=value)
+        self._cache[key] = value
+        
+        # --- MODIFIKASI: Suntikkan langsung ke Environment Variable (RAM) ---
+        os.environ[str(key)] = str(value)
+        
+        if cache_only:
+            return
+        
+        # Simpan permanen ke Database Utama
+        return self.set(str(key), str(value))
+
+    def del_key(self, key):
+        if key in self._cache:
+            del self._cache[key]
+        # Hapus juga dari Environment Variable jika ada
+        if key in os.environ:
+            del os.environ[key]
+        self.delete(key)
+        return True
+
+    def rename(self, key1, key2):
+        _ = self.get_key(key1)
+        if _:
+            self.del_key(key1)
+            self.set_key(key2, _)
+            return 0
+        return 1
+
     def ping(self):
         return 1
 
@@ -74,6 +118,7 @@ class _BaseDatabase:
 
     def keys(self):
         return []
+        
 
     def del_key(self, key):
         if key in self._cache:
