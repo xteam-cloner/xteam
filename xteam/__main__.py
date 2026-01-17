@@ -88,7 +88,7 @@ async def main_async():
     call_py = None
     
     if vcbot_enabled:
-        VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION or Var.SESSION
+        VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION
         
         if VC_SESSION:
             session = validate_session(VC_SESSION)
@@ -98,7 +98,7 @@ async def main_async():
             call_py = None
             session = None
         else:
-            session = "xteam-vc-client"
+            session = "xteam-music"
             LOGS.info("VCBOT enabled but VC_SESSION missing. Trying local session.")
 
         if session:
