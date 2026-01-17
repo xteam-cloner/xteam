@@ -88,7 +88,7 @@ async def main_async():
     call_py = None
     
     if vcbot_enabled:
-        VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION
+        VC_SESSION = udB.get_key("VC_SESSION") or Var.VC_SESSION or Var.SESSION
         
         if VC_SESSION:
             session = validate_session(VC_SESSION)
