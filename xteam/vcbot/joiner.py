@@ -20,6 +20,8 @@ from telethon.tl.functions.channels import LeaveChannelRequest
 from telethon.tl.functions.messages import ImportChatInviteRequest
 from telethon.tl.functions.messages import ExportChatInviteRequest
 
+ASSISTANT_ID = Var.ASSISTANT_ID
+
 def AssistantAdd(mystic):
     async def wrapper(event):
         # 1. Jika bukan di grup, langsung jalankan fungsi utama
