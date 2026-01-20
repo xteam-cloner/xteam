@@ -1,7 +1,7 @@
 from typing import *
 import random
 from typing import Dict, List, Union
-
+from xteam import bot
 from xteam.configs import Var
 from telethon import *
 from telethon.errors.rpcerrorlist import (
@@ -44,7 +44,7 @@ def AssistantAdd(mystic):
                 invitelink = invite_link.replace("https://t.me/+", "").replace("https://t.me/joinchat/", "")
                 
                 # 4. Assistant (xteam.bot) bergabung menggunakan link tersebut
-                await xteam.bot(ImportChatInviteRequest(invitelink))
+                await bot(ImportChatInviteRequest(invitelink))
                 
                 await event.reply("✅ **Assistant Berhasil Bergabung!**\nSekarang siap memutar musik.")
                 
