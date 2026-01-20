@@ -2,7 +2,7 @@ from typing import *
 import random
 from typing import Dict, List, Union
 
-from .configs import Var
+from xteam.configs import Var
 from telethon import *
 from telethon.errors.rpcerrorlist import (
     UserAlreadyParticipantError,
