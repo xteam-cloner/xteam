@@ -8,11 +8,7 @@ from youtubesearchpython import VideosSearch
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
 COOKIES_FILE_PATH = "cookies.txt"
-
-if not os.path.exists(DOWNLOAD_DIR):
-    os.makedirs(DOWNLOAD_DIR)
 
 def ytsearch(query: str) -> Union[List[Any], int]:
     try:
@@ -42,27 +38,23 @@ async def ytdl(url: str, video_mode: bool = False, mode: str = None) -> Tuple[in
             "geo_bypass": True,
             "nocheckcertificate": True,
             "cookiefile": COOKIES_FILE_PATH if os.path.exists(COOKIES_FILE_PATH) else None,
-            "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
+            "outtmpl": "%(id)s.%(ext)s",
         }
 
-        selected_mode = mode
-        if not selected_mode:
-            selected_mode = "video" if video_mode else "audio"
+        if mode:
+            selected_mode = mode
+        elif video_mode:
+            selected_mode = "video"
+        else:
+            selected_mode = "m4a"
 
         if selected_mode == "video":
             common_opts["format"] = "bestvideo[height<=?720][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"
             common_opts["merge_output_format"] = "mp4"
             target_ext = "mp4"
-
         elif selected_mode == "m4a":
-            common_opts["format"] = "bestaudio[ext=m4a]/best"
+            common_opts["format"] = "bestaudio[ext=m4a]/bestaudio"
             target_ext = "m4a"
-
-        elif selected_mode == "song_video":
-            common_opts["format"] = "bestvideo+bestaudio/best"
-            common_opts["merge_output_format"] = "mp4"
-            target_ext = "mp4"
-
         elif selected_mode == "song_audio":
             common_opts["format"] = "bestaudio/best"
             common_opts["postprocessors"] = [{
@@ -71,7 +63,6 @@ async def ytdl(url: str, video_mode: bool = False, mode: str = None) -> Tuple[in
                 "preferredquality": "192",
             }]
             target_ext = "mp3"
-
         else:
             common_opts["format"] = "bestaudio/best"
             common_opts["postprocessors"] = [{
@@ -82,17 +73,15 @@ async def ytdl(url: str, video_mode: bool = False, mode: str = None) -> Tuple[in
             target_ext = "opus"
 
         with yt_dlp.YoutubeDL(common_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
+            info = ydl.extract_info(url, download=True)
             video_id = info['id']
+            filename = f"{video_id}.{target_ext}"
             
-            actual_ext = target_ext if target_ext else info.get('ext', 'm4a')
-            file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.{actual_ext}")
-
-            if os.path.exists(file_path):
-                return file_path
-
-            ydl.download([url])
-            return file_path
+            if os.path.exists(filename):
+                return os.path.abspath(filename)
+            
+            files = [f for f in os.listdir('.') if f.startswith(video_id)]
+            return os.path.abspath(files[0]) if files else filename
 
     try:
         result_path = await loop.run_in_executor(None, download_sync)
@@ -100,4 +89,13 @@ async def ytdl(url: str, video_mode: bool = False, mode: str = None) -> Tuple[in
     except Exception as e:
         logger.error(f"Download Error: {e}")
         return 0, str(e)
-        
+
+async def cleanup_file(filepath: str, delay: int = 60):
+    await asyncio.sleep(delay)
+    try:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            logger.info(f"File dibersihkan: {filepath}")
+    except Exception as e:
+        logger.error(f"Gagal membersihkan file: {e}")
+            
