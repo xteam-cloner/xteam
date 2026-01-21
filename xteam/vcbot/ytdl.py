@@ -8,7 +8,11 @@ from youtubesearchpython import VideosSearch
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+DOWNLOAD_DIR = "downloads"
 COOKIES_FILE_PATH = "cookies.txt"
+
+if not os.path.exists(DOWNLOAD_DIR):
+    os.makedirs(DOWNLOAD_DIR)
 
 def ytsearch(query: str) -> Union[List[Any], int]:
     try:
@@ -38,7 +42,7 @@ async def ytdl(url: str, video_mode: bool = False, mode: str = None) -> Tuple[in
             "geo_bypass": True,
             "nocheckcertificate": True,
             "cookiefile": COOKIES_FILE_PATH if os.path.exists(COOKIES_FILE_PATH) else None,
-            "outtmpl": "%(id)s.%(ext)s",
+            "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s",
         }
 
         if mode:
@@ -52,36 +56,26 @@ async def ytdl(url: str, video_mode: bool = False, mode: str = None) -> Tuple[in
             common_opts["format"] = "bestvideo[height<=?720][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"
             common_opts["merge_output_format"] = "mp4"
             target_ext = "mp4"
-        elif selected_mode == "m4a":
-            common_opts["format"] = "bestaudio[ext=m4a]/bestaudio"
-            target_ext = "m4a"
         elif selected_mode == "song_audio":
             common_opts["format"] = "bestaudio/best"
             common_opts["postprocessors"] = [{
                 "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "192",
-            }]
-            target_ext = "mp3"
-        else:
-            common_opts["format"] = "bestaudio/best"
-            common_opts["postprocessors"] = [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "opus",
+                "preferredcodec": "m4a",
                 "preferredquality": "128",
             }]
-            target_ext = "opus"
+            target_ext = "m4a"
+        else:
+            common_opts["format"] = "bestaudio[ext=m4a]/bestaudio"
+            target_ext = "m4a"
 
         with yt_dlp.YoutubeDL(common_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             video_id = info['id']
-            filename = f"{video_id}.{target_ext}"
             
-            if os.path.exists(filename):
-                return os.path.abspath(filename)
-            
-            files = [f for f in os.listdir('.') if f.startswith(video_id)]
-            return os.path.abspath(files[0]) if files else filename
+            files = [f for f in os.listdir(DOWNLOAD_DIR) if f.startswith(video_id) and f.endswith(f'.{target_ext}')]
+            if files:
+                return os.path.abspath(os.path.join(DOWNLOAD_DIR, files[0]))
+            return os.path.abspath(os.path.join(DOWNLOAD_DIR, f"{video_id}.{target_ext}"))
 
     try:
         result_path = await loop.run_in_executor(None, download_sync)
@@ -90,7 +84,7 @@ async def ytdl(url: str, video_mode: bool = False, mode: str = None) -> Tuple[in
         logger.error(f"Download Error: {e}")
         return 0, str(e)
 
-async def cleanup_file(filepath: str, delay: int = 60):
+async def cleanup_file(filepath: str, delay: int = 1800):
     await asyncio.sleep(delay)
     try:
         if os.path.exists(filepath):
