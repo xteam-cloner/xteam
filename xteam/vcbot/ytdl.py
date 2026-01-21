@@ -1,131 +1,92 @@
 import os
 import asyncio
 import yt_dlp
-from typing import Tuple, Union, Any
-from youtubesearchpython import VideosSearch
-from xteam import LOGS
-from xteam.fns.helper import bash
 import logging
+from typing import Tuple, Union, Any, List
+from youtubesearchpython import VideosSearch
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-FFMPEG_ABSOLUTE_PATH = "/usr/bin/ffmpeg"
 DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
 COOKIES_FILE_PATH = "cookies.txt"
 
-def ytsearch(query: str):
+if not os.path.exists(DOWNLOAD_DIR):
+    os.makedirs(DOWNLOAD_DIR)
+
+def ytsearch(query: str) -> Union[List[Any], int]:
     try:
         search = VideosSearch(query, limit=1).result()
         if not search["result"]:
             return 0
         data = search["result"][0]
-        songname = data["title"]
-        url = data["link"]
-        duration = data["duration"]
-        thumbnail = data["thumbnails"][0]["url"]
-        videoid = data["id"]
-        artist = data["channel"]["name"]
-        return [songname, url, duration, thumbnail, videoid, artist]
+        return [
+            data["title"],
+            data["link"],
+            data["duration"],
+            data["thumbnails"][0]["url"],
+            data["id"],
+            data["channel"]["name"]
+        ]
     except Exception as e:
-        LOGS.info(str(e))
+        logger.error(f"Search Error: {e}")
         return 0
 
-async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, Union[str, Any]]:
+async def ytdl(url: str, mode: str = "audio") -> Tuple[int, str]:
     loop = asyncio.get_running_loop()
-    
-    if not os.path.isdir(DOWNLOAD_DIR):
-        try:
-            os.makedirs(DOWNLOAD_DIR)
-        except OSError as e:
-            return 0, f"Gagal membuat direktori unduhan: {e}"
 
-    def vc_audio_dl_sync():
+    def download_sync():
         common_opts = {
-            "js_runtimes": {
-                "deno": {},
-                "node": {},
-            },
-            "remote_components": "ejs:github",
-            "allow_dynamic_mpd": True,
-            "nocheckcertificate": True,
-            "noplaylist": True,
             "quiet": True,
-            "prefer_ffmpeg": True,
-            "exec_path": FFMPEG_ABSOLUTE_PATH,
-            "cookiefile": COOKIES_FILE_PATH,
+            "no_warnings": True,
+            "geo_bypass": True,
+            "nocheckcertificate": True,
+            "cookiefile": COOKIES_FILE_PATH if os.path.exists(COOKIES_FILE_PATH) else None,
+            "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
         }
-        
-        if video_mode:
-            ydl_opts_vc = {
-                **common_opts,
-                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
-                "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]",
-                "merge_output_format": "mp4",
-                "postprocessors": [
-                    {
-                        "key": "FFmpegVideoConvertor",
-                        "preferedformat": "mp4"
-                    },
-                    {
-                        "key": "FFmpegMetadata",
-                        "add_metadata": False,
-                    },
-                ],
-            }
-        else:
-            ydl_opts_vc = {
-                **common_opts,
-                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s"), 
-                "format": "bestaudio/best",
-                "postprocessors": [
-                    {
-                        "key": "FFmpegExtractAudio",
-                        "preferredcodec": "opus",
-                        "preferredquality": "128",
-                    },
-                    {
-                        "key": "FFmpegMetadata",
-                        "add_metadata": False,
-                    },
-                ],
-            }
-        
-        video_id = 'unknown' 
-        
-        try:
-            x = yt_dlp.YoutubeDL(ydl_opts_vc)
-            info = x.extract_info(url, download=True)
-            video_id = info.get('id', 'unknown')
-            
-            if video_mode:
-                target_ext = 'mp4'
-            else:
-                target_ext = 'opus'
 
-            final_files = [f for f in os.listdir(DOWNLOAD_DIR) if f.startswith(video_id) and f.endswith(f'.{target_ext}')]
-            
-            if not final_files:
-                logger.error(f"FFmpeg gagal membuat file {target_ext.upper()} setelah processing untuk ID: {video_id}.")
-                raise FileNotFoundError(f"Konversi {target_ext.upper()} gagal.")
-                
-            final_link = os.path.join(DOWNLOAD_DIR, final_files[0])
-            return final_link
-            
-        except Exception as e:
-            logger.error(f"YTDL VC Error during sync operation: {e}", exc_info=True)
-            
-            for f in os.listdir(DOWNLOAD_DIR):
-                if f.startswith(video_id):
-                    try:
-                        os.remove(os.path.join(DOWNLOAD_DIR, f))
-                    except OSError:
-                        pass 
-            
-            raise 
+        if mode == "video":
+            common_opts["format"] = "bestvideo[height<=?720][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"
+            target_ext = "mp4"
+
+        elif mode == "song_audio":
+            common_opts["format"] = "bestaudio/best"
+            common_opts["postprocessors"] = [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            }]
+            target_ext = "mp3"
+
+        elif mode == "song_video":
+            common_opts["format"] = "bestvideo+bestaudio/best"
+            common_opts["merge_output_format"] = "mp4"
+            target_ext = "mp4"
+
+        else:
+            common_opts["format"] = "bestaudio/best"
+            common_opts["postprocessors"] = [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "opus",
+                "preferredquality": "128",
+            }]
+            target_ext = "opus"
+
+        with yt_dlp.YoutubeDL(common_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            video_id = info['id']
+            file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.{target_ext}")
+
+            if os.path.exists(file_path):
+                return file_path
+
+            ydl.download([url])
+            return file_path
 
     try:
-        downloaded_file = await loop.run_in_executor(None, vc_audio_dl_sync)
-        return 1, downloaded_file
+        result_path = await loop.run_in_executor(None, download_sync)
+        return 1, result_path
     except Exception as e:
-        return 0, f"Error saat mengunduh atau konversi: {e}"
-                                               
+        logger.error(f"Download Error: {e}")
+        return 0, str(e)
+            
