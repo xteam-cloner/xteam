@@ -32,7 +32,7 @@ def ytsearch(query: str) -> Union[List[Any], int]:
         logger.error(f"Search Error: {e}")
         return 0
 
-async def ytdl(url: str, mode: str = "audio") -> Tuple[int, str]:
+async def ytdl(url: str, video_mode: bool = False, mode: str = None) -> Tuple[int, str]:
     loop = asyncio.get_running_loop()
 
     def download_sync():
@@ -45,11 +45,25 @@ async def ytdl(url: str, mode: str = "audio") -> Tuple[int, str]:
             "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
         }
 
-        if mode == "video":
+        selected_mode = mode
+        if not selected_mode:
+            selected_mode = "video" if video_mode else "audio"
+
+        if selected_mode == "video":
             common_opts["format"] = "bestvideo[height<=?720][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"
+            common_opts["merge_output_format"] = "mp4"
             target_ext = "mp4"
 
-        elif mode == "song_audio":
+        elif selected_mode == "m4a":
+            common_opts["format"] = "bestaudio[ext=m4a]/best"
+            target_ext = "m4a"
+
+        elif selected_mode == "song_video":
+            common_opts["format"] = "bestvideo+bestaudio/best"
+            common_opts["merge_output_format"] = "mp4"
+            target_ext = "mp4"
+
+        elif selected_mode == "song_audio":
             common_opts["format"] = "bestaudio/best"
             common_opts["postprocessors"] = [{
                 "key": "FFmpegExtractAudio",
@@ -57,11 +71,6 @@ async def ytdl(url: str, mode: str = "audio") -> Tuple[int, str]:
                 "preferredquality": "192",
             }]
             target_ext = "mp3"
-
-        elif mode == "song_video":
-            common_opts["format"] = "bestvideo+bestaudio/best"
-            common_opts["merge_output_format"] = "mp4"
-            target_ext = "mp4"
 
         else:
             common_opts["format"] = "bestaudio/best"
@@ -75,7 +84,9 @@ async def ytdl(url: str, mode: str = "audio") -> Tuple[int, str]:
         with yt_dlp.YoutubeDL(common_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             video_id = info['id']
-            file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.{target_ext}")
+            
+            actual_ext = target_ext if target_ext else info.get('ext', 'm4a')
+            file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.{actual_ext}")
 
             if os.path.exists(file_path):
                 return file_path
@@ -89,4 +100,4 @@ async def ytdl(url: str, mode: str = "audio") -> Tuple[int, str]:
     except Exception as e:
         logger.error(f"Download Error: {e}")
         return 0, str(e)
-            
+        
