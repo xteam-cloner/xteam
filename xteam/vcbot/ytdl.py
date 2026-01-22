@@ -14,18 +14,6 @@ COOKIES_FILE_PATH = "cookies.txt"
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
-async def get_playlist_ids(link, limit):
-    command = f"yt-dlp -i --get-id --flat-playlist --playlist-end {limit} --skip-download '{link}'"
-    process = await asyncio.create_subprocess_shell(
-        command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
-    stdout, stderr = await process.communicate()
-    try:
-        return [key for key in stdout.decode().split("\n") if key.strip() != ""]
-    except:
-        return []
 
 def ytsearch(query: str) -> Union[List[Any], int]:
     try:
@@ -65,6 +53,20 @@ async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, str]:
     except Exception as e:
         return 0, str(e)
 
+            
+async def get_playlist_ids(link, limit):
+    command = f"yt-dlp -i --get-id --flat-playlist --playlist-end {limit} --skip-download '{link}'"
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    stdout, _ = await process.communicate()
+    try:
+        return [key for key in stdout.decode().split("\n") if key.strip() != ""]
+    except:
+        return []
+
 async def cleanup_file(filepath: str, delay: int = 1800):
     await asyncio.sleep(delay)
     try:
@@ -72,4 +74,3 @@ async def cleanup_file(filepath: str, delay: int = 1800):
             os.remove(filepath)
     except:
         pass
-            
