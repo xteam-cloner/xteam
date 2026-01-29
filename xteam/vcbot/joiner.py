@@ -33,9 +33,17 @@ def AssistantAdd(mystic):
             return await mystic(event)
 
         try:
+            await event.client.get_entity(ASSISTANT_ID)
+        except Exception:
+            try:
+                await event.client(functions.users.GetFullUserRequest(id=ASSISTANT_ID))
+            except Exception:
+                pass 
+
+        try:
             await event.client.get_permissions(event.chat_id, ASSISTANT_ID)
             
-        except UserNotParticipantError:
+        except (UserNotParticipantError, ValueError):
             try:
                 invite_request = await event.client(ExportChatInviteRequest(event.chat_id))
                 invite_link = invite_request.link
@@ -43,11 +51,11 @@ def AssistantAdd(mystic):
                 
                 await bot(ImportChatInviteRequest(invitelink))
                 
-                status = await event.reply("**Assistant Successfully Joined!**")
+                status = await event.reply("**ᴀssɪsᴛᴀɴᴛ sᴜᴄᴄᴇssғᴜʟʟʏ ᴊᴏɪɴᴇᴅ!**")
                 asyncio.create_task(auto_delete(status, 5))
                 
             except Exception as e:
-                error = await event.reply(f"❌ **Assistant Failed to Join**\n\n**Reason**: `{e}`")
+                error = await event.reply(f"❌ **ᴀssɪsᴛᴀɴᴛ ғᴀɪʟᴇᴅ ᴛᴏ ᴊᴏɪɴ**\n\n**ʀᴇᴀsᴏɴ**: `{e}`")
                 asyncio.create_task(auto_delete(error, 10))
                 return
                 
