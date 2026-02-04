@@ -1,22 +1,9 @@
-import random
 import asyncio
-from typing import *
-from typing import Dict, List, Union
+from telethon import functions, errors
+from telethon.tl.functions.messages import ImportChatInviteRequest, ExportChatInviteRequest
+from telethon.errors.rpcerrorlist import UserAlreadyParticipantError
 from xteam import bot
 from xteam.configs import Var
-from telethon import *
-from telethon.errors.rpcerrorlist import (
-    UserAlreadyParticipantError,
-    UserNotParticipantError
-)
-from telethon.tl.types import PeerChannel, InputChannel
-from telethon.tl.functions.channels import *
-from telethon.tl.functions.channels import GetParticipantsRequest
-from telethon.tl.types import ChannelParticipantsSearch
-import telethon
-from telethon.tl import functions
-from telethon.tl.functions.channels import LeaveChannelRequest
-from telethon.tl.functions.messages import ImportChatInviteRequest, ExportChatInviteRequest
 
 ASSISTANT_ID = Var.ASSISTANT_ID
 
@@ -24,36 +11,45 @@ async def auto_delete(msg, delay=2):
     await asyncio.sleep(delay)
     try:
         await msg.delete()
-    except:
+    except Exception:
         pass
 
 def AssistantAdd(mystic):
     async def wrapper(event):
-        if not event.is_group:
+        # Hanya jalankan di grup/channel
+        if not event.is_group and not event.is_channel:
             return await mystic(event)
 
-        try:
-            await event.client.get_entity(ASSISTANT_ID)
-        except Exception:
-            try:
-                await event.client(functions.users.GetFullUserRequest(id=ASSISTANT_ID))
-            except Exception:
-                pass 
-
+        # 1. Cek apakah Assistant sudah ada di dalam grup
+        is_participant = False
         try:
             await event.client.get_permissions(event.chat_id, ASSISTANT_ID)
-            
-        except (UserNotParticipantError, ValueError):
+            is_participant = True
+        except (errors.UserNotParticipantError, ValueError):
+            is_participant = False
+        except Exception:
+            is_participant = False
+
+        # 2. Jika belum ada, coba masukkan
+        if not is_participant:
             try:
-                invite_request = await event.client(ExportChatInviteRequest(event.chat_id))
-                invite_link = invite_request.link
-                invitelink = invite_link.replace("https://t.me/+", "").replace("https://t.me/joinchat/", "")
+                # Ambil/Buat link invite
+                invite = await event.client(ExportChatInviteRequest(event.chat_id))
+                hash_code = invite.link.split('+')[-1] if '+' in invite.link else invite.link.split('/')[-1]
                 
-                await bot(ImportChatInviteRequest(invitelink))
+                # Gunakan bot client (Assistant) untuk bergabung
+                try:
+                    await bot(ImportChatInviteRequest(hash_code))
+                    status = await event.reply("**ᴀssɪsᴛᴀɴᴛ sᴜᴄᴄᴇssғᴜʟʟʏ ᴊᴏɪɴᴇᴅ!**")
+                    asyncio.create_task(auto_delete(status, 5))
+                except UserAlreadyParticipantError:
+                    # Jika ternyata sudah di dalam, abaikan saja
+                    pass
                 
-                status = await event.reply("**ᴀssɪsᴛᴀɴᴛ sᴜᴄᴄᴇssғᴜʟʟʏ ᴊᴏɪɴᴇᴅ!**")
-                asyncio.create_task(auto_delete(status, 5))
-                
+            except errors.ChatAdminRequiredError:
+                error = await event.reply("❌ **ᴇʀʀᴏʀ**: Saya butuh hak admin (Add Users) untuk mengundang assistant!")
+                asyncio.create_task(auto_delete(error, 10))
+                return
             except Exception as e:
                 error = await event.reply(f"❌ **ᴀssɪsᴛᴀɴᴛ ғᴀɪʟᴇᴅ ᴛᴏ ᴊᴏɪɴ**\n\n**ʀᴇᴀsᴏɴ**: `{e}`")
                 asyncio.create_task(auto_delete(error, 10))
