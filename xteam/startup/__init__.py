@@ -93,7 +93,7 @@ if run_as_module:
     LOGS.info(f"Xteam Version - {__xteam__}")
     LOGS.info(f"Telethon Version - {__version__} [Layer: {LAYER}]")
     LOGS.info(f"Userbot Version - {ultroid_version} [{HOSTED_ON}]")
-    LOGS.info(f"PyTgCalls Version - {_ptgver_}
+    LOGS.info(f"PyTgCalls Version - {_ptgver_}")
 
     try:
         from safety.tools import *
