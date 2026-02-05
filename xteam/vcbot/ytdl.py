@@ -1,30 +1,76 @@
 import os
-from yt_dlp import YoutubeDL
-from xteam.startup.loader import BASE_PATH 
+import asyncio
+import yt_dlp
+import logging
+from typing import Tuple, Union, Any, List
+from youtubesearchpython import VideosSearch
 
-DOWNLOAD_DIR = os.path.join(BASE_PATH, "downloads")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+DOWNLOAD_DIR = "downloads"
+COOKIES_FILE_PATH = "cookies.txt"
+
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
-COOKIES_FILE_PATH = os.path.join(BASE_PATH, "cookies.txt")
 
-def get_ytdl_opts():
-    return {
-        "quiet": True,
-        "no_warnings": True,
-        "geo_bypass": True,
-        "nocheckcertificate": True,
-        "format": "bestaudio[ext=m4a]/best[ext=mp4]/best",
-        "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
-        "cookiefile": COOKIES_FILE_PATH if os.path.exists(COOKIES_FILE_PATH) else None,
-        "noplaylist": True,
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    }
+def ytsearch(query: str) -> Union[List[Any], int]:
+    try:
+        search = VideosSearch(query, limit=1).result()
+        if not search["result"]: return 0
+        data = search["result"][0]
+        return [data["title"], data["link"], data["duration"], data["thumbnails"][0]["url"], data["id"], data["channel"]["name"]]
+    except:
+        return 0
 
-async def download_song(url):
-    opts = get_ytdl_opts()
-    with YoutubeDL(opts) as ytdl:
-        info_dict = ytdl.extract_info(url, download=True)
-        file_path = ytdl.prepare_filename(info_dict)
-        return file_path
-        
+async def ytdl(url: str, video_mode: bool = False) -> Tuple[int, str]:
+    loop = asyncio.get_running_loop()
+    def download_sync():
+        opts = {
+            "quiet": True,
+            "no_warnings": True,
+            "geo_bypass": True,
+            "nocheckcertificate": True,
+            "cookiefile": COOKIES_FILE_PATH if os.path.exists(COOKIES_FILE_PATH) else None,
+            "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s",
+        }
+        if video_mode:
+            opts["format"] = "bestvideo[height<=?720][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"
+            target_ext = "mp4"
+        else:
+            opts["format"] = "bestaudio[ext=m4a]/bestaudio"
+            target_ext = "m4a"
+
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            v_id = info['id']
+            return os.path.abspath(os.path.join(DOWNLOAD_DIR, f"{v_id}.{target_ext}"))
+
+    try:
+        path = await loop.run_in_executor(None, download_sync)
+        return 1, path
+    except Exception as e:
+        return 0, str(e)
+
+            
+async def get_playlist_ids(link, limit):
+    command = f"yt-dlp -i --get-id --flat-playlist --playlist-end {limit} --skip-download '{link}'"
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    stdout, _ = await process.communicate()
+    try:
+        return [key for key in stdout.decode().split("\n") if key.strip() != ""]
+    except:
+        return []
+
+async def cleanup_file(filepath: str, delay: int = 1800):
+    await asyncio.sleep(delay)
+    try:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+    except:
+        pass
