@@ -25,7 +25,7 @@ async def play_logs(event, title, duration, streamtype):
             "</blockquote>"
         )
         
-        await bot.send_message(
+        await asst.send_message(
             Var.LOG_CHANNEL,
             logger_text,
             parse_mode='html',
