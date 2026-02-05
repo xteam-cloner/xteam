@@ -41,6 +41,7 @@ def where_hosted():
 
 if run_as_module:
     from telethon import __version__
+    from pytgcalls import __version__ as _ptgver_
     from telethon.tl.alltlobjects import LAYER
 
     from ..version import __version__ as __xteam__
