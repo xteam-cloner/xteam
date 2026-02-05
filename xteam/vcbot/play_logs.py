@@ -1,7 +1,7 @@
 from xteam import asst, LOGS
 from xteam.configs import Var
 
-async def play_logs(event, title, duration, streamtype):
+async def play_logs(event, title, duration):
     if not Var.LOG_CHANNEL:
         return
         
