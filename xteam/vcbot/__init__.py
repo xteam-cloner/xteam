@@ -6,3 +6,4 @@ from .ytdl import ytdl, ytsearch, cleanup_file, get_playlist_ids
 from .join_call import join_call
 from .markups import telegram_markup_timer, MUSIC_BUTTONS
 from .joiner import AssistantAdd
+from .play_logs import play_logs
